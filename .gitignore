@@ -26,3 +26,10 @@ NVIDIA-ICLAD25-Hackathon-main/work/**/reports/*_harness.txt
 NVIDIA-ICLAD25-Hackathon-main/work/**/harness/**/sim_build/
 NVIDIA-ICLAD25-Hackathon-main/work/**/*.vcd
 NVIDIA-ICLAD25-Hackathon-main/work/**/*.fst
+
+# results
+NVIDIA-ICLAD25-Hackathon-main/work/raw_result.json
+NVIDIA-ICLAD25-Hackathon-main/work/result.json
+NVIDIA-ICLAD25-Hackathon-main/work/report.json
+NVIDIA-ICLAD25-Hackathon-main/work/report.txt
+NVIDIA-ICLAD25-Hackathon-main/work/run.log

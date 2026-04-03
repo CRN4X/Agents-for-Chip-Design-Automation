@@ -16,17 +16,92 @@ Modes:
 """
 
 import json
+import os
 import re
 import subprocess
 import sys
 import time
 import shlex
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, TextIO, Tuple
 
 
 def log(msg: str) -> None:
-    print(f"[agent.py] {msg}", flush=True)
+    print(f"\n[agent.py] {msg}", flush=True)
+
+
+class TeeStream:
+    def __init__(self, console_stream: TextIO, log_stream: TextIO) -> None:
+        self.console_stream = console_stream
+        self.log_stream = log_stream
+
+    def write(self, data: str) -> int:
+        n = self.console_stream.write(data)
+        self.log_stream.write(data)
+        return n
+
+    def flush(self) -> None:
+        self.console_stream.flush()
+        self.log_stream.flush()
+
+    def isatty(self) -> bool:
+        return bool(getattr(self.console_stream, "isatty", lambda: False)())
+
+
+def lock_log_file(log_file: TextIO, log_path: Path) -> None:
+    if os.name == "nt":
+        import msvcrt
+
+        try:
+            # Non-blocking lock of first byte while file handle is held.
+            msvcrt.locking(log_file.fileno(), msvcrt.LK_NBLCK, 1)
+        except OSError as exc:
+            raise RuntimeError(
+                f"Could not lock {log_path}. It may be open in another application. "
+                "Close the file and retry."
+            ) from exc
+        return
+
+    import fcntl
+
+    try:
+        fcntl.flock(log_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError as exc:
+        raise RuntimeError(
+            f"Could not lock {log_path}. It may be open in another application. "
+            "Close the file and retry."
+        ) from exc
+
+
+def start_run_log(repo_root: Path) -> Tuple[TextIO, TextIO, TextIO]:
+    work_dir = repo_root / "work"
+    log_path = work_dir / "run.log"
+    try:
+        work_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_path.open("w", encoding="utf-8")
+    except OSError as exc:
+        raise RuntimeError(
+            f"Could not open {log_path} for writing. Check folder permissions and retry."
+        ) from exc
+
+    try:
+        lock_log_file(log_file, log_path)
+    except RuntimeError:
+        log_file.close()
+        raise
+
+    orig_stdout = sys.stdout
+    orig_stderr = sys.stderr
+    sys.stdout = TeeStream(orig_stdout, log_file)
+    sys.stderr = TeeStream(orig_stderr, log_file)
+    print(f"\n[agent.py] Logging terminal output to: {log_path}", flush=True)
+    return log_file, orig_stdout, orig_stderr
+
+
+def stop_run_log(log_file: TextIO, orig_stdout: TextIO, orig_stderr: TextIO) -> None:
+    sys.stdout = orig_stdout
+    sys.stderr = orig_stderr
+    log_file.close()
 
 
 def run_cmd(
@@ -387,6 +462,20 @@ def main() -> None:
             return
         print_usage()
         sys.exit(2)
+
+    try:
+        log_file, orig_stdout, orig_stderr = start_run_log(repo_root)
+    except RuntimeError as exc:
+        print(f"Run log error: {exc}", file=sys.stderr)
+        sys.exit(2)
+
+    try:
+        _main_orchestrator(idx, max_retries, repo_root)
+    finally:
+        stop_run_log(log_file, orig_stdout, orig_stderr)
+
+
+def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
 
     dataset_path = repo_root / "dataset" / "hackathon-agentic-obfuscated_final_corrected.jsonl"
     if not dataset_path.exists():
