@@ -185,7 +185,7 @@ vvp -V
 - For detailed diagnostics, inspect the entire `run.log` file and check for any errors
 
 
-### Invoking `codex` via agents.py
+### Invoking `Codex` via agent.py
 
 - If getting permision error, `Codex` cannot write to the directory, then close terminal
 - Open a new terminal, just type `codex`, give the approval and then Ctrl + C
