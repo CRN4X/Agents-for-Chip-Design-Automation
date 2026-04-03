@@ -444,30 +444,55 @@ Attempt: {attempt}/{max_retries}
 def run_codex_once(repo_root: Path, prompt: str) -> subprocess.CompletedProcess:
     cmd = ["codex", "exec", "-", "--skip-git-repo-check", "-C", str(repo_root)]
     timeout_sec = 480  # 8 minutes
-    try:
-        cp = subprocess.run(
-            cmd,
-            cwd=str(repo_root),
-            text=True,
-            input=prompt,
-            capture_output=True,
-            check=False,
-            timeout=timeout_sec,
-        )
-        if cp.stdout:
-            print(cp.stdout, end="", flush=True)
-        if cp.stderr:
-            print(cp.stderr, end="", flush=True)
-        return cp
-    except subprocess.TimeoutExpired as exc:
-        stdout = exc.stdout or ""
-        stderr = exc.stderr or ""
-        if stdout:
-            print(stdout, end="", flush=True)
-        if stderr:
-            print(stderr, end="", flush=True)
+    proc = subprocess.Popen(
+        cmd,
+        cwd=str(repo_root),
+        text=True,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        bufsize=1,
+    )
+
+    assert proc.stdout is not None
+    assert proc.stdin is not None
+    proc.stdin.write(prompt)
+    proc.stdin.close()
+
+    start = time.time()
+    out_lines: List[str] = []
+
+    # Stream output live while enforcing timeout.
+    import select
+
+    timed_out = False
+    while True:
+        if proc.poll() is not None:
+            # Drain any buffered remaining output.
+            rest = proc.stdout.read()
+            if rest:
+                print(rest, end="", flush=True)
+                out_lines.append(rest)
+            break
+
+        if (time.time() - start) > timeout_sec:
+            timed_out = True
+            proc.kill()
+            break
+
+        ready, _, _ = select.select([proc.stdout], [], [], 0.2)
+        if ready:
+            line = proc.stdout.readline()
+            if line:
+                print(line, end="", flush=True)
+                out_lines.append(line)
+
+    if timed_out:
         # Use 124 as timeout sentinel return code.
-        return subprocess.CompletedProcess(cmd, 124, stdout, stderr)
+        return subprocess.CompletedProcess(cmd, 124, "".join(out_lines), "")
+
+    rc = proc.wait()
+    return subprocess.CompletedProcess(cmd, rc, "".join(out_lines), "")
 
 
 def run_local_eval(repo_root: Path, harness_path: Path) -> subprocess.CompletedProcess:

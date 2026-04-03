@@ -183,3 +183,10 @@ vvp -V
 - If a run fails before execution starts with a `run.log`/lock message, close `work/run.log` in any editor/viewer and retry.
 - If Codex does not respond within 8 minutes, `agent.py` times out that attempt, applies a short backoff, and quits with a clear Codex timeout message.
 - For detailed diagnostics, inspect the entire `run.log` file and check for any errors
+
+
+### Invoking `codex` via agents.py
+
+- If getting permision error, `Codex` cannot write to the directory, then close terminal
+- Open a new terminal, just type `codex`, give the approval and then Ctrl + C
+- Now run the virtual env command followed by the python run agent command to get the results

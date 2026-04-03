@@ -1,13 +1,13 @@
 {
-  "cvdp_agentic_azure_sapphire_tiger_4476": {
-    "category": "cid005",
+  "cvdp_agentic_sunrise_ivory_glacier_9089": {
+    "category": "cid004",
     "difficulty": "medium",
     "tests": [
       {
         "result": 0,
-        "log": "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase1/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_azure_sapphire_tiger/harness/4476/rundir/sim.log",
+        "log": "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_sunrise_ivory_glacier/harness/9089/rundir/sim.log",
         "error_msg": null,
-        "execution": 11.0,
+        "execution": 6.0,
         "pid": 0
       }
     ],
