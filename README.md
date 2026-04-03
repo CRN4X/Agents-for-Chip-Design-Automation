@@ -65,15 +65,13 @@ Use this when you want automated retries + failure-context feedback.
 
 ```bash
 source agent_env/bin/activate
-python3 my-agent/agent.py -i <dataset_index>
 python3 my-agent/agent.py --index <dataset_index> --max-retries <1-17>
 ```
 
 ### Windows PowerShell
 
-```powershell
+```bash
 .\agent_env\Scripts\Activate.ps1
-python my-agent/agent.py -i <dataset_index>
 python my-agent/agent.py --index <dataset_index> --max-retries <1-17>
 ```
 
@@ -81,8 +79,7 @@ Command options:
 
 - Index (required): `-i <dataset_index>` or `--index <dataset_index>`
 - Retries (optional): `-r <N>` or `--max-retries <N>`
-- Default retries: `8`
-- Maximum allowed retries: `17`
+- Default retries: `8` and Maximum retries: `17`
 
 Examples:
 
