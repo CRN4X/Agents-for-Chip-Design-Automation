@@ -68,6 +68,7 @@ Use this when you want automated retries + failure-context feedback.
 ```bash
 cd NVIDIA-ICLAD25-Hackathon-main
 source agent_env/bin/activate
+cd my-agent
 python3 my-agent/agent.py --index <dataset_index> --max-retries <1-17>
 ```
 
@@ -76,6 +77,7 @@ python3 my-agent/agent.py --index <dataset_index> --max-retries <1-17>
 ```bash
 cd NVIDIA-ICLAD25-Hackathon-main
 .\agent_env\Scripts\Activate.ps1
+cd my-agent
 python my-agent/agent.py --index <dataset_index> --max-retries <1-17>
 ```
 
