@@ -11,21 +11,35 @@ This repository evaluates agentic RTL debugging/generation workflows on harnesse
 
 ## Prerequisites (Local No-Docker Flow)
 
-- macOS/Linux shell
-- `python3` available
-- Icarus Verilog tools installed:
+- `python3`
+- Icarus Verilog tools:
   - `iverilog`
   - `vvp`
 
-On macOS, you can install Icarus with:
+### macOS
 
 ```bash
 brew install icarus-verilog
 ```
 
+### Linux (Ubuntu/Debian)
+
+```bash
+sudo apt-get update
+sudo apt-get install -y iverilog
+```
+
+### Windows (No WSL)
+
+- Install **Python 3** and ensure `python`/`python3` is on PATH.
+- Install **Git for Windows** (includes Git Bash).
+- Install **Icarus Verilog for Windows** and ensure `iverilog` and `vvp` are on PATH.
+
 ## Setup
 
-From repo root:
+Run from repo root.
+
+### macOS/Linux/Git Bash
 
 ```bash
 python3 -m venv agent_env
@@ -33,11 +47,19 @@ source agent_env/bin/activate
 python3 -m pip install -r requirements.txt
 ```
 
-Note: all local eval commands should be run with the virtual environment activated.
+### Windows PowerShell
+
+```powershell
+python -m venv agent_env
+.\agent_env\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
 
 ## Quick Start
 
 ### 1) Run a single harness locally
+
+#### macOS/Linux/Git Bash
 
 ```bash
 source agent_env/bin/activate
@@ -50,6 +72,13 @@ Example:
 ./my-agent/run_local_eval.sh ./work/<problem_name>/harness/<id>
 ```
 
+#### Windows PowerShell (call through Git Bash)
+
+```powershell
+.\agent_env\Scripts\Activate.ps1
+bash ./my-agent/run_local_eval.sh ./work/<problem_name>/harness/<id>
+```
+
 What this does:
 
 1. Runs `my-agent/agent.py` in harness mode.
@@ -60,16 +89,25 @@ What this does:
 
 Use this when you want automated retries + failure-context feedback.
 
+#### macOS/Linux/Git Bash
+
 ```bash
 source agent_env/bin/activate
 python3 my-agent/agent.py --<dataset_index>
 ```
 
+#### Windows PowerShell
+
+```powershell
+.\agent_env\Scripts\Activate.ps1
+python my-agent/agent.py --<dataset_index>
+```
+
 Examples:
 
-```bash
-python3 my-agent/agent.py --1
-python3 my-agent/agent.py --index 1
+```text
+--1
+--index 1
 ```
 
 Behavior summary:
@@ -82,6 +120,8 @@ Behavior summary:
 
 ### 3) Run local batch eval/report
 
+#### macOS/Linux/Git Bash
+
 ```bash
 source agent_env/bin/activate
 ./my-agent/run_local_eval_batch.sh <repo_root>
@@ -92,6 +132,13 @@ Optional:
 ```bash
 ./my-agent/run_local_eval_batch.sh <repo_root> --limit 5
 ./my-agent/run_local_eval_batch.sh <repo_root> --harness ./work/<problem_name>/harness/<id>
+```
+
+#### Windows PowerShell (call through Git Bash)
+
+```powershell
+.\agent_env\Scripts\Activate.ps1
+bash ./my-agent/run_local_eval_batch.sh .
 ```
 
 ## Key Output Artifacts
@@ -122,23 +169,18 @@ For local no-Docker flow:
 
 ### `Missing Python deps in current environment`
 
-Activate the repo virtual environment before running eval:
-
-```bash
-source agent_env/bin/activate
-```
-
-Then verify:
+Activate the virtual environment first, then verify:
 
 ```bash
 python3 -c "import pytest, cocotb, cocotb_tools.runner"
 ```
 
+Windows PowerShell equivalent:
+
+```powershell
+python -c "import pytest, cocotb, cocotb_tools.runner"
+```
+
 ### `Missing tool: iverilog` or `vvp`
 
-Install Icarus Verilog and confirm both executables are on `PATH`.
-
-## Notes
-
-- This README documents the current local no-Docker workflow used by `my-agent` scripts.
-- If you also use Docker flows, keep Docker-specific docs in `my-agent/` scripts or a separate section to avoid mixing setup paths.
+Install Icarus Verilog and ensure both executables are available on PATH.
