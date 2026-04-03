@@ -132,4 +132,33 @@ python -c "import pytest, cocotb, cocotb_tools.runner"
 
 ### `Missing tool: iverilog` or `vvp`
 
-Install Icarus Verilog and ensure both executables are available on PATH.
+Install Icarus Verilog and confirm both executables are on PATH.
+
+- macOS:
+
+```bash
+brew install icarus-verilog
+```
+
+- Linux (Ubuntu/Debian):
+
+```bash
+sudo apt-get update
+sudo apt-get install -y iverilog
+```
+
+- Windows PowerShell (with winget):
+
+```powershell
+winget search iverilog
+winget install IcarusVerilog.IcarusVerilog
+```
+
+If `winget` package ID differs on your machine, install from the official Icarus Verilog Windows installer and then reopen terminal.
+
+Verify install:
+
+```bash
+iverilog -V
+vvp -V
+```
