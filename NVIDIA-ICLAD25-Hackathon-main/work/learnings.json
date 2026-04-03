@@ -1,0 +1,6 @@
+{
+  "Modify or Extend Existing RTL": "",
+  "Integrate multiple modules into a top module": "For 3DES top-level integration, wire key slices to the exact K1/K2/K3 spec order and align done with final-stage data visibility (not just valid-shift timing) so latency and output correctness both hold.",
+  "Create new RTL from spec": "For DES decrypt-from-spec tasks, preserve the encrypt module interface/latency and implement decryption by reversing round-key usage (K16\u2192K1) with correct R16||L16 start and L0||R0 pre-FP concatenation.",
+  "Debug/fix buggy RTL": "For debug/fix RTL tasks, run the full harness first and only patch staged RTL when sim.log shows a concrete mismatch; if the harness already passes, keep RTL unchanged."
+}

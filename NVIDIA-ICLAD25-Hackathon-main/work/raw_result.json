@@ -1,13 +1,13 @@
 {
-  "cvdp_agentic_starlight_phoenix_comet_6246": {
-    "category": "cid016",
+  "cvdp_agentic_azure_sapphire_tiger_4476": {
+    "category": "cid005",
     "difficulty": "medium",
     "tests": [
       {
         "result": 0,
-        "log": "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase1/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_starlight_phoenix_comet/harness/6246/rundir/sim.log",
+        "log": "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase1/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_azure_sapphire_tiger/harness/4476/rundir/sim.log",
         "error_msg": null,
-        "execution": 59.0,
+        "execution": 11.0,
         "pid": 0
       }
     ],

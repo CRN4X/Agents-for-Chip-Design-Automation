@@ -24,6 +24,14 @@ import time
 import shlex
 from pathlib import Path
 from typing import Dict, List, Optional, TextIO, Tuple
+from init_learnings import init_learnings_json
+
+INFO_CATEGORIES = [
+    "Modify or Extend Existing RTL",
+    "Integrate multiple modules into a top module",
+    "Create new RTL from spec",
+    "Debug/fix buggy RTL",
+]
 
 
 def log(msg: str) -> None:
@@ -306,6 +314,78 @@ def read_agents_md(repo_root: Path) -> str:
     return agents_path.read_text(encoding="utf-8", errors="ignore")
 
 
+def read_learnings_json(repo_root: Path) -> str:
+    learnings_path = repo_root / "work" / "learnings.json"
+    if not learnings_path.exists():
+        return ""
+    return learnings_path.read_text(encoding="utf-8", errors="ignore")
+
+
+def extract_info_payload(text: str) -> Optional[Dict[str, str]]:
+    decoder = json.JSONDecoder()
+    i = 0
+    matches: List[Dict[str, str]] = []
+    while i < len(text):
+        if text[i] != "{":
+            i += 1
+            continue
+        try:
+            obj, end = decoder.raw_decode(text, i)
+        except json.JSONDecodeError:
+            i += 1
+            continue
+        i = end
+        if not isinstance(obj, dict):
+            continue
+        if "problem_category" in obj and "learning" in obj:
+            matches.append(obj)
+
+    if not matches:
+        return None
+    obj = matches[-1]
+    category = str(obj.get("problem_category", "")).strip()
+    learning = str(obj.get("learning", "")).strip()
+    if not category or not learning:
+        return None
+    return {"problem_category": category, "learning": learning}
+
+
+def update_learnings_json(repo_root: Path, problem_category: str, learning: str) -> None:
+    if problem_category not in INFO_CATEGORIES:
+        raise RuntimeError(
+            f"Invalid InfoAgent category: {problem_category}. Must be one of: {', '.join(INFO_CATEGORIES)}"
+        )
+
+    learnings_path = repo_root / "work" / "learnings.json"
+    if not learnings_path.exists():
+        rc = init_learnings_json(learnings_path)
+        if rc != 0:
+            raise RuntimeError(f"Unable to initialize {learnings_path}.")
+
+    with learnings_path.open("r+", encoding="utf-8") as fh:
+        lock_log_file(fh, learnings_path)
+        raw = fh.read().strip()
+        if raw:
+            try:
+                doc = json.loads(raw)
+            except json.JSONDecodeError as exc:
+                raise RuntimeError(f"{learnings_path} is not valid JSON: {exc}") from exc
+            if not isinstance(doc, dict):
+                raise RuntimeError(f"{learnings_path} JSON root must be an object.")
+        else:
+            doc = {k: "" for k in INFO_CATEGORIES}
+
+        for cat in INFO_CATEGORIES:
+            doc.setdefault(cat, "")
+
+        # Keep exactly one summarized statement per category.
+        doc[problem_category] = learning
+
+        fh.seek(0)
+        fh.write(json.dumps(doc, indent=2) + "\n")
+        fh.truncate()
+
+
 def build_codex_prompt(
     harness_path: Path,
     attempt: int,
@@ -313,6 +393,8 @@ def build_codex_prompt(
     fail_context: str,
     agents_md_text: str,
     include_agents_md: bool,
+    learnings_text: str,
+    include_learnings: bool,
 ) -> str:
     agents_block = ""
     if include_agents_md and agents_md_text:
@@ -324,10 +406,21 @@ Important:
 
 """
 
+    learnings_block = ""
+    if include_learnings and learnings_text:
+        learnings_block = f"""Use existing learnings context from work/learnings.json:
+{learnings_text}
+
+Important:
+- Do not echo or print learnings.json contents in your response.
+
+"""
+
     base = f"""Work on this harness iteratively:
 {harness_path}
 
 {agents_block}
+{learnings_block}
 
 Rules:
 - Run ./my-agent/run_local_eval.sh "{harness_path}"
@@ -350,7 +443,31 @@ Attempt: {attempt}/{max_retries}
 
 def run_codex_once(repo_root: Path, prompt: str) -> subprocess.CompletedProcess:
     cmd = ["codex", "exec", "-", "--skip-git-repo-check", "-C", str(repo_root)]
-    return run_cmd(cmd, cwd=repo_root, stdin_text=prompt, stream_stdout=True)
+    timeout_sec = 480  # 8 minutes
+    try:
+        cp = subprocess.run(
+            cmd,
+            cwd=str(repo_root),
+            text=True,
+            input=prompt,
+            capture_output=True,
+            check=False,
+            timeout=timeout_sec,
+        )
+        if cp.stdout:
+            print(cp.stdout, end="", flush=True)
+        if cp.stderr:
+            print(cp.stderr, end="", flush=True)
+        return cp
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout or ""
+        stderr = exc.stderr or ""
+        if stdout:
+            print(stdout, end="", flush=True)
+        if stderr:
+            print(stderr, end="", flush=True)
+        # Use 124 as timeout sentinel return code.
+        return subprocess.CompletedProcess(cmd, 124, stdout, stderr)
 
 
 def run_local_eval(repo_root: Path, harness_path: Path) -> subprocess.CompletedProcess:
@@ -394,6 +511,11 @@ def solve_problem(repo_root: Path, harness_path: Path, max_retries: int = 8) -> 
         log("Loaded AGENTS.md instructions for Codex context.")
     else:
         log("AGENTS.md not found; proceeding without extra agent instructions.")
+    learnings_text = read_learnings_json(repo_root)
+    if learnings_text:
+        log("Loaded learnings.json context for first attempt.")
+    else:
+        log("learnings.json not found or empty; continuing without learning context.")
     for attempt in range(1, max_retries + 1):
         log(f"Step 1/3: Codex solve attempt {attempt}/{max_retries}")
         prompt = build_codex_prompt(
@@ -403,11 +525,49 @@ def solve_problem(repo_root: Path, harness_path: Path, max_retries: int = 8) -> 
             fail_context,
             agents_md_text,
             include_agents_md=(attempt == 1),
+            learnings_text=learnings_text,
+            include_learnings=(attempt == 1),
         )
         codex = run_codex_once(repo_root, prompt)
         log(f"Codex exit code: {codex.returncode}")
+        if codex.returncode == 124:
+            backoff_sec = 10
+            log(f"Codex timed out after 8 minutes. Backing off for {backoff_sec} seconds.")
+            time.sleep(backoff_sec)
+            print(
+                "Codex issue detected: request timed out after 8 minutes; quitting run.",
+                file=sys.stderr,
+            )
+            sys.exit(2)
         if codex.returncode != 0:
             log("Codex invocation failed; continuing to eval to capture concrete failure.")
+
+        info_payload = extract_info_payload(codex.stdout or "")
+        if info_payload is None:
+            log("InfoAgent JSON not found in Codex output for this attempt.")
+        elif info_payload["problem_category"] not in INFO_CATEGORIES:
+            log(
+                "InfoAgent JSON had invalid category; skipping learning update for this attempt: "
+                f"{info_payload['problem_category']}"
+            )
+        else:
+            try:
+                update_learnings_json(
+                    repo_root,
+                    info_payload["problem_category"],
+                    info_payload["learning"],
+                )
+                log(
+                    "Updated work/learnings.json from InfoAgent output: "
+                    f"{info_payload['problem_category']}"
+                )
+            except RuntimeError as exc:
+                print(
+                    f"InfoAgent learning update error: {exc}. "
+                    "If learnings.json is open, close it and retry.",
+                    file=sys.stderr,
+                )
+                sys.exit(2)
 
         log("Step 2/3: Running local eval")
         ev = run_local_eval(repo_root, harness_path)
@@ -476,6 +636,16 @@ def main() -> None:
 
 
 def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
+    log("Step 0: Initializing learnings file")
+    learnings_path = repo_root / "work" / "learnings.json"
+    init_rc = init_learnings_json(learnings_path)
+    if init_rc != 0:
+        print(
+            f"Failed to initialize {learnings_path}. "
+            "If the file is open, close it and retry.",
+            file=sys.stderr,
+        )
+        sys.exit(init_rc)
 
     dataset_path = repo_root / "dataset" / "hackathon-agentic-obfuscated_final_corrected.jsonl"
     if not dataset_path.exists():
