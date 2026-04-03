@@ -57,35 +57,7 @@ python -m pip install -r requirements.txt
 
 ## Quick Start
 
-### 1) Run a single harness locally
-
-#### macOS/Linux/Git Bash
-
-```bash
-source agent_env/bin/activate
-./my-agent/run_local_eval.sh <absolute_or_relative_harness_path>
-```
-
-Example:
-
-```bash
-./my-agent/run_local_eval.sh ./work/<problem_name>/harness/<id>
-```
-
-#### Windows PowerShell (call through Git Bash)
-
-```powershell
-.\agent_env\Scripts\Activate.ps1
-bash ./my-agent/run_local_eval.sh ./work/<problem_name>/harness/<id>
-```
-
-What this does:
-
-1. Runs `my-agent/agent.py` in harness mode.
-2. Links harness `rtl/` to staged editable RTL under `my-agent/agent_files/<problem_name>/rtl/`.
-3. Runs local cocotb/pytest harness.
-
-### 2) Iterative solve loop for one harness (Codex-driven)
+Iterative solve loop for one harness (Codex-driven)
 
 Use this when you want automated retries + failure-context feedback.
 
@@ -117,29 +89,6 @@ Behavior summary:
 - Runs local eval between attempts.
 - On failure, feeds `prompt.json`, `rundir/sim.log`, and `rundir/agent_report.json` context into next attempt.
 - On completion, runs single-target batch reporting for that harness.
-
-### 3) Run local batch eval/report
-
-#### macOS/Linux/Git Bash
-
-```bash
-source agent_env/bin/activate
-./my-agent/run_local_eval_batch.sh <repo_root>
-```
-
-Optional:
-
-```bash
-./my-agent/run_local_eval_batch.sh <repo_root> --limit 5
-./my-agent/run_local_eval_batch.sh <repo_root> --harness ./work/<problem_name>/harness/<id>
-```
-
-#### Windows PowerShell (call through Git Bash)
-
-```powershell
-.\agent_env\Scripts\Activate.ps1
-bash ./my-agent/run_local_eval_batch.sh .
-```
 
 ## Key Output Artifacts
 
