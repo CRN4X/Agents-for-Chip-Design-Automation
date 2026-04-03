@@ -37,11 +37,12 @@ sudo apt-get install -y iverilog
 
 ## Setup
 
-Run from repo root.
+Run from repo root: `NVIDIA-ICLAD25-Hackathon-main` (first `cd` into this folder).
 
 ### macOS/Linux/Git Bash
 
 ```bash
+cd NVIDIA-ICLAD25-Hackathon-main
 python3 -m venv agent_env
 source agent_env/bin/activate
 python3 -m pip install -r requirements.txt
@@ -49,7 +50,8 @@ python3 -m pip install -r requirements.txt
 
 ### Windows PowerShell
 
-```powershell
+```bash
+cd NVIDIA-ICLAD25-Hackathon-main
 python -m venv agent_env
 .\agent_env\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
@@ -64,6 +66,7 @@ Use this when you want automated retries + failure-context feedback.
 ### macOS/Linux/Git Bash
 
 ```bash
+cd NVIDIA-ICLAD25-Hackathon-main
 source agent_env/bin/activate
 python3 my-agent/agent.py --index <dataset_index> --max-retries <1-17>
 ```
@@ -71,6 +74,7 @@ python3 my-agent/agent.py --index <dataset_index> --max-retries <1-17>
 ### Windows PowerShell
 
 ```bash
+cd NVIDIA-ICLAD25-Hackathon-main
 .\agent_env\Scripts\Activate.ps1
 python my-agent/agent.py --index <dataset_index> --max-retries <1-17>
 ```
