@@ -1,144 +1,83 @@
 # NVIDIA Debug Problem Set
+The problem set is designed to evaluate agents, with support for tool interaction, iterative workflows, and complex reasoning 
+for hardware design task.
 
-This repository evaluates agentic RTL debugging/generation workflows on harnessed verification tasks.
+Directory structure:
 
-## Repository Layout
+-examples: example dummy agent
 
-- `dataset/`: benchmark problem metadata (`.jsonl`)
-- `work/`: generated harnesses, run artifacts, and reports
-- `my-agent/`: your local agent, scripts, staged editable RTL, and batch reports
-- `examples/`: example baseline agent assets
+-work: a datapoint example of the docker env
 
-## Prerequisites (Local No-Docker Flow)
+# Quick Start
 
-- macOS/Linux shell
-- `python3` available
-- Icarus Verilog tools installed:
-  - `iverilog`
-  - `vvp`
+## Installation
 
-On macOS, you can install Icarus with:
+### Prerequisites
 
+**Python 3.12 is recommended** for optimal compatibility.
+
+**Docker CE (Community Edition)** with a recent version is required for running test harnesses and agents:
+- Install Docker CE from [https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/)
+- **Add your user to the docker group** to run Docker without sudo permissions:
+  ```bash
+  # Add current user to docker group
+  sudo usermod -aG docker $USER
+  
+  # Log out and back in, or restart your session
+  # Verify Docker works without sudo:
+  docker --version
+  ```
+
+### Setup Instructions
+
+1. **Create a virtual environment** (recommended):
 ```bash
-brew install icarus-verilog
-```
+# Create virtual environment
+python -m venv agent_env
 
-## Setup
-
-From repo root:
-
-```bash
-python3 -m venv agent_env
+# Activate virtual environment
+# On Linux/macOS:
 source agent_env/bin/activate
-python3 -m pip install -r requirements.txt
+# On Windows:
+agent_env\Scripts\activate
 ```
 
-Note: all local eval commands should be run with the virtual environment activated.
-
-## Quick Start
-
-### 1) Run a single harness locally
-
+2. **Install Python dependencies**:
 ```bash
-source agent_env/bin/activate
-./my-agent/run_local_eval.sh <absolute_or_relative_harness_path>
+pip install -r requirements.txt
 ```
 
-Example:
+## Agentic flow setup
 
+### Dummy agent example
+**1. Copy the agent example and build:**
 ```bash
-./my-agent/run_local_eval.sh ./work/<problem_name>/harness/<id>
+# Copy the complete agent example
+cp -r examples/agent/ ./my-agent/
+cd my-agent/
+
+# Build using the provided script
+./build_agent.sh
 ```
-
-What this does:
-
-1. Runs `my-agent/agent.py` in harness mode.
-2. Links harness `rtl/` to staged editable RTL under `my-agent/agent_files/<problem_name>/rtl/`.
-3. Runs local cocotb/pytest harness.
-
-### 2) Iterative solve loop for one harness (Codex-driven)
-
-Use this when you want automated retries + failure-context feedback.
-
+**2. Run the agent on batch mode:**
 ```bash
-source agent_env/bin/activate
-python3 my-agent/agent.py --<dataset_index>
+python run_benchmark.py -f ./dataset/hackathon-agentic-obfuscated_final_corrected.jsonl -l -g example-agent
+# check the total benchmark pass/fail status
+python run_reporter.py work/report.json | less
+# check the run and each problem
+cd work
 ```
 
-Examples:
-
+**3. Run the agent on one example:**
 ```bash
-python3 my-agent/agent.py --1
-python3 my-agent/agent.py --index 1
+cd work/cvdp_agentic_programmable_fsm_dynamic_state_encoding/harness/1/
+# invoke the agent run
+./run_docker_agent.sh
+# debug the agent
+./run_docker_agent.sh -d
+# run evaluation
+./run_docker_harness_direct.sh
 ```
 
-Behavior summary:
-
-- Resolves dataset entry by index.
-- Runs Codex solve attempts (up to configured retry limit).
-- Runs local eval between attempts.
-- On failure, feeds `prompt.json`, `rundir/sim.log`, and `rundir/agent_report.json` context into next attempt.
-- On completion, runs single-target batch reporting for that harness.
-
-### 3) Run local batch eval/report
-
-```bash
-source agent_env/bin/activate
-./my-agent/run_local_eval_batch.sh <repo_root>
-```
-
-Optional:
-
-```bash
-./my-agent/run_local_eval_batch.sh <repo_root> --limit 5
-./my-agent/run_local_eval_batch.sh <repo_root> --harness ./work/<problem_name>/harness/<id>
-```
-
-## Key Output Artifacts
-
-After local batch flow, the following are produced under `work/`:
-
-- `work/result.json`
-- `work/raw_result.json`
-- `work/report.json`
-- `work/report.txt`
-
-Per-harness runtime artifacts are under each harness `rundir/` folder, including:
-
-- `sim.log`
-- `agent_report.json`
-
-## RTL Editing Rules (Important)
-
-For local no-Docker flow:
-
-- Edit only staged RTL in:
-  - `my-agent/agent_files/<problem_name>/rtl/`
-- Do **not** modify:
-  - `before/rtl` originals
-- Preserve module names, ports, and expected file paths unless explicitly required.
-
-## Troubleshooting
-
-### `Missing Python deps in current environment`
-
-Activate the repo virtual environment before running eval:
-
-```bash
-source agent_env/bin/activate
-```
-
-Then verify:
-
-```bash
-python3 -c "import pytest, cocotb, cocotb_tools.runner"
-```
-
-### `Missing tool: iverilog` or `vvp`
-
-Install Icarus Verilog and confirm both executables are on `PATH`.
-
-## Notes
-
-- This README documents the current local no-Docker workflow used by `my-agent` scripts.
-- If you also use Docker flows, keep Docker-specific docs in `my-agent/` scripts or a separate section to avoid mixing setup paths.
+### Start your own agent
+Add your code into ./my-agent/ and build the agent docker image.
