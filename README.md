@@ -182,8 +182,4 @@ vvp -V
 - `work/run.log` contains full terminal output for each `agent.py` run and is overwritten on the next run.
 - If a run fails before execution starts with a `run.log`/lock message, close `work/run.log` in any editor/viewer and retry.
 - If Codex does not respond within 8 minutes, `agent.py` times out that attempt, applies a short backoff, and quits with a clear Codex timeout message.
-- For quick diagnostics, inspect the tail:
-
-```bash
-tail -n 80 work/run.log
-```
+- For detailed diagnostics, inspect the entire `run.log` file and check for any errors
