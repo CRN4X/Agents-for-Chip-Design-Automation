@@ -1,0 +1,19 @@
+networks:
+  default:
+    external: true
+    name: cvdp-bridge-hackathon_agentic_easy_example-4f752983
+services:
+  agent:
+    environment:
+      OPENAI_USER_KEY: null
+    image: example-agent
+    networks:
+    - default
+    volumes:
+    - ./docs:/code/docs
+    - ./rtl:/code/rtl
+    - ./verif:/code/verif
+    - ./rundir:/code/rundir
+    - ./prompt.json:/code/prompt.json
+    working_dir: /code
+version: '3'

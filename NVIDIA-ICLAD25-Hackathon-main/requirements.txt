@@ -1,0 +1,12 @@
+pyyaml
+requests
+pydantic
+openai
+python-dotenv
+psutil
+nltk
+tabulate
+numpy
+colorama
+pytest
+cocotb

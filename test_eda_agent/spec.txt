@@ -1,0 +1,8 @@
+Design a 4-bit adder module.
+
+Inputs:
+A[3:0], B[3:0]
+
+Outputs:
+SUM[3:0]
+COUT

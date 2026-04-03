@@ -1,0 +1,7 @@
+#!/bin/sh 
+
+# SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+docker build -f Dockerfile-base -t my-hw-agent-base .
+docker build -f Dockerfile-agent -t my-hw-agent --no-cache .

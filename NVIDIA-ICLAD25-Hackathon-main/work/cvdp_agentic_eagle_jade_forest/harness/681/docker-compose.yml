@@ -1,0 +1,26 @@
+networks:
+  default:
+    external: true
+    name: licnetwork
+services:
+  test_decrypt:
+    command: pytest /src/test_runner_dec_top.py -s -v -o cache_dir=/rundir/harness/.cache
+    env_file: ./src/.env_decrypt
+    image: ghcr.io/hdl/sim/osvb
+    volumes:
+    - ./src:/src/
+    working_dir: /code/rundir
+  test_encrypt:
+    command: pytest /src/test_runner_enc_top.py -s -v -o cache_dir=/rundir/harness/.cache
+    env_file: ./src/.env_encrypt
+    image: ghcr.io/hdl/sim/osvb
+    volumes:
+    - ./src:/src/
+    working_dir: /code/rundir
+  test_padding:
+    command: pytest /src/test_runner.py -s -v -o cache_dir=/rundir/harness/.cache
+    env_file: ./src/.env
+    image: ghcr.io/hdl/sim/osvb
+    volumes:
+    - ./src:/src/
+    working_dir: /code/rundir

@@ -1,0 +1,371 @@
+#!/usr/bin/env python3
+
+# SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+"""Codex-driven local solver orchestrator.
+
+Modes:
+1) Orchestrator mode: `python3 my-agent/agent.py --1`
+   - Picks the Nth problem from dataset JSONL
+   - Runs Codex CLI + local eval loop (max 8 retries)
+   - Runs local batch benchmark to refresh result/report artifacts
+
+2) Harness mode (no args): called by run_local_eval.sh
+   - No-op agent that only writes a minimal agent_report.json
+"""
+
+import json
+import re
+import subprocess
+import sys
+import time
+import shlex
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+
+def log(msg: str) -> None:
+    print(f"[agent.py] {msg}", flush=True)
+
+
+def run_cmd(
+    cmd: List[str],
+    cwd: Path,
+    stdin_text: Optional[str] = None,
+    stream_stdout: bool = False,
+) -> subprocess.CompletedProcess:
+    if not stream_stdout:
+        return subprocess.run(
+            cmd,
+            cwd=str(cwd),
+            text=True,
+            input=stdin_text,
+            capture_output=True,
+            check=False,
+        )
+
+    proc = subprocess.Popen(
+        cmd,
+        cwd=str(cwd),
+        text=True,
+        stdin=subprocess.PIPE if stdin_text is not None else None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        bufsize=1,
+    )
+    assert proc.stdout is not None
+    if stdin_text is not None and proc.stdin is not None:
+        proc.stdin.write(stdin_text)
+        proc.stdin.close()
+
+    out_lines: List[str] = []
+    for line in proc.stdout:
+        print(line, end="", flush=True)
+        out_lines.append(line)
+    rc = proc.wait()
+    return subprocess.CompletedProcess(cmd, rc, "".join(out_lines), "")
+
+
+def parse_problem_index(argv: List[str]) -> Optional[int]:
+    if len(argv) <= 1:
+        return None
+
+    # Supports: --1, 1, --index 1, -i 1
+    token = argv[1]
+    m = re.fullmatch(r"--(\d+)", token)
+    if m:
+        return int(m.group(1))
+    if token.isdigit():
+        return int(token)
+    if token in ("--index", "-i") and len(argv) >= 3 and argv[2].isdigit():
+        return int(argv[2])
+    return None
+
+
+def infer_repo_root() -> Path:
+    return Path(__file__).resolve().parent.parent
+
+
+def infer_harness_mode_workspace() -> Optional[Path]:
+    import os
+
+    env_root = Path.cwd().resolve()
+    ws_env = os.environ.get("CVDP_WORKSPACE_ROOT")
+    if ws_env:
+        p = Path(ws_env).resolve()
+        if p.exists():
+            return p
+    if (env_root / "prompt.json").exists() and (env_root / "rundir").exists():
+        return env_root
+    return None
+
+
+def write_harness_noop_report(workspace: Path) -> None:
+    rundir = workspace / "rundir"
+    rundir.mkdir(parents=True, exist_ok=True)
+    report = {
+        "agent": "my-hw-agent",
+        "mode": "harness_noop",
+        "status": "success",
+        "message": "No-op in harness mode; external Codex loop performs edits.",
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+    }
+    (rundir / "agent_report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    log(f"Wrote no-op agent report: {rundir / 'agent_report.json'}")
+
+
+def load_dataset_entries(dataset_path: Path) -> List[Dict]:
+    entries: List[Dict] = []
+    with dataset_path.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            entries.append(json.loads(line))
+    return entries
+
+
+def split_problem_and_issue(dataset_id: str) -> Tuple[str, str]:
+    problem, issue = dataset_id.rsplit("_", 1)
+    return problem, issue
+
+
+def resolve_harness_path(repo_root: Path, problem: str, issue: str) -> Path:
+    exact = repo_root / "work" / problem / "harness" / issue
+    if exact.exists():
+        return exact
+
+    # Handle zero-padded mismatch (e.g., dataset has 0681 but dir is 681).
+    harness_dir = repo_root / "work" / problem / "harness"
+    if not harness_dir.exists():
+        raise FileNotFoundError(f"Missing harness dir: {harness_dir}")
+    if issue.isdigit():
+        issue_num = int(issue)
+        for p in harness_dir.iterdir():
+            if p.is_dir() and p.name.isdigit() and int(p.name) == issue_num:
+                return p
+    raise FileNotFoundError(f"Cannot resolve harness path for {problem}_{issue}")
+
+
+def extract_first_error_from_sim_log(sim_log: Path) -> str:
+    if not sim_log.exists():
+        return "sim.log missing"
+    patterns = ("error:", "FAILED", "AssertionError", "Traceback", "No module named")
+    for line in sim_log.read_text(encoding="utf-8", errors="ignore").splitlines():
+        if any(p in line for p in patterns):
+            return line.strip()
+    return "no explicit error line found in sim.log"
+
+
+def read_tail(path: Path, lines: int = 80) -> str:
+    if not path.exists():
+        return f"[missing] {path}"
+    content = path.read_text(encoding="utf-8", errors="ignore").splitlines()
+    return "\n".join(content[-lines:])
+
+
+def read_agents_md(repo_root: Path) -> str:
+    agents_path = repo_root / "my-agent" / "AGENTS.md"
+    if not agents_path.exists():
+        return ""
+    return agents_path.read_text(encoding="utf-8", errors="ignore")
+
+
+def build_codex_prompt(
+    harness_path: Path,
+    attempt: int,
+    max_retries: int,
+    fail_context: str,
+    agents_md_text: str,
+    include_agents_md: bool,
+) -> str:
+    agents_block = ""
+    if include_agents_md and agents_md_text:
+        agents_block = f"""Follow these AGENTS.md instructions:
+{agents_md_text}
+
+Important:
+- Do not echo or print AGENTS.md contents in your response.
+
+"""
+
+    base = f"""Work on this harness iteratively:
+{harness_path}
+
+{agents_block}
+
+Rules:
+- Run ./my-agent/run_local_eval.sh "{harness_path}"
+- If failing, read:
+  - {harness_path}/prompt.json
+  - {harness_path}/rundir/sim.log
+  - {harness_path}/rundir/agent_report.json
+- Edit ONLY files under:
+  my-agent/agent_files/{harness_path.parts[-3]}/rtl/
+- Do not modify before/ originals.
+- Keep edits minimal, compile-safe first.
+- Use sim.log first-error lines as primary guidance.
+
+Attempt: {attempt}/{max_retries}
+"""
+    if fail_context:
+        return base + "\nPrevious failure context:\n" + fail_context + "\n"
+    return base
+
+
+def run_codex_once(repo_root: Path, prompt: str) -> subprocess.CompletedProcess:
+    cmd = ["codex", "exec", "-", "--skip-git-repo-check", "-C", str(repo_root)]
+    return run_cmd(cmd, cwd=repo_root, stdin_text=prompt, stream_stdout=True)
+
+
+def run_local_eval(repo_root: Path, harness_path: Path) -> subprocess.CompletedProcess:
+    cmd = [
+        "/bin/zsh",
+        "-lc",
+        f"source {shlex.quote(str(repo_root / 'agent_env' / 'bin' / 'activate'))} && "
+        f"./my-agent/run_local_eval.sh {shlex.quote(str(harness_path))}",
+    ]
+    return run_cmd(cmd, cwd=repo_root)
+
+
+def run_post_benchmark(repo_root: Path, harness_path: Path) -> subprocess.CompletedProcess:
+    cmd = [
+        "/bin/zsh",
+        "-lc",
+        f"source {shlex.quote(str(repo_root / 'agent_env' / 'bin' / 'activate'))} && "
+        f"./my-agent/run_local_eval_batch.sh {shlex.quote(str(repo_root))} --harness {shlex.quote(str(harness_path))}",
+    ]
+    return run_cmd(cmd, cwd=repo_root)
+
+
+def ensure_local_eval_env(repo_root: Path) -> bool:
+    cmd = [
+        str(repo_root / "agent_env" / "bin" / "python"),
+        "-c",
+        "import pytest, cocotb, cocotb_tools.runner; print('ok')",
+    ]
+    cp = run_cmd(cmd, cwd=repo_root)
+    return cp.returncode == 0
+
+
+def solve_problem(repo_root: Path, harness_path: Path, max_retries: int = 8) -> bool:
+    if not ensure_local_eval_env(repo_root):
+        log("Environment precheck failed: agent_env is missing pytest/cocotb deps.")
+        return False
+
+    fail_context = ""
+    agents_md_text = read_agents_md(repo_root)
+    if agents_md_text:
+        log("Loaded AGENTS.md instructions for Codex context.")
+    else:
+        log("AGENTS.md not found; proceeding without extra agent instructions.")
+    for attempt in range(1, max_retries + 1):
+        log(f"Step 1/3: Codex solve attempt {attempt}/{max_retries}")
+        prompt = build_codex_prompt(
+            harness_path,
+            attempt,
+            max_retries,
+            fail_context,
+            agents_md_text,
+            include_agents_md=(attempt == 1),
+        )
+        codex = run_codex_once(repo_root, prompt)
+        log(f"Codex exit code: {codex.returncode}")
+        if codex.returncode != 0:
+            log("Codex invocation failed; continuing to eval to capture concrete failure.")
+
+        log("Step 2/3: Running local eval")
+        ev = run_local_eval(repo_root, harness_path)
+        log(f"Eval exit code: {ev.returncode}")
+        if ev.stdout.strip():
+            log("Eval output (tail):")
+            print("\n".join(ev.stdout.splitlines()[-25:]), flush=True)
+
+        if ev.returncode == 0:
+            log(f"PASS reached on attempt {attempt}.")
+            return True
+
+        sim_log = harness_path / "rundir" / "sim.log"
+        agent_report = harness_path / "rundir" / "agent_report.json"
+        eval_tail = "\n".join((ev.stdout or "").splitlines()[-40:])
+        if "Missing Python deps in current environment." in (ev.stdout or ""):
+            fail_context = (
+                f"eval_return_code={ev.returncode}\n"
+                "first_error=environment_python_deps_missing\n"
+                f"eval_output_tail:\n{eval_tail}\n"
+            )
+        else:
+            first_error = extract_first_error_from_sim_log(sim_log)
+            fail_context = (
+                f"eval_return_code={ev.returncode}\n"
+                f"first_error={first_error}\n"
+                f"sim_log_tail:\n{read_tail(sim_log, 80)}\n\n"
+                f"agent_report_tail:\n{read_tail(agent_report, 80)}\n"
+            )
+        log("Attempt failed; prepared failure context for next Codex retry.")
+
+    log(f"Max retries reached ({max_retries}); final status FAIL.")
+    return False
+
+
+def main() -> None:
+    idx = parse_problem_index(sys.argv)
+    repo_root = infer_repo_root()
+
+    # Harness mode (invoked by run_local_eval.sh): no args means no-op report only.
+    if idx is None:
+        workspace = infer_harness_mode_workspace()
+        if workspace is not None:
+            log("Harness mode detected (no index argument).")
+            write_harness_noop_report(workspace)
+            log("Harness mode complete.")
+            return
+        print("Usage: python3 my-agent/agent.py --<1-based-index>  (example: --1)", file=sys.stderr)
+        sys.exit(2)
+
+    dataset_path = repo_root / "dataset" / "hackathon-agentic-obfuscated_final_corrected.jsonl"
+    if not dataset_path.exists():
+        print(f"Dataset not found: {dataset_path}", file=sys.stderr)
+        sys.exit(1)
+
+    log("Step A: Loading dataset entries")
+    entries = load_dataset_entries(dataset_path)
+    if idx < 1 or idx > len(entries):
+        print(f"Index out of range: {idx}. Valid range: 1..{len(entries)}", file=sys.stderr)
+        sys.exit(1)
+
+    entry = entries[idx - 1]
+    entry_id = entry.get("id", "")
+    if "_" not in entry_id:
+        print(f"Invalid dataset id format: {entry_id}", file=sys.stderr)
+        sys.exit(1)
+
+    problem, issue = split_problem_and_issue(entry_id)
+    try:
+        harness_path = resolve_harness_path(repo_root, problem, issue)
+    except FileNotFoundError as exc:
+        print(f"Harness resolution error: {exc}", file=sys.stderr)
+        sys.exit(1)
+    log(f"Selected dataset index {idx}: {entry_id}")
+    log(f"Resolved harness path: {harness_path}")
+
+    solved = solve_problem(repo_root, harness_path, max_retries=8)
+
+    log("Step B: Running single-target local benchmark/report pipeline")
+    bench = run_post_benchmark(repo_root, harness_path)
+    log(f"Benchmark pipeline exit code: {bench.returncode}")
+    if bench.stdout.strip():
+        log("Benchmark output (tail):")
+        print("\n".join(bench.stdout.splitlines()[-30:]), flush=True)
+    if bench.returncode != 0:
+        print("Post-solve benchmark pipeline failed.", file=sys.stderr)
+        sys.exit(1)
+
+    final_status = "PASS" if solved else "FAIL"
+    log(f"Step C: Complete. Target problem final status: {final_status}")
+    sys.exit(0 if solved else 3)
+
+
+if __name__ == "__main__":
+    main()
