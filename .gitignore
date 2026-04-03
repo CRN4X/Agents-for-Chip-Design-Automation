@@ -34,5 +34,9 @@ NVIDIA-ICLAD25-Hackathon-main/work/report.json
 NVIDIA-ICLAD25-Hackathon-main/work/report.txt
 NVIDIA-ICLAD25-Hackathon-main/work/run.log
 
+# Docker helper scripts generated inside harnesses
+NVIDIA-ICLAD25-Hackathon-main/work/**/harness/**/run_docker*.sh
+NVIDIA-ICLAD25-Hackathon-main/work/**/harness/**/run_docker_*.sh
+
 # misc
 /Archive/

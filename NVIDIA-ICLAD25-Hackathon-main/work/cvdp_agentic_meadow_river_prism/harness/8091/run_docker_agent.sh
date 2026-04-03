@@ -44,9 +44,9 @@ GROUP_ID=$(id -g)
 
 if [ "$DEBUG_MODE" = true ]; then
   echo "DEBUG MODE: Starting container with bash entrypoint"
-  docker compose -f /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase1/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_meadow_river_prism/harness/8091/docker-compose-agent.yml -p agent_cvdp_agentic_meadow_river_prism_8091_$(date +%s) run --rm --user $USER_ID:$GROUP_ID --entrypoint bash agent
+  docker compose -f /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_meadow_river_prism/harness/8091/docker-compose-agent.yml -p agent_cvdp_agentic_meadow_river_prism_8091_$(date +%s) run --rm --user $USER_ID:$GROUP_ID --entrypoint bash agent
 else
-  docker compose -f /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase1/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_meadow_river_prism/harness/8091/docker-compose-agent.yml -p agent_cvdp_agentic_meadow_river_prism_8091_$(date +%s) run --rm --user $USER_ID:$GROUP_ID agent
+  docker compose -f /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_meadow_river_prism/harness/8091/docker-compose-agent.yml -p agent_cvdp_agentic_meadow_river_prism_8091_$(date +%s) run --rm --user $USER_ID:$GROUP_ID agent
 fi
 exit_code=$?
 
