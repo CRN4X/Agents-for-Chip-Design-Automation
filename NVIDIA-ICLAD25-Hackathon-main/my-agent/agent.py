@@ -6,9 +6,9 @@
 """Codex-driven local solver orchestrator.
 
 Modes:
-1) Orchestrator mode: `python3 my-agent/agent.py --1`
+1) Orchestrator mode: `python3 my-agent/agent.py -i 1`
    - Picks the Nth problem from dataset JSONL
-   - Runs Codex CLI + local eval loop (max 8 retries)
+   - Runs Codex CLI + local eval loop (default 8 retries, configurable up to 17)
    - Runs local batch benchmark to refresh result/report artifacts
 
 2) Harness mode (no args): called by run_local_eval.sh
@@ -67,20 +67,79 @@ def run_cmd(
     return subprocess.CompletedProcess(cmd, rc, "".join(out_lines), "")
 
 
-def parse_problem_index(argv: List[str]) -> Optional[int]:
-    if len(argv) <= 1:
-        return None
+def print_usage() -> None:
+    print(
+        "Usage:\n"
+        "  python3 my-agent/agent.py                (harness no-op mode)\n"
+        "  python3 my-agent/agent.py -i <index> [--max-retries N]\n"
+        "  python3 my-agent/agent.py --index <index> [--max-retries N]\n\n"
+        "Options:\n"
+        "  --index, -i <index>  1-based dataset index\n"
+        "  --max-retries, -r N   Retry limit for Codex solve loop (default: 8, max: 17)\n",
+        file=sys.stderr,
+    )
 
-    # Supports: --1, 1, --index 1, -i 1
-    token = argv[1]
-    m = re.fullmatch(r"--(\d+)", token)
-    if m:
-        return int(m.group(1))
-    if token.isdigit():
-        return int(token)
-    if token in ("--index", "-i") and len(argv) >= 3 and argv[2].isdigit():
-        return int(argv[2])
-    return None
+
+def parse_cli(argv: List[str]) -> Tuple[Optional[int], int]:
+    default_retries = 8
+    max_allowed_retries = 17
+
+    if len(argv) <= 1:
+        return None, default_retries
+
+    idx: Optional[int] = None
+    max_retries = default_retries
+    i = 1
+    while i < len(argv):
+        token = argv[i]
+
+        if token in ("--help", "-h"):
+            print_usage()
+            sys.exit(0)
+
+        if token in ("--max-retries", "-r"):
+            if i + 1 >= len(argv):
+                raise ValueError("Missing value for --max-retries.")
+            value_token = argv[i + 1]
+            if not value_token.isdigit():
+                raise ValueError(f"Invalid --max-retries value: {value_token}. Expected a positive integer.")
+            max_retries = int(value_token)
+            i += 2
+            continue
+
+        if token.startswith("--max-retries="):
+            value_token = token.split("=", 1)[1]
+            if not value_token.isdigit():
+                raise ValueError(f"Invalid --max-retries value: {value_token}. Expected a positive integer.")
+            max_retries = int(value_token)
+            i += 1
+            continue
+
+        # Supports: --index 1, -i 1
+        if idx is None:
+            if token in ("--index", "-i"):
+                if i + 1 >= len(argv):
+                    raise ValueError(f"Missing value for {token}.")
+                idx_token = argv[i + 1]
+                if not idx_token.isdigit():
+                    raise ValueError(f"Invalid index value: {idx_token}. Expected a positive integer.")
+                idx = int(idx_token)
+                i += 2
+                continue
+
+        raise ValueError(f"Unexpected argument: {token}")
+
+    if max_retries < 1:
+        raise ValueError(f"Invalid --max-retries: {max_retries}. Minimum allowed value is 1.")
+    if max_retries > max_allowed_retries:
+        raise ValueError(
+            f"Invalid --max-retries: {max_retries}. Maximum allowed value is {max_allowed_retries}."
+        )
+
+    if idx is None:
+        raise ValueError("Missing required index. Use --index <N> or -i <N>.")
+
+    return idx, max_retries
 
 
 def infer_repo_root() -> Path:
@@ -310,7 +369,12 @@ def solve_problem(repo_root: Path, harness_path: Path, max_retries: int = 8) -> 
 
 
 def main() -> None:
-    idx = parse_problem_index(sys.argv)
+    try:
+        idx, max_retries = parse_cli(sys.argv)
+    except ValueError as exc:
+        print(f"Argument error: {exc}", file=sys.stderr)
+        print_usage()
+        sys.exit(2)
     repo_root = infer_repo_root()
 
     # Harness mode (invoked by run_local_eval.sh): no args means no-op report only.
@@ -321,7 +385,7 @@ def main() -> None:
             write_harness_noop_report(workspace)
             log("Harness mode complete.")
             return
-        print("Usage: python3 my-agent/agent.py --<1-based-index>  (example: --1)", file=sys.stderr)
+        print_usage()
         sys.exit(2)
 
     dataset_path = repo_root / "dataset" / "hackathon-agentic-obfuscated_final_corrected.jsonl"
@@ -350,7 +414,8 @@ def main() -> None:
     log(f"Selected dataset index {idx}: {entry_id}")
     log(f"Resolved harness path: {harness_path}")
 
-    solved = solve_problem(repo_root, harness_path, max_retries=8)
+    log(f"Using max retries: {max_retries}")
+    solved = solve_problem(repo_root, harness_path, max_retries=max_retries)
 
     log("Step B: Running single-target local benchmark/report pipeline")
     bench = run_post_benchmark(repo_root, harness_path)

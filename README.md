@@ -61,25 +61,37 @@ Iterative solve loop for one harness (Codex-driven)
 
 Use this when you want automated retries + failure-context feedback.
 
-#### macOS/Linux/Git Bash
+### macOS/Linux/Git Bash
 
 ```bash
 source agent_env/bin/activate
-python3 my-agent/agent.py --<dataset_index>
+python3 my-agent/agent.py -i <dataset_index>
 ```
 
-#### Windows PowerShell
+### Windows PowerShell
 
 ```powershell
 .\agent_env\Scripts\Activate.ps1
-python my-agent/agent.py --<dataset_index>
+python my-agent/agent.py -i <dataset_index>
 ```
+
+Equivalent index format:
+
+```text
+--index <dataset_index>
+```
+
+Retry control:
+
+- Default retries: `8`
+- Maximum allowed retries: `17`
 
 Examples:
 
-```text
---1
---index 1
+```bash
+python3 my-agent/agent.py -i 1  # default retries (8) are used
+python3 my-agent/agent.py --index 1 --max-retries 12
+python3 my-agent/agent.py -i 1 -r 17  # 17 is the maximum retry limit
 ```
 
 Behavior summary:
