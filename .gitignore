@@ -40,3 +40,6 @@ NVIDIA-ICLAD25-Hackathon-main/work/**/harness/**/run_docker_*.sh
 
 # misc
 /Archive/
+
+# Runtime archived logs
+***/logs/

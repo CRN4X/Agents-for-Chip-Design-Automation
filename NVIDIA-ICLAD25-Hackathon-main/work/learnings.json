@@ -1,6 +1,6 @@
 {
-  "Modify or Extend Existing RTL": "For clock-estimator extension tasks, add a test-clock divider in the source domain and rescale the synchronized edge count so high-frequency clocks are measurable without CDC undercount while keeping the original interface behavior.",
-  "Integrate multiple modules into a top module": "For 3DES top-level integration, wire key slices to the exact K1/K2/K3 spec order and align done with final-stage data visibility (not just valid-shift timing) so latency and output correctness both hold.",
-  "Create new RTL from spec": "For DES decrypt-from-spec tasks, preserve the encrypt module interface/latency and implement decryption by reversing round-key usage (K16\u2192K1) with correct R16||L16 start and L0||R0 pre-FP concatenation.",
-  "Debug/fix buggy RTL": "For debug/fix RTL tasks, run the full harness first and only patch staged RTL when sim.log shows a concrete mismatch; if the harness already passes, keep RTL unchanged."
+  "Modify or Extend Existing RTL": "When extending an existing LUT-based phase module for new interface requirements, preserve proven LUT behavior and add clock/reset-driven one-cycle input registration to satisfy sequential timing checks without breaking phase accuracy.",
+  "Integrate multiple modules into a top module": "When integrating a control-heavy top module, treat unknown/all-ones inputs as invalid early, classify latency from pre-operation state, and keep output invalid encodings deterministic so functional and cycle checks pass together.",
+  "Create new RTL from spec": "For scrambler/descrambler wrappers around PRBS cores, lock data/valid latency alignment to the testbench\u2019s capture pattern first, because off-by-one pipeline staging can break both descramble recovery and checker-mode error timing even when bypass logic passes.",
+  "Debug/fix buggy RTL": "For 2-way cache debug tasks, implement explicit per-way tag/data/valid/dirty state with deterministic hit selection and expose victim-way state so replacement and observability checks both pass."
 }

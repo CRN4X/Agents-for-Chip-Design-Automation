@@ -1,13 +1,13 @@
 {
-  "cvdp_agentic_forest_fountain_river_702": {
+  "cvdp_agentic_horizon_whisper_panther_1434": {
     "category": "cid004",
-    "difficulty": "easy",
+    "difficulty": "medium",
     "tests": [
       {
         "result": 0,
-        "log": "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_forest_fountain_river/harness/702/rundir/sim.log",
+        "log": "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_horizon_whisper_panther/harness/1434/rundir/sim.log",
         "error_msg": null,
-        "execution": 2.0,
+        "execution": 57.0,
         "pid": 0
       }
     ],

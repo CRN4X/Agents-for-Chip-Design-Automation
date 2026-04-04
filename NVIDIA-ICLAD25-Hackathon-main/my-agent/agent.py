@@ -33,6 +33,11 @@ INFO_CATEGORIES = [
     "Debug/fix buggy RTL",
 ]
 
+CODEX_TIMEOUT_SEC = 1200  # 20 minutes per Codex attempt
+CODEX_TIMEOUT_MINUTES = CODEX_TIMEOUT_SEC // 60
+CODEX_TIMEOUT_BACKOFF_SEC = 10
+MAX_SOLVE_RUN_CYCLES = 2  # If max retries are exhausted, start one fresh run cycle
+
 
 def log(msg: str) -> None:
     print(f"\n[agent.py] {msg}", flush=True)
@@ -112,6 +117,20 @@ def stop_run_log(log_file: TextIO, orig_stdout: TextIO, orig_stderr: TextIO) -> 
     log_file.close()
 
 
+def archive_run_log(repo_root: Path, idx: int) -> Path:
+    run_log_path = repo_root / "work" / "run.log"
+    if not run_log_path.exists():
+        raise RuntimeError(f"Run log not found at {run_log_path}")
+
+    logs_dir = repo_root / "work" / "logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+
+    ts = int(time.time())
+    archive_path = logs_dir / f"run_{ts}__{idx}.log"
+    archive_path.write_text(run_log_path.read_text(encoding="utf-8"), encoding="utf-8")
+    return archive_path
+
+
 def run_cmd(
     cmd: List[str],
     cwd: Path,
@@ -153,25 +172,27 @@ def run_cmd(
 def print_usage() -> None:
     print(
         "Usage:\n"
-        "  python3 my-agent/agent.py                (harness no-op mode)\n"
-        "  python3 my-agent/agent.py -i <index> [--max-retries N]\n"
-        "  python3 my-agent/agent.py --index <index> [--max-retries N]\n\n"
+        "  python3 my-agent/agent.py                                     (harness no-op mode)\n"
+        "  python3 my-agent/agent.py -i <index> [--max-retries N] [--save_log]\n"
+        "  python3 my-agent/agent.py --index <index> [--max-retries N] [--save_log]\n\n"
         "Options:\n"
-        "  --index, -i <index>  1-based dataset index\n"
-        "  --max-retries, -r N   Retry limit for Codex solve loop (default: 8, max: 17)\n",
+        "  --index, -i <index>       1-based dataset index\n"
+        "  --max-retries, -r N       Retry limit for Codex solve loop (default: 8, max: 17)\n"
+        "  --save_log, -s            Archive work/run.log to work/logs/run_<unix>__<index>.log\n",
         file=sys.stderr,
     )
 
 
-def parse_cli(argv: List[str]) -> Tuple[Optional[int], int]:
+def parse_cli(argv: List[str]) -> Tuple[Optional[int], int, bool]:
     default_retries = 8
     max_allowed_retries = 17
 
     if len(argv) <= 1:
-        return None, default_retries
+        return None, default_retries, False
 
     idx: Optional[int] = None
     max_retries = default_retries
+    save_log = False
     i = 1
     while i < len(argv):
         token = argv[i]
@@ -195,6 +216,11 @@ def parse_cli(argv: List[str]) -> Tuple[Optional[int], int]:
             if not value_token.isdigit():
                 raise ValueError(f"Invalid --max-retries value: {value_token}. Expected a positive integer.")
             max_retries = int(value_token)
+            i += 1
+            continue
+
+        if token in ("--save_log", "-s"):
+            save_log = True
             i += 1
             continue
 
@@ -222,7 +248,7 @@ def parse_cli(argv: List[str]) -> Tuple[Optional[int], int]:
     if idx is None:
         raise ValueError("Missing required index. Use --index <N> or -i <N>.")
 
-    return idx, max_retries
+    return idx, max_retries, save_log
 
 
 def infer_repo_root() -> Path:
@@ -443,7 +469,6 @@ Attempt: {attempt}/{max_retries}
 
 def run_codex_once(repo_root: Path, prompt: str) -> subprocess.CompletedProcess:
     cmd = ["codex", "exec", "-", "--skip-git-repo-check", "-C", str(repo_root)]
-    timeout_sec = 480  # 8 minutes
     proc = subprocess.Popen(
         cmd,
         cwd=str(repo_root),
@@ -475,7 +500,7 @@ def run_codex_once(repo_root: Path, prompt: str) -> subprocess.CompletedProcess:
                 out_lines.append(rest)
             break
 
-        if (time.time() - start) > timeout_sec:
+        if (time.time() - start) > CODEX_TIMEOUT_SEC:
             timed_out = True
             proc.kill()
             break
@@ -556,14 +581,18 @@ def solve_problem(repo_root: Path, harness_path: Path, max_retries: int = 8) -> 
         codex = run_codex_once(repo_root, prompt)
         log(f"Codex exit code: {codex.returncode}")
         if codex.returncode == 124:
-            backoff_sec = 10
-            log(f"Codex timed out after 8 minutes. Backing off for {backoff_sec} seconds.")
-            time.sleep(backoff_sec)
-            print(
-                "Codex issue detected: request timed out after 8 minutes; quitting run.",
-                file=sys.stderr,
+            log(
+                f"Codex timed out after {CODEX_TIMEOUT_MINUTES} minutes. "
+                f"Backing off for {CODEX_TIMEOUT_BACKOFF_SEC} seconds and moving to next attempt."
             )
-            sys.exit(2)
+            time.sleep(CODEX_TIMEOUT_BACKOFF_SEC)
+            codex_tail = "\n".join((codex.stdout or "").splitlines()[-40:])
+            fail_context = (
+                f"codex_return_code=124\n"
+                f"first_error=codex_timeout_{CODEX_TIMEOUT_MINUTES}m\n"
+                f"codex_output_tail:\n{codex_tail}\n"
+            )
+            continue
         if codex.returncode != 0:
             log("Codex invocation failed; continuing to eval to capture concrete failure.")
 
@@ -630,7 +659,7 @@ def solve_problem(repo_root: Path, harness_path: Path, max_retries: int = 8) -> 
 
 def main() -> None:
     try:
-        idx, max_retries = parse_cli(sys.argv)
+        idx, max_retries, save_log = parse_cli(sys.argv)
     except ValueError as exc:
         print(f"Argument error: {exc}", file=sys.stderr)
         print_usage()
@@ -658,6 +687,14 @@ def main() -> None:
         _main_orchestrator(idx, max_retries, repo_root)
     finally:
         stop_run_log(log_file, orig_stdout, orig_stderr)
+        if save_log and idx is not None:
+            try:
+                archived = archive_run_log(repo_root, idx)
+                print(f"\n[agent.py] Archived run.log to: {archived}", flush=True)
+            except RuntimeError as exc:
+                print(f"Run log archive error: {exc}", file=sys.stderr)
+            except OSError as exc:
+                print(f"Run log archive error: {exc}", file=sys.stderr)
 
 
 def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
@@ -698,8 +735,20 @@ def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
     log(f"Selected dataset index {idx}: {entry_id}")
     log(f"Resolved harness path: {harness_path}")
 
-    log(f"Using max retries: {max_retries}")
-    solved = solve_problem(repo_root, harness_path, max_retries=max_retries)
+    solved = False
+    for run_cycle in range(1, MAX_SOLVE_RUN_CYCLES + 1):
+        log(
+            f"Run cycle {run_cycle}/{MAX_SOLVE_RUN_CYCLES}: "
+            f"using max retries {max_retries}"
+        )
+        solved = solve_problem(repo_root, harness_path, max_retries=max_retries)
+        if solved:
+            break
+        if run_cycle < MAX_SOLVE_RUN_CYCLES:
+            log(
+                f"Run cycle {run_cycle} reached max retries ({max_retries}) without PASS; "
+                "starting a fresh run cycle."
+            )
 
     log("Step B: Running single-target local benchmark/report pipeline")
     bench = run_post_benchmark(repo_root, harness_path)
