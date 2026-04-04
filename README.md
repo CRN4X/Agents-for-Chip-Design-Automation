@@ -60,13 +60,13 @@ The setup script does all of the following:
 - initializes `work/learnings.json`
 
 
-## Quick Start
+## Problem Execution
 
-Iterative solve loop for one harness (Codex-driven)
+Solve 1 problem at a time Iterative loop (Codex-driven)
 
-Use this when you want automated retries + failure-context feedback.
+Features automated retries + failure-context feedback.
 
-Before first run on a new machine, execute `./setup_local_no_docker.sh` from repo root.
+Before first run on a new machine, execute `./setup_local_no_docker.sh` from repo root (if not done previously).
 
 ### macOS/Linux/Git Bash
 
