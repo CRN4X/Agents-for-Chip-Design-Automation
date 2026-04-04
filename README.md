@@ -43,19 +43,22 @@ Run from repo root: `NVIDIA-ICLAD25-Hackathon-main` (first `cd` into this folder
 
 ```bash
 cd NVIDIA-ICLAD25-Hackathon-main
-python3 -m venv agent_env
-source agent_env/bin/activate
-python3 -m pip install -r requirements.txt
+./setup_local_no_docker.sh
 ```
 
-### Windows PowerShell
+### Windows PowerShell (Git Bash recommended for setup script)
 
-```bash
+```powershell
 cd NVIDIA-ICLAD25-Hackathon-main
-python -m venv agent_env
-.\agent_env\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
+bash .\setup_local_no_docker.sh
 ```
+
+The setup script does all of the following:
+- creates/reuses `agent_env`
+- installs Python dependencies
+- relinks all harness `rtl` paths (symlink first, copy fallback)
+- initializes `work/learnings.json`
+
 
 ## Quick Start
 
@@ -63,21 +66,21 @@ Iterative solve loop for one harness (Codex-driven)
 
 Use this when you want automated retries + failure-context feedback.
 
+Before first run on a new machine, execute `./setup_local_no_docker.sh` from repo root.
+
 ### macOS/Linux/Git Bash
 
 ```bash
 cd NVIDIA-ICLAD25-Hackathon-main
 source agent_env/bin/activate
-cd my-agent
 python3 my-agent/agent.py --index <dataset_index> --max-retries <1-17>
 ```
 
 ### Windows PowerShell
 
-```bash
+```powershell
 cd NVIDIA-ICLAD25-Hackathon-main
 .\agent_env\Scripts\Activate.ps1
-cd my-agent
 python my-agent/agent.py --index <dataset_index> --max-retries <1-17>
 ```
 
@@ -85,7 +88,8 @@ Command options:
 
 - Index (required): `-i <dataset_index>` or `--index <dataset_index>`
 - Retries (optional): `-r <N>` or `--max-retries <N>`
-- Default retries: `8` and Maximum retries: `17`
+- Default retries: `8`
+- Maximum retries: `17`
 
 Examples:
 
