@@ -716,6 +716,9 @@ def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
 
     log("Step A: Loading dataset entries")
     entries = load_dataset_entries(dataset_path)
+    if not entries:
+        print(f"Input dataset file is empty: {dataset_path}", file=sys.stderr)
+        sys.exit(1)
     if idx < 1 or idx > len(entries):
         print(f"Index out of range: {idx}. Valid range: 1..{len(entries)}", file=sys.stderr)
         sys.exit(1)

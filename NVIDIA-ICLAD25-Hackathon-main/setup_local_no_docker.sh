@@ -17,6 +17,76 @@ if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
   exit 1
 fi
 
+ensure_iverilog() {
+  if command -v iverilog >/dev/null 2>&1 && command -v vvp >/dev/null 2>&1; then
+    echo "[setup] Found Icarus Verilog: $(iverilog -V | head -n 1)"
+    return 0
+  fi
+
+  echo "[setup] Icarus Verilog not found. Attempting install..."
+
+  local uname_s
+  uname_s="$(uname -s 2>/dev/null || echo unknown)"
+
+  case "$uname_s" in
+    Darwin)
+      if command -v brew >/dev/null 2>&1; then
+        brew install icarus-verilog
+      else
+        echo "[setup] ERROR: Homebrew is not installed. Install brew first, then run: brew install icarus-verilog" >&2
+        return 1
+      fi
+      ;;
+    Linux)
+      if command -v apt-get >/dev/null 2>&1; then
+        sudo apt-get update
+        sudo apt-get install -y iverilog
+      elif command -v dnf >/dev/null 2>&1; then
+        sudo dnf install -y iverilog
+      elif command -v yum >/dev/null 2>&1; then
+        sudo yum install -y iverilog
+      elif command -v pacman >/dev/null 2>&1; then
+        sudo pacman -Sy --noconfirm iverilog
+      elif command -v zypper >/dev/null 2>&1; then
+        sudo zypper install -y iverilog
+      else
+        echo "[setup] ERROR: No supported package manager found for auto-install." >&2
+        echo "[setup] Please install iverilog manually and rerun setup." >&2
+        return 1
+      fi
+      ;;
+    MINGW*|MSYS*|CYGWIN*)
+      if command -v winget.exe >/dev/null 2>&1; then
+        winget.exe install --id IcarusVerilog.IcarusVerilog -e --accept-package-agreements --accept-source-agreements
+      elif command -v choco >/dev/null 2>&1; then
+        choco install iverilog -y
+      else
+        echo "[setup] ERROR: Could not auto-install on Windows shell." >&2
+        echo "[setup] Install Icarus Verilog manually (or via winget/choco), then rerun setup." >&2
+        return 1
+      fi
+      ;;
+    *)
+      echo "[setup] ERROR: Unsupported OS for auto-install: $uname_s" >&2
+      echo "[setup] Please install Icarus Verilog manually and rerun setup." >&2
+      return 1
+      ;;
+  esac
+
+  if command -v iverilog >/dev/null 2>&1 && command -v vvp >/dev/null 2>&1; then
+    echo "[setup] Icarus Verilog install complete: $(iverilog -V | head -n 1)"
+    return 0
+  fi
+
+  echo "[setup] ERROR: Install attempted, but iverilog/vvp still not found in PATH." >&2
+  echo "[setup] Open a new terminal (PATH refresh) and rerun setup." >&2
+  return 1
+}
+
+if ! ensure_iverilog; then
+  exit 1
+fi
+
 if [[ ! -d "$ROOT_DIR/agent_env" ]]; then
   echo "[setup] Creating virtual environment: agent_env"
   "$PYTHON_BIN" -m venv "$ROOT_DIR/agent_env"

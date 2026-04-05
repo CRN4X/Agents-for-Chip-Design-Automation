@@ -1,13 +1,13 @@
 {
-  "cvdp_agentic_horizon_whisper_panther_1434": {
-    "category": "cid004",
+  "cvdp_agentic_thunder_diamond_horizon_119": {
+    "category": "cid005",
     "difficulty": "medium",
     "tests": [
       {
         "result": 0,
-        "log": "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_horizon_whisper_panther/harness/1434/rundir/sim.log",
+        "log": "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_thunder_diamond_horizon/harness/119/rundir/sim.log",
         "error_msg": null,
-        "execution": 57.0,
+        "execution": 50.0,
         "pid": 0
       }
     ],

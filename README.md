@@ -1,4 +1,4 @@
-# NVIDIA Debug Problem Set
+# NVIDIA CVDP Problem Set
 
 This repository evaluates agentic RTL debugging/generation workflows on harnessed verification tasks.
 
@@ -9,7 +9,7 @@ This repository evaluates agentic RTL debugging/generation workflows on harnesse
 - `my-agent/`: your local agent, scripts, staged editable RTL, and batch reports
 - `examples/`: example baseline agent assets
 
-## Prerequisites (Local No-Docker Flow)
+## Prerequisites
 
 - `python3`
 - Icarus Verilog tools:
@@ -35,7 +35,7 @@ sudo apt-get install -y iverilog
 - Install **Git for Windows** (includes Git Bash).
 - Install **Icarus Verilog for Windows** and ensure `iverilog` and `vvp` are on PATH.
 
-## Setup
+## Setup Instructions
 
 Run from repo root: `NVIDIA-ICLAD25-Hackathon-main` (first `cd` into this folder).
 
@@ -60,7 +60,7 @@ The setup script does all of the following:
 - initializes `work/learnings.json`
 
 
-## Problem Execution
+## Problem Execution Commands
 
 Solve 1 problem at a time Iterative loop (Codex-driven)
 
@@ -87,6 +87,7 @@ python my-agent/agent.py --index <dataset_index> --max-retries <1-17>
 Command options:
 
 - Index (required): `-i <dataset_index>` or `--index <dataset_index>`
+- Index value starts from 1, which indicates first line in the jsnol file
 - Retries (optional): `-r <N>` or `--max-retries <N>`
 - Default retries: `8`
 - Maximum retries: `17`
@@ -107,32 +108,102 @@ Behavior summary:
 - On failure, feeds `prompt.json`, `rundir/sim.log`, and `rundir/agent_report.json` context into next attempt.
 - On completion, runs single-target batch reporting for that harness.
 
-## Key Output Artifacts
+## Input Description
 
-After local batch flow, the following are produced under `work/`:
+- Dataset input file: `dataset/hackathon-agentic-obfuscated_final_corrected.jsonl`
+- CLI input selects one dataset row: `--index/-i <N>` (1-based index)
+- The selected row resolves to one harness folder: `work/<problem_name>/harness/<id>/`
+- Main harness inputs used in each run:
+  - `prompt.json` (problem/spec details passed to Codex)
+  - `src/` and `verif/` (testbench and verification logic)
+  - `src/.env` (TOPLEVEL, MODULE, VERILOG_SOURCES and sim settings)
+  - `rtl/` (harness RTL path linked/copied to staged RTL workspace)
 
-- `work/result.json`
-- `work/raw_result.json`
-- `work/report.json`
-- `work/report.txt`
-- `work/run.log` (full terminal/session output from `python3 my-agent/agent.py ...`; overwritten each new run)
+## Output Description
 
-Per-harness runtime artifacts are under each harness `rundir/` folder, including:
+- Benchmark/report artifacts in `work/`:
+  - `work/result.json`
+  - `work/raw_result.json`
+  - `work/report.json`
+  - `work/report.txt`
+- Learning memory output:
+  - `work/learnings.json` (updated from InfoAgent category + one-line learning)
+- Run logs:
+  - `work/run.log` (full terminal/session log, overwritten each run)
+  - `work/logs/run_<unix_timestamp>__<index>.log` (only when `--save_log/-s` is used)
+- Per-harness runtime + feedback artifacts (used for next-attempt context):
+  - `work/<problem_name>/harness/<id>/rundir/sim.log`
+  - `work/<problem_name>/harness/<id>/rundir/agent_report.json`
 
-- `sim.log`
-- `agent_report.json`
+## Expected Results (for Verification)
 
-## RTL Editing Rules (Important)
+Successful verification means all of the following are true:
+- Local eval command exits with code `0`
+- Pytest/Cocotb summary shows all tests passed (no `FAIL`)
+- Harness simulation log has no compile/elaboration/assertion failure
+- Benchmark/report artifacts are refreshed under `work/`
 
-For local no-Docker flow:
+Verification is considered failed if any of the following occurs:
+- Local eval exits with non-zero code
+- Any Cocotb/Pytest test fails, times out, or raises assertion errors
+- `iverilog`/`vvp` compile or elaboration errors appear in `sim.log`
 
-- Edit only staged RTL in:
-  - `my-agent/agent_files/<problem_name>/rtl/`
-- Do **not** modify:
-  - `before/rtl` originals
-- Preserve module names, ports, and expected file paths unless explicitly required.
+When verification fails, check logs in this order:
+1. `work/run.log` for full pipeline context
+2. `work/<problem_name>/harness/<id>/rundir/sim.log` for first simulation error
+3. `work/<problem_name>/harness/<id>/rundir/agent_report.json` for agent-side notes
+4. `work/logs/run_<unix_timestamp>__<index>.log` if `--save_log/-s` was used
 
-## Troubleshooting
+Note: warnings (for example deprecation warnings) may appear during successful runs; pass/fail is determined by test summary and exit code.
+
+## Brief Workflow Description
+
+1. Run setup once, then run `python3 my-agent/agent.py -i <index>` (and optional flags).
+2. The agent reads the selected row from the dataset JSONL and resolves the matching harness folder.
+3. Codex receives prompt/context and updates only staged RTL under `my-agent/agent_files/<problem_name>/rtl/`.
+4. Local evaluation runs with Pytest + Cocotb using Icarus Verilog (`iverilog`/`vvp`).
+5. If evaluation fails, failure context (`prompt.json`, `rundir/sim.log`, `rundir/agent_report.json`) is fed into the next attempt.
+6. Retries continue until pass or retry/cycle limits are reached.
+7. On completion, benchmark/report artifacts are refreshed in `work/`, and logs/learnings are updated.
+
+## How To Add Hidden Test Cases
+
+1. Add a new JSONL entry in:
+- `dataset/hackathon-agentic-obfuscated_final_corrected.jsonl`
+
+Example:
+```json
+{
+  "id": "cvdp_agentic_demo_problem_1001",
+  "categories": ["cid999", "medium"],
+  "system_message": "You are an RTL fixing agent.",
+  "prompt": "Debug/fix the target RTL module to satisfy the harness testbench."
+}
+```
+`id` format must be `<problem_folder_name>_<harness_id>` and must map to:
+- `work/<problem_folder_name>/harness/<harness_id>/`
+
+2. Create/update the matching harness folder:
+- `work/cvdp_agentic_demo_problem/harness/1001/`
+
+3. Add harness verification inputs:
+- `src/test_*.py`: cocotb tests that drive DUT and assert expected behavior.
+- `verif/` (optional): helper assets (reference models, constants/tables, utility modules, vectors) if tests need them.
+- `src/.env`: simulation config (`VERILOG_SOURCES`, `TOPLEVEL`, `MODULE`, `SIM`, etc.); must match DUT and tests.
+
+4. Run the new case by index:
+```bash
+python3 my-agent/agent.py -i <new_index>
+```
+
+5. Check verification outputs:
+- `work/run.log`: full run trace (agent attempts, eval calls, command output, high-level errors).
+- `work/<problem_folder_name>/harness/<harness_id>/rundir/sim.log`: simulator/test-level failures (compile, elaboration, runtime, assertions).
+- `work/result.json`: structured final run status summary.
+- `work/report.json`: report-format benchmark/result summary.
+
+
+## Troubleshooting (if necessary)
 
 ### `Missing Python deps in current environment`
 
