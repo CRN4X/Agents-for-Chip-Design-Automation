@@ -57,23 +57,22 @@ The setup script does all of the following:
 - creates/reuses `agent_env`
 - installs Python dependencies
 - relinks all harness `rtl` paths (symlink first, copy fallback)
-- initializes `work/learnings.json`
 
 
 ## Problem Execution Commands
 
-Solve 1 problem at a time Iterative loop (Codex-driven)
+Solve 1 problem at a time in an iterative loop fashion (Codex-driven)
 
 Features automated retries + failure-context feedback.
 
-Before first run on a new machine, execute `./setup_local_no_docker.sh` from repo root (if not done previously).
+Before first run (if not done previously), execute `./setup_local_no_docker.sh` from repo root.
 
 ### macOS/Linux/Git Bash
 
 ```bash
 cd NVIDIA-ICLAD25-Hackathon-main
 source agent_env/bin/activate
-python3 my-agent/agent.py --index <dataset_index> --max-retries <1-17>
+python3 my-agent/agent.py --index <dataset_index_starts_from_1> --max-retries <1-17>
 ```
 
 ### Windows PowerShell
@@ -81,12 +80,12 @@ python3 my-agent/agent.py --index <dataset_index> --max-retries <1-17>
 ```powershell
 cd NVIDIA-ICLAD25-Hackathon-main
 .\agent_env\Scripts\Activate.ps1
-python my-agent/agent.py --index <dataset_index> --max-retries <1-17>
+python my-agent/agent.py --index <dataset_index_starts_from_1> --max-retries <1-17>
 ```
 
 Command options:
 
-- Index (required): `-i <dataset_index>` or `--index <dataset_index>`
+- Index (required): `-i <dataset_index_starts_from_1>` or `--index <dataset_index_starts_from_1>`
 - Index value starts from 1, which indicates first line in the jsnol file
 - Retries (optional): `-r <N>` or `--max-retries <N>`
 - Default retries: `8`
@@ -111,7 +110,7 @@ Behavior summary:
 ## Input Description
 
 - Dataset input file: `dataset/hackathon-agentic-obfuscated_final_corrected.jsonl`
-- CLI input selects one dataset row: `--index/-i <N>` (1-based index)
+- CLI input selects one dataset row: `--index/-i <N>` (problem index starts with 1)
 - The selected row resolves to one harness folder: `work/<problem_name>/harness/<id>/`
 - Main harness inputs used in each run:
   - `prompt.json` (problem/spec details passed to Codex)
@@ -122,10 +121,10 @@ Behavior summary:
 ## Output Description
 
 - Benchmark/report artifacts in `work/`:
-  - `work/result.json`
-  - `work/raw_result.json`
-  - `work/report.json`
-  - `work/report.txt`
+  - `work/result.json`: summarized pass/fail results for evaluated targets in a compact machine-readable format.
+  - `work/raw_result.json`: detailed per-run raw benchmark output (more granular execution data).
+  - `work/report.json`: structured final report data intended for downstream reporting/analysis tools.
+  - `work/report.txt`: human-readable text report with the benchmark summary.
 - Learning memory output:
   - `work/learnings.json` (updated from InfoAgent category + one-line learning)
 - Run logs:
@@ -187,9 +186,28 @@ Example:
 - `work/cvdp_agentic_demo_problem/harness/1001/`
 
 3. Add harness verification inputs:
-- `src/test_*.py`: cocotb tests that drive DUT and assert expected behavior.
-- `verif/` (optional): helper assets (reference models, constants/tables, utility modules, vectors) if tests need them.
-- `src/.env`: simulation config (`VERILOG_SOURCES`, `TOPLEVEL`, `MODULE`, `SIM`, etc.); must match DUT and tests.
+- Target harness path: `work/cvdp_agentic_demo_problem/harness/1001/`
+- Add hidden test files in `src/` (file name must match `test_*.py` for pytest auto-discovery):
+  - `work/cvdp_agentic_demo_problem/harness/1001/src/test_hidden_case1.py`
+  - `work/cvdp_agentic_demo_problem/harness/1001/src/test_hidden_case2.py` (optional)
+- Add optional helper files in `verif/` (if tests need support assets):
+  - `work/cvdp_agentic_demo_problem/harness/1001/verif/reference_model.py`
+  - `work/cvdp_agentic_demo_problem/harness/1001/verif/test_vectors.json`
+  - `work/cvdp_agentic_demo_problem/harness/1001/verif/golden_outputs.csv`
+  - `work/cvdp_agentic_demo_problem/harness/1001/verif/scoreboard_utils.py`
+- Set simulation config in `src/.env`:
+  - `work/cvdp_agentic_demo_problem/harness/1001/src/.env`
+
+Example `.env`:
+```env
+VERILOG_SOURCES = /code/rtl/my_module.sv
+TOPLEVEL        = my_module
+MODULE          = test_hidden_case1
+SIM             = icarus
+TOPLEVEL_LANG   = verilog
+PYTHONPATH      = /src
+WAVE            = true
+```
 
 4. Run the new case by index:
 ```bash
