@@ -2,13 +2,6 @@
 
 This repository evaluates agentic RTL debugging/generation workflows on harnessed verification tasks.
 
-## Repository Layout
-
-- `dataset/`: benchmark problem metadata (`.jsonl`)
-- `work/`: generated harnesses, run artifacts, and reports
-- `my-agent/`: your local agent, scripts, staged editable RTL, and batch reports
-- `examples/`: example baseline agent assets
-
 ## Prerequisites
 
 - `python3`
