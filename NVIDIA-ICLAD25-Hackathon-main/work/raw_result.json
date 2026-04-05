@@ -1,13 +1,13 @@
 {
-  "cvdp_agentic_thunder_diamond_horizon_119": {
-    "category": "cid005",
+  "cvdp_agentic_amber_eagle_lambda_1": {
+    "category": "cid003",
     "difficulty": "medium",
     "tests": [
       {
         "result": 0,
-        "log": "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_thunder_diamond_horizon/harness/119/rundir/sim.log",
+        "log": "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/rundir/sim.log",
         "error_msg": null,
-        "execution": 50.0,
+        "execution": 2.0,
         "pid": 0
       }
     ],

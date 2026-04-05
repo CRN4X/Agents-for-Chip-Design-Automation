@@ -617,7 +617,7 @@ def solve_problem(repo_root: Path, harness_path: Path, max_retries: int = 8) -> 
                 )
             except RuntimeError as exc:
                 print(
-                    f"InfoAgent learning update error: {exc}. "
+                    f"[Write Permission Error] Could not update learnings.json. {exc}. "
                     "If learnings.json is open, close it and retry.",
                     file=sys.stderr,
                 )
@@ -661,7 +661,7 @@ def main() -> None:
     try:
         idx, max_retries, save_log = parse_cli(sys.argv)
     except ValueError as exc:
-        print(f"Argument error: {exc}", file=sys.stderr)
+        print(f"[Usage Error] Invalid command arguments. {exc}", file=sys.stderr)
         print_usage()
         sys.exit(2)
     repo_root = infer_repo_root()
@@ -680,7 +680,7 @@ def main() -> None:
     try:
         log_file, orig_stdout, orig_stderr = start_run_log(repo_root)
     except RuntimeError as exc:
-        print(f"Run log error: {exc}", file=sys.stderr)
+        print(f"[Write Permission Error] Could not create/update work/run.log file. {exc}", file=sys.stderr)
         sys.exit(2)
 
     try:
@@ -692,9 +692,9 @@ def main() -> None:
                 archived = archive_run_log(repo_root, idx)
                 print(f"\n[agent.py] Archived run.log to: {archived}", flush=True)
             except RuntimeError as exc:
-                print(f"Run log archive error: {exc}", file=sys.stderr)
+                print(f"[Write Permission Error] Could not archive run.log to work/logs/. {exc}", file=sys.stderr)
             except OSError as exc:
-                print(f"Run log archive error: {exc}", file=sys.stderr)
+                print(f"[Write Permission Error] Could not archive run.log to work/logs/. {exc}", file=sys.stderr)
 
 
 def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
@@ -703,7 +703,7 @@ def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
     init_rc = init_learnings_json(learnings_path)
     if init_rc != 0:
         print(
-            f"Failed to initialize {learnings_path}. "
+            f"[Write Permission Error] Could not initialize {learnings_path}. ",
             "If the file is open, close it and retry.",
             file=sys.stderr,
         )
@@ -711,29 +711,29 @@ def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
 
     dataset_path = repo_root / "dataset" / "hackathon-agentic-obfuscated_final_corrected.jsonl"
     if not dataset_path.exists():
-        print(f"Dataset not found: {dataset_path}", file=sys.stderr)
+        print(f"[Input File Error] Dataset file not found: {dataset_path}", file=sys.stderr)
         sys.exit(1)
 
     log("Step A: Loading dataset entries")
     entries = load_dataset_entries(dataset_path)
     if not entries:
-        print(f"Input dataset file is empty: {dataset_path}", file=sys.stderr)
+        print(f"[Input File Error] Dataset file is empty: {dataset_path}", file=sys.stderr)
         sys.exit(1)
     if idx < 1 or idx > len(entries):
-        print(f"Index out of range: {idx}. Valid range: 1..{len(entries)}", file=sys.stderr)
+        print(f"[Input Value Error] Index out of range: {idx}. Valid range: 1..{len(entries)}", file=sys.stderr)
         sys.exit(1)
 
     entry = entries[idx - 1]
     entry_id = entry.get("id", "")
     if "_" not in entry_id:
-        print(f"Invalid dataset id format: {entry_id}", file=sys.stderr)
+        print(f"[Input Format Error] Invalid dataset id format: {entry_id}. Expected <problem_name>_<harness_id>.", file=sys.stderr)
         sys.exit(1)
 
     problem, issue = split_problem_and_issue(entry_id)
     try:
         harness_path = resolve_harness_path(repo_root, problem, issue)
     except FileNotFoundError as exc:
-        print(f"Harness resolution error: {exc}", file=sys.stderr)
+        print(f"[Harness Error] Could not find the harness folder for this dataset id. {exc}", file=sys.stderr)
         sys.exit(1)
     log(f"Selected dataset index {idx}: {entry_id}")
     log(f"Resolved harness path: {harness_path}")
@@ -760,7 +760,7 @@ def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
         log("Benchmark output (tail):")
         print("\n".join(bench.stdout.splitlines()[-30:]), flush=True)
     if bench.returncode != 0:
-        print("Post-solve benchmark pipeline failed.", file=sys.stderr)
+        print("[Permission Error] Could not generate final report files.", file=sys.stderr)
         sys.exit(1)
 
     final_status = "PASS" if solved else "FAIL"
