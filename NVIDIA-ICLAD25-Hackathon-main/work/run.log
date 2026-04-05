@@ -6,9 +6,9 @@
 
 [agent.py] Step A: Loading dataset entries
 
-[agent.py] Selected dataset index 27: cvdp_agentic_amber_eagle_lambda_0001
+[agent.py] Selected dataset index 29: cvdp_agentic_compass_breeze_obsidian_0016
 
-[agent.py] Resolved harness path: /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1
+[agent.py] Resolved harness path: /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16
 
 [agent.py] Run cycle 1/2: using max retries 8
 
@@ -26,11 +26,11 @@ approval: never
 sandbox: workspace-write [workdir, /tmp, $TMPDIR, /Users/siddharth/.codex/memories]
 reasoning effort: medium
 reasoning summaries: none
-session id: 019d5cda-4b27-7de3-b935-4c354f4d1b44
+session id: 019d5cdd-f154-7de1-9760-68d9aabfb487
 --------
 user
 Work on this harness iteratively:
-/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1
+/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16
 
 Follow these AGENTS.md instructions:
 General Note:
@@ -272,7 +272,7 @@ Use existing learnings context from work/learnings.json:
 {
   "Modify or Extend Existing RTL": "When extending existing DSP RTL for new control/FSM requirements, first satisfy interface/visibility contracts used by verification (new params/ports and probe-friendly packed signals), then align cycle-by-cycle internal buffering/state updates to the checker\u2019s reference model before optimizing behavior.",
   "Integrate multiple modules into a top module": "For top-level wrapper tasks, first satisfy required source filenames/modules, then implement minimal glue logic that computes checker-visible outputs directly from post-processed submodule outputs while propagating critical submodule error flags.",
-  "Create new RTL from spec": "For spec-driven top modules that wrap existing compute blocks, lock interface and exact latency contracts first, then pipeline valid/done/error signaling so behavioral checks and cycle-accurate timing checks pass together.",
+  "Create new RTL from spec": "For APB CSR modules built from spec, lock the register map and transaction-state sequencing first, then enforce register-specific protections and side effects (like ISR clear-on-write semantics) to satisfy protocol and behavioral checks together.",
   "Debug/fix buggy RTL": "For 2-way cache debug tasks, implement explicit per-way tag/data/valid/dirty state with deterministic hit selection and expose victim-way state so replacement and observability checks both pass."
 }
 
@@ -283,13 +283,13 @@ Important:
 
 
 Rules:
-- Run ./my-agent/run_local_eval.sh "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1"
+- Run ./my-agent/run_local_eval.sh "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16"
 - If failing, read:
-  - /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/prompt.json
-  - /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/rundir/sim.log
-  - /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/rundir/agent_report.json
+  - /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/prompt.json
+  - /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/rundir/sim.log
+  - /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/rundir/agent_report.json
 - Edit ONLY files under:
-  my-agent/agent_files/cvdp_agentic_amber_eagle_lambda/rtl/
+  my-agent/agent_files/cvdp_agentic_compass_breeze_obsidian/rtl/
 - Do not modify before/ originals.
 - Keep edits minimal, compile-safe first.
 - Use sim.log first-error lines as primary guidance.
@@ -297,143 +297,445 @@ Rules:
 Attempt: 1/8
 
 codex
-Running the local eval loop on the specified harness now, then I’ll inspect `sim.log` and `agent_report.json` for the first failing signal/path and apply a minimal RTL fix only under `my-agent/agent_files/cvdp_agentic_amber_eagle_lambda/rtl/`.
+I’m starting the harness run for `harness/16` using the required local flow (`source agent_env/bin/activate` + `python3`), then I’ll triage failures from `sim.log` first and patch only `my-agent/agent_files/cvdp_agentic_compass_breeze_obsidian/rtl/`.
 exec
-/bin/zsh -lc 'source agent_env/bin/activate && ./my-agent/run_local_eval.sh "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1"' in /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main
- succeeded in 1796ms:
-Running agent locally with workspace: /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1
+/bin/zsh -lc 'source agent_env/bin/activate && ./my-agent/run_local_eval.sh "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16"' in /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main
+ succeeded in 3580ms:
+Running agent locally with workspace: /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16
 
 [agent.py] Harness mode detected (no index argument).
 
-[agent.py] Wrote no-op agent report: /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/rundir/agent_report.json
+[agent.py] Wrote no-op agent report: /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/rundir/agent_report.json
 
 [agent.py] Harness mode complete.
 Harness rtl now points to staged rtl (symlink mode):
-  /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/rtl -> /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/my-agent/agent_files/cvdp_agentic_amber_eagle_lambda/rtl
+  /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/rtl -> /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/my-agent/agent_files/cvdp_agentic_compass_breeze_obsidian/rtl
 Running local harness eval
-  HARNESS_PATH=/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1
-  TOPLEVEL=csr_apb_interface
-  MODULE=test_csr_apb_interface
+  HARNESS_PATH=/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16
+  TOPLEVEL=order_matching_engine
+  MODULE=test_order_matching_engine
   SIM=icarus
-  VERILOG_SOURCES=/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/rtl/csr_apb_interface.sv
+  VERILOG_SOURCES=/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/rtl/order_matching_engine.sv /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/rtl/sorting_engine.sv
 ============================= test session starts ==============================
 platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/agent_env/bin/python3
 cachedir: rundir/harness/.cache
-rootdir: /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1
+rootdir: /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16
 plugins: anyio-4.12.1
-collecting ... collected 2 items
+collecting ... collected 5 items
 
-../src/test_runner.py::test_areg_param[0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:94   in _embed_init_python              Using Python 3.9.13 interpreter at /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/agent_env/bin/python3
+../src/test_runner.py::test_runner      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:94   in _embed_init_python              Using Python 3.9.13 interpreter at /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/agent_env/bin/python3
      -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:79   in gpi_print_registered_impl       VPI registered
      0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (stable)
-     0.00ns INFO     cocotb                             Seeding Python random module with 1775379312
+     0.00ns INFO     cocotb                             Seeding Python random module with 1775379551
      0.00ns INFO     cocotb                             Initialized cocotb v2.0.1 from /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/agent_env/lib/python3.9/site-packages/cocotb
      0.00ns INFO     cocotb                             Running tests
-     0.00ns INFO     cocotb.regression                  running test_csr_apb_interface.test_csr_apb_interface (1/1)
-     0.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/src/test_csr_apb_interface.py:43: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
-                                                          cocotb.start_soon(Clock(dut.pclk, 10, units='ns').start())
-     0.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/src/harness_library.py:6: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
-                                                          await Timer(duration_ns, units="ns")
-    10.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/src/harness_library.py:8: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
-                                                          await Timer(duration_ns, units='ns')
-    20.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/src/harness_library.py:10: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
-                                                          await Timer(duration_ns, units="ns")
-    30.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/src/harness_library.py:12: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
-                                                          await Timer(duration_ns, units='ns')
-   110.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/src/test_csr_apb_interface.py:38: DeprecationWarning: `logic_array.integer` getter is deprecated. Use `logic_array.to_unsigned()` instead.
-                                                          return dut.prdata.value.integer
-   110.00ns INFO     cocotb.csr_apb_interface           Writing and Reading from DATA_REG : data_read_back = 702125228, data_to_write = 702125228
-   190.00ns INFO     cocotb.csr_apb_interface           Writing and Reading from CONTROL_REG : data_read_back = 592837145, data_to_write = 592837145
-   270.00ns INFO     cocotb.csr_apb_interface           Writing and Reading from INTERRUPT_REG : data_read_back = 453889292, data_to_write = 453889292
-   270.00ns INFO     cocotb.csr_apb_interface           Test Case 5: Write-protected ISR_REG
-   310.00ns INFO     cocotb.csr_apb_interface           Write to ISR_REG correctly caused error (Write-Protected Register)
-   310.00ns INFO     cocotb.csr_apb_interface           Test Case 6: Read ISR_REG
-   350.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/src/test_csr_apb_interface.py:106: DeprecationWarning: `logic_array.integer` getter is deprecated. Use `logic_array.to_unsigned()` instead.
-                                                          isr_read_value = dut.prdata.value.integer
-   350.00ns INFO     cocotb.csr_apb_interface           ISR_REG read successful: 0
-   450.00ns INFO     cocotb.csr_apb_interface           All test cases passed!
-   450.00ns INFO     cocotb.regression                  test_csr_apb_interface.test_csr_apb_interface passed
-   450.00ns INFO     cocotb.regression                  *******************************************************************************************************
-                                                        ** TEST                                           STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
-                                                        *******************************************************************************************************
-                                                        ** test_csr_apb_interface.test_csr_apb_interface   PASS         450.00           0.01      34400.85  **
-                                                        *******************************************************************************************************
-                                                        ** TESTS=1 PASS=1 FAIL=0 SKIP=0                                 450.00           0.02      23503.35  **
-                                                        *******************************************************************************************************
-FST info: dumpfile /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/rundir/sim_build/csr_apb_interface.fst opened for output.
+     0.00ns INFO     cocotb.regression                  running test_order_matching_engine.test_order_matching_engine (1/1)
+                                                            Cocotb testbench for order_matching_engine.
+     0.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/src/test_order_matching_engine.py:32: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
+                                                          clock = Clock(dut.clk, 10, units="ns")
+     0.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+     0.00ns INFO     cocotb.order_matching_engine       Starting test: Matching scenario: valid match
+   230.00ns INFO     cocotb.order_matching_engine       Test 'Matching scenario: valid match': Measured latency = 21 cycles
+   230.00ns INFO     cocotb.order_matching_engine       Test 'Matching scenario: valid match' PASSED: Best bid = 12, Best ask = 2, Matched price = 2
+   230.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/src/test_order_matching_engine.py:160: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
+                                                          await Timer(20, units="ns")
+   250.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+   250.00ns INFO     cocotb.order_matching_engine       Starting test: No match scenario: no match
+   480.00ns INFO     cocotb.order_matching_engine       Test 'No match scenario: no match': Measured latency = 21 cycles
+   480.00ns INFO     cocotb.order_matching_engine       Test 'No match scenario: no match' PASSED: Best bid = 11, Best ask = 12, Matched price = 0
+   500.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+   500.00ns INFO     cocotb.order_matching_engine       Starting test: Extreme values: match at boundary
+   730.00ns INFO     cocotb.order_matching_engine       Test 'Extreme values: match at boundary': Measured latency = 21 cycles
+   730.00ns INFO     cocotb.order_matching_engine       Test 'Extreme values: match at boundary' PASSED: Best bid = 15, Best ask = 15, Matched price = 15
+   750.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+   750.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 1
+   980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 1': Measured latency = 21 cycles
+   980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 1' PASSED: Best bid = 9, Best ask = 0, Matched price = 0
+  1000.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1000.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 2
+  1230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 2': Measured latency = 21 cycles
+  1230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 2' PASSED: Best bid = 13, Best ask = 1, Matched price = 1
+  1250.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1250.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 3
+  1480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 3': Measured latency = 21 cycles
+  1480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 3' PASSED: Best bid = 14, Best ask = 0, Matched price = 0
+  1500.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1500.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 4
+  1730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 4': Measured latency = 21 cycles
+  1730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 4' PASSED: Best bid = 13, Best ask = 0, Matched price = 0
+  1750.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1750.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 5
+  1980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 5': Measured latency = 21 cycles
+  1980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 5' PASSED: Best bid = 15, Best ask = 2, Matched price = 2
+  2000.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2000.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 6
+  2230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 6': Measured latency = 21 cycles
+  2230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 6' PASSED: Best bid = 9, Best ask = 1, Matched price = 1
+  2250.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2250.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 7
+  2480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 7': Measured latency = 21 cycles
+  2480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 7' PASSED: Best bid = 11, Best ask = 2, Matched price = 2
+  2500.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2500.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 8
+  2730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 8': Measured latency = 21 cycles
+  2730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 8' PASSED: Best bid = 15, Best ask = 0, Matched price = 0
+  2750.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2750.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 9
+  2980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 9': Measured latency = 21 cycles
+  2980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 9' PASSED: Best bid = 14, Best ask = 1, Matched price = 1
+  3000.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  3000.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 10
+  3230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 10': Measured latency = 21 cycles
+  3230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 10' PASSED: Best bid = 13, Best ask = 5, Matched price = 5
+  3250.00ns INFO     cocotb.order_matching_engine       All tests passed.
+  3250.00ns INFO     cocotb.regression                  test_order_matching_engine.test_order_matching_engine passed
+  3250.00ns INFO     cocotb.regression                  ***************************************************************************************************************
+                                                        ** TEST                                                   STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        ***************************************************************************************************************
+                                                        ** test_order_matching_engine.test_order_matching_engine   PASS        3250.00           0.04      73353.04  **
+                                                        ***************************************************************************************************************
+                                                        ** TESTS=1 PASS=1 FAIL=0 SKIP=0                                        3250.00           0.05      63143.53  **
+                                                        ***************************************************************************************************************
+FST info: dumpfile /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/rundir/sim_build/order_matching_engine.fst opened for output.
+[DEBUG] Running simulation with PRICE_WIDTH=4
+[DEBUG] Parameters: {'PRICE_WIDTH': 4}
 PASSED
-../src/test_runner.py::test_areg_param[1]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:94   in _embed_init_python              Using Python 3.9.13 interpreter at /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/agent_env/bin/python3
+../src/test_runner.py::test_sort[4]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:94   in _embed_init_python              Using Python 3.9.13 interpreter at /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/agent_env/bin/python3
      -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:79   in gpi_print_registered_impl       VPI registered
      0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (stable)
-     0.00ns INFO     cocotb                             Seeding Python random module with 1775379313
+     0.00ns INFO     cocotb                             Seeding Python random module with 1775379551
      0.00ns INFO     cocotb                             Initialized cocotb v2.0.1 from /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/agent_env/lib/python3.9/site-packages/cocotb
      0.00ns INFO     cocotb                             Running tests
-     0.00ns INFO     cocotb.regression                  running test_csr_apb_interface.test_csr_apb_interface (1/1)
-     0.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/src/test_csr_apb_interface.py:43: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
-                                                          cocotb.start_soon(Clock(dut.pclk, 10, units='ns').start())
-     0.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/src/harness_library.py:6: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
-                                                          await Timer(duration_ns, units="ns")
-    10.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/src/harness_library.py:8: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
-                                                          await Timer(duration_ns, units='ns')
-    20.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/src/harness_library.py:10: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
-                                                          await Timer(duration_ns, units="ns")
-    30.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/src/harness_library.py:12: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
-                                                          await Timer(duration_ns, units='ns')
-   110.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/src/test_csr_apb_interface.py:38: DeprecationWarning: `logic_array.integer` getter is deprecated. Use `logic_array.to_unsigned()` instead.
-                                                          return dut.prdata.value.integer
-   110.00ns INFO     cocotb.csr_apb_interface           Writing and Reading from DATA_REG : data_read_back = 801524221, data_to_write = 801524221
-   190.00ns INFO     cocotb.csr_apb_interface           Writing and Reading from CONTROL_REG : data_read_back = 2196519265, data_to_write = 2196519265
-   270.00ns INFO     cocotb.csr_apb_interface           Writing and Reading from INTERRUPT_REG : data_read_back = 3877319593, data_to_write = 3877319593
-   270.00ns INFO     cocotb.csr_apb_interface           Test Case 5: Write-protected ISR_REG
-   310.00ns INFO     cocotb.csr_apb_interface           Write to ISR_REG correctly caused error (Write-Protected Register)
-   310.00ns INFO     cocotb.csr_apb_interface           Test Case 6: Read ISR_REG
-   350.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/src/test_csr_apb_interface.py:106: DeprecationWarning: `logic_array.integer` getter is deprecated. Use `logic_array.to_unsigned()` instead.
-                                                          isr_read_value = dut.prdata.value.integer
-   350.00ns INFO     cocotb.csr_apb_interface           ISR_REG read successful: 0
-   450.00ns INFO     cocotb.csr_apb_interface           All test cases passed!
-   450.00ns INFO     cocotb.regression                  test_csr_apb_interface.test_csr_apb_interface passed
-   450.00ns INFO     cocotb.regression                  *******************************************************************************************************
-                                                        ** TEST                                           STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
-                                                        *******************************************************************************************************
-                                                        ** test_csr_apb_interface.test_csr_apb_interface   PASS         450.00           0.01      45984.57  **
-                                                        *******************************************************************************************************
-                                                        ** TESTS=1 PASS=1 FAIL=0 SKIP=0                                 450.00           0.02      29209.15  **
-                                                        *******************************************************************************************************
-FST info: dumpfile /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/rundir/sim_build/csr_apb_interface.fst opened for output.
+     0.00ns INFO     cocotb.regression                  running test_order_matching_engine.test_order_matching_engine (1/1)
+                                                            Cocotb testbench for order_matching_engine.
+     0.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/src/test_order_matching_engine.py:32: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
+                                                          clock = Clock(dut.clk, 10, units="ns")
+     0.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+     0.00ns INFO     cocotb.order_matching_engine       Starting test: Matching scenario: valid match
+   230.00ns INFO     cocotb.order_matching_engine       Test 'Matching scenario: valid match': Measured latency = 21 cycles
+   230.00ns INFO     cocotb.order_matching_engine       Test 'Matching scenario: valid match' PASSED: Best bid = 12, Best ask = 2, Matched price = 2
+   230.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/src/test_order_matching_engine.py:160: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
+                                                          await Timer(20, units="ns")
+   250.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+   250.00ns INFO     cocotb.order_matching_engine       Starting test: No match scenario: no match
+   480.00ns INFO     cocotb.order_matching_engine       Test 'No match scenario: no match': Measured latency = 21 cycles
+   480.00ns INFO     cocotb.order_matching_engine       Test 'No match scenario: no match' PASSED: Best bid = 11, Best ask = 12, Matched price = 0
+   500.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+   500.00ns INFO     cocotb.order_matching_engine       Starting test: Extreme values: match at boundary
+   730.00ns INFO     cocotb.order_matching_engine       Test 'Extreme values: match at boundary': Measured latency = 21 cycles
+   730.00ns INFO     cocotb.order_matching_engine       Test 'Extreme values: match at boundary' PASSED: Best bid = 15, Best ask = 15, Matched price = 15
+   750.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+   750.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 1
+   980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 1': Measured latency = 21 cycles
+   980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 1' PASSED: Best bid = 9, Best ask = 0, Matched price = 0
+  1000.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1000.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 2
+  1230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 2': Measured latency = 21 cycles
+  1230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 2' PASSED: Best bid = 13, Best ask = 1, Matched price = 1
+  1250.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1250.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 3
+  1480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 3': Measured latency = 21 cycles
+  1480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 3' PASSED: Best bid = 14, Best ask = 0, Matched price = 0
+  1500.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1500.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 4
+  1730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 4': Measured latency = 21 cycles
+  1730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 4' PASSED: Best bid = 13, Best ask = 0, Matched price = 0
+  1750.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1750.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 5
+  1980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 5': Measured latency = 21 cycles
+  1980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 5' PASSED: Best bid = 15, Best ask = 2, Matched price = 2
+  2000.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2000.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 6
+  2230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 6': Measured latency = 21 cycles
+  2230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 6' PASSED: Best bid = 9, Best ask = 1, Matched price = 1
+  2250.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2250.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 7
+  2480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 7': Measured latency = 21 cycles
+  2480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 7' PASSED: Best bid = 11, Best ask = 2, Matched price = 2
+  2500.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2500.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 8
+  2730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 8': Measured latency = 21 cycles
+  2730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 8' PASSED: Best bid = 15, Best ask = 0, Matched price = 0
+  2750.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2750.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 9
+  2980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 9': Measured latency = 21 cycles
+  2980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 9' PASSED: Best bid = 14, Best ask = 1, Matched price = 1
+  3000.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  3000.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 10
+  3230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 10': Measured latency = 21 cycles
+  3230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 10' PASSED: Best bid = 13, Best ask = 5, Matched price = 5
+  3250.00ns INFO     cocotb.order_matching_engine       All tests passed.
+  3250.00ns INFO     cocotb.regression                  test_order_matching_engine.test_order_matching_engine passed
+  3250.00ns INFO     cocotb.regression                  ***************************************************************************************************************
+                                                        ** TEST                                                   STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        ***************************************************************************************************************
+                                                        ** test_order_matching_engine.test_order_matching_engine   PASS        3250.00           0.04      83252.34  **
+                                                        ***************************************************************************************************************
+                                                        ** TESTS=1 PASS=1 FAIL=0 SKIP=0                                        3250.00           0.05      70054.88  **
+                                                        ***************************************************************************************************************
+FST info: dumpfile /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/rundir/sim_build/order_matching_engine.fst opened for output.
+[DEBUG] Running simulation with PRICE_WIDTH=4
+[DEBUG] Parameters: {'PRICE_WIDTH': 4}
+PASSED
+../src/test_runner.py::test_sort[5]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:94   in _embed_init_python              Using Python 3.9.13 interpreter at /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/agent_env/bin/python3
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:79   in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (stable)
+     0.00ns INFO     cocotb                             Seeding Python random module with 1775379552
+     0.00ns INFO     cocotb                             Initialized cocotb v2.0.1 from /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/agent_env/lib/python3.9/site-packages/cocotb
+     0.00ns INFO     cocotb                             Running tests
+     0.00ns INFO     cocotb.regression                  running test_order_matching_engine.test_order_matching_engine (1/1)
+                                                            Cocotb testbench for order_matching_engine.
+     0.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/src/test_order_matching_engine.py:32: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
+                                                          clock = Clock(dut.clk, 10, units="ns")
+     0.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+     0.00ns INFO     cocotb.order_matching_engine       Starting test: Matching scenario: valid match
+   230.00ns INFO     cocotb.order_matching_engine       Test 'Matching scenario: valid match': Measured latency = 21 cycles
+   230.00ns INFO     cocotb.order_matching_engine       Test 'Matching scenario: valid match' PASSED: Best bid = 24, Best ask = 4, Matched price = 4
+   230.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/src/test_order_matching_engine.py:160: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
+                                                          await Timer(20, units="ns")
+   250.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+   250.00ns INFO     cocotb.order_matching_engine       Starting test: No match scenario: no match
+   480.00ns INFO     cocotb.order_matching_engine       Test 'No match scenario: no match': Measured latency = 21 cycles
+   480.00ns INFO     cocotb.order_matching_engine       Test 'No match scenario: no match' PASSED: Best bid = 23, Best ask = 24, Matched price = 0
+   500.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+   500.00ns INFO     cocotb.order_matching_engine       Starting test: Extreme values: match at boundary
+   730.00ns INFO     cocotb.order_matching_engine       Test 'Extreme values: match at boundary': Measured latency = 21 cycles
+   730.00ns INFO     cocotb.order_matching_engine       Test 'Extreme values: match at boundary' PASSED: Best bid = 31, Best ask = 31, Matched price = 31
+   750.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+   750.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 1
+   980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 1': Measured latency = 21 cycles
+   980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 1' PASSED: Best bid = 25, Best ask = 0, Matched price = 0
+  1000.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1000.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 2
+  1230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 2': Measured latency = 21 cycles
+  1230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 2' PASSED: Best bid = 27, Best ask = 0, Matched price = 0
+  1250.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1250.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 3
+  1480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 3': Measured latency = 21 cycles
+  1480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 3' PASSED: Best bid = 26, Best ask = 3, Matched price = 3
+  1500.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1500.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 4
+  1730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 4': Measured latency = 21 cycles
+  1730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 4' PASSED: Best bid = 27, Best ask = 0, Matched price = 0
+  1750.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1750.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 5
+  1980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 5': Measured latency = 21 cycles
+  1980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 5' PASSED: Best bid = 24, Best ask = 5, Matched price = 5
+  2000.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2000.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 6
+  2230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 6': Measured latency = 21 cycles
+  2230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 6' PASSED: Best bid = 23, Best ask = 0, Matched price = 0
+  2250.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2250.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 7
+  2480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 7': Measured latency = 21 cycles
+  2480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 7' PASSED: Best bid = 22, Best ask = 2, Matched price = 2
+  2500.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2500.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 8
+  2730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 8': Measured latency = 21 cycles
+  2730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 8' PASSED: Best bid = 26, Best ask = 1, Matched price = 1
+  2750.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2750.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 9
+  2980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 9': Measured latency = 21 cycles
+  2980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 9' PASSED: Best bid = 31, Best ask = 2, Matched price = 2
+  3000.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  3000.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 10
+  3230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 10': Measured latency = 21 cycles
+  3230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 10' PASSED: Best bid = 28, Best ask = 8, Matched price = 8
+  3250.00ns INFO     cocotb.order_matching_engine       All tests passed.
+  3250.00ns INFO     cocotb.regression                  test_order_matching_engine.test_order_matching_engine passed
+  3250.00ns INFO     cocotb.regression                  ***************************************************************************************************************
+                                                        ** TEST                                                   STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        ***************************************************************************************************************
+                                                        ** test_order_matching_engine.test_order_matching_engine   PASS        3250.00           0.04      81744.62  **
+                                                        ***************************************************************************************************************
+                                                        ** TESTS=1 PASS=1 FAIL=0 SKIP=0                                        3250.00           0.05      68623.39  **
+                                                        ***************************************************************************************************************
+FST info: dumpfile /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/rundir/sim_build/order_matching_engine.fst opened for output.
+[DEBUG] Running simulation with PRICE_WIDTH=5
+[DEBUG] Parameters: {'PRICE_WIDTH': 5}
+PASSED
+../src/test_runner.py::test_sort[8]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:94   in _embed_init_python              Using Python 3.9.13 interpreter at /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/agent_env/bin/python3
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:79   in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (stable)
+     0.00ns INFO     cocotb                             Seeding Python random module with 1775379552
+     0.00ns INFO     cocotb                             Initialized cocotb v2.0.1 from /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/agent_env/lib/python3.9/site-packages/cocotb
+     0.00ns INFO     cocotb                             Running tests
+     0.00ns INFO     cocotb.regression                  running test_order_matching_engine.test_order_matching_engine (1/1)
+                                                            Cocotb testbench for order_matching_engine.
+     0.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/src/test_order_matching_engine.py:32: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
+                                                          clock = Clock(dut.clk, 10, units="ns")
+     0.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+     0.00ns INFO     cocotb.order_matching_engine       Starting test: Matching scenario: valid match
+   230.00ns INFO     cocotb.order_matching_engine       Test 'Matching scenario: valid match': Measured latency = 21 cycles
+   230.00ns INFO     cocotb.order_matching_engine       Test 'Matching scenario: valid match' PASSED: Best bid = 204, Best ask = 38, Matched price = 38
+   230.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/src/test_order_matching_engine.py:160: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
+                                                          await Timer(20, units="ns")
+   250.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+   250.00ns INFO     cocotb.order_matching_engine       Starting test: No match scenario: no match
+   480.00ns INFO     cocotb.order_matching_engine       Test 'No match scenario: no match': Measured latency = 21 cycles
+   480.00ns INFO     cocotb.order_matching_engine       Test 'No match scenario: no match' PASSED: Best bid = 191, Best ask = 204, Matched price = 0
+   500.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+   500.00ns INFO     cocotb.order_matching_engine       Starting test: Extreme values: match at boundary
+   730.00ns INFO     cocotb.order_matching_engine       Test 'Extreme values: match at boundary': Measured latency = 21 cycles
+   730.00ns INFO     cocotb.order_matching_engine       Test 'Extreme values: match at boundary' PASSED: Best bid = 255, Best ask = 255, Matched price = 255
+   750.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+   750.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 1
+   980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 1': Measured latency = 21 cycles
+   980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 1' PASSED: Best bid = 202, Best ask = 3, Matched price = 3
+  1000.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1000.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 2
+  1230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 2': Measured latency = 21 cycles
+  1230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 2' PASSED: Best bid = 223, Best ask = 3, Matched price = 3
+  1250.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1250.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 3
+  1480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 3': Measured latency = 21 cycles
+  1480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 3' PASSED: Best bid = 214, Best ask = 29, Matched price = 29
+  1500.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1500.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 4
+  1730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 4': Measured latency = 21 cycles
+  1730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 4' PASSED: Best bid = 223, Best ask = 4, Matched price = 4
+  1750.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1750.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 5
+  1980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 5': Measured latency = 21 cycles
+  1980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 5' PASSED: Best bid = 199, Best ask = 43, Matched price = 43
+  2000.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2000.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 6
+  2230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 6': Measured latency = 21 cycles
+  2230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 6' PASSED: Best bid = 189, Best ask = 6, Matched price = 6
+  2250.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2250.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 7
+  2480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 7': Measured latency = 21 cycles
+  2480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 7' PASSED: Best bid = 178, Best ask = 19, Matched price = 19
+  2500.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2500.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 8
+  2730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 8': Measured latency = 21 cycles
+  2730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 8' PASSED: Best bid = 208, Best ask = 15, Matched price = 15
+  2750.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2750.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 9
+  2980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 9': Measured latency = 21 cycles
+  2980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 9' PASSED: Best bid = 252, Best ask = 18, Matched price = 18
+  3000.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  3000.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 10
+  3230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 10': Measured latency = 21 cycles
+  3230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 10' PASSED: Best bid = 226, Best ask = 67, Matched price = 67
+  3250.00ns INFO     cocotb.order_matching_engine       All tests passed.
+  3250.00ns INFO     cocotb.regression                  test_order_matching_engine.test_order_matching_engine passed
+  3250.00ns INFO     cocotb.regression                  ***************************************************************************************************************
+                                                        ** TEST                                                   STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        ***************************************************************************************************************
+                                                        ** test_order_matching_engine.test_order_matching_engine   PASS        3250.00           0.05      71422.52  **
+                                                        ***************************************************************************************************************
+                                                        ** TESTS=1 PASS=1 FAIL=0 SKIP=0                                        3250.00           0.05      61578.68  **
+                                                        ***************************************************************************************************************
+FST info: dumpfile /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/rundir/sim_build/order_matching_engine.fst opened for output.
+[DEBUG] Running simulation with PRICE_WIDTH=8
+[DEBUG] Parameters: {'PRICE_WIDTH': 8}
+PASSED
+../src/test_runner.py::test_sort[12]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:94   in _embed_init_python              Using Python 3.9.13 interpreter at /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/agent_env/bin/python3
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:79   in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (stable)
+     0.00ns INFO     cocotb                             Seeding Python random module with 1775379553
+     0.00ns INFO     cocotb                             Initialized cocotb v2.0.1 from /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/agent_env/lib/python3.9/site-packages/cocotb
+     0.00ns INFO     cocotb                             Running tests
+     0.00ns INFO     cocotb.regression                  running test_order_matching_engine.test_order_matching_engine (1/1)
+                                                            Cocotb testbench for order_matching_engine.
+     0.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/src/test_order_matching_engine.py:32: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
+                                                          clock = Clock(dut.clk, 10, units="ns")
+     0.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+     0.00ns INFO     cocotb.order_matching_engine       Starting test: Matching scenario: valid match
+   230.00ns INFO     cocotb.order_matching_engine       Test 'Matching scenario: valid match': Measured latency = 21 cycles
+   230.00ns INFO     cocotb.order_matching_engine       Test 'Matching scenario: valid match' PASSED: Best bid = 3276, Best ask = 614, Matched price = 614
+   230.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/src/test_order_matching_engine.py:160: DeprecationWarning: The 'units' argument has been renamed to 'unit'.
+                                                          await Timer(20, units="ns")
+   250.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+   250.00ns INFO     cocotb.order_matching_engine       Starting test: No match scenario: no match
+   480.00ns INFO     cocotb.order_matching_engine       Test 'No match scenario: no match': Measured latency = 21 cycles
+   480.00ns INFO     cocotb.order_matching_engine       Test 'No match scenario: no match' PASSED: Best bid = 3071, Best ask = 3276, Matched price = 0
+   500.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+   500.00ns INFO     cocotb.order_matching_engine       Starting test: Extreme values: match at boundary
+   730.00ns INFO     cocotb.order_matching_engine       Test 'Extreme values: match at boundary': Measured latency = 21 cycles
+   730.00ns INFO     cocotb.order_matching_engine       Test 'Extreme values: match at boundary' PASSED: Best bid = 4095, Best ask = 4095, Matched price = 4095
+   750.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+   750.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 1
+   980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 1': Measured latency = 21 cycles
+   980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 1' PASSED: Best bid = 3741, Best ask = 174, Matched price = 174
+  1000.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1000.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 2
+  1230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 2': Measured latency = 21 cycles
+  1230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 2' PASSED: Best bid = 3942, Best ask = 703, Matched price = 703
+  1250.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1250.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 3
+  1480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 3': Measured latency = 21 cycles
+  1480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 3' PASSED: Best bid = 3218, Best ask = 1330, Matched price = 1330
+  1500.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1500.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 4
+  1730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 4': Measured latency = 21 cycles
+  1730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 4' PASSED: Best bid = 3726, Best ask = 107, Matched price = 107
+  1750.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  1750.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 5
+  1980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 5': Measured latency = 21 cycles
+  1980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 5' PASSED: Best bid = 3897, Best ask = 731, Matched price = 731
+  2000.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2000.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 6
+  2230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 6': Measured latency = 21 cycles
+  2230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 6' PASSED: Best bid = 3887, Best ask = 12, Matched price = 12
+  2250.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2250.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 7
+  2480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 7': Measured latency = 21 cycles
+  2480.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 7' PASSED: Best bid = 3269, Best ask = 1214, Matched price = 1214
+  2500.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2500.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 8
+  2730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 8': Measured latency = 21 cycles
+  2730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 8' PASSED: Best bid = 3409, Best ask = 172, Matched price = 172
+  2750.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2750.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 9
+  2980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 9': Measured latency = 21 cycles
+  2980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 9' PASSED: Best bid = 4014, Best ask = 584, Matched price = 584
+  3000.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  3000.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 10
+  3230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 10': Measured latency = 21 cycles
+  3230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 10' PASSED: Best bid = 3637, Best ask = 324, Matched price = 324
+  3250.00ns INFO     cocotb.order_matching_engine       All tests passed.
+  3250.00ns INFO     cocotb.regression                  test_order_matching_engine.test_order_matching_engine passed
+  3250.00ns INFO     cocotb.regression                  ***************************************************************************************************************
+                                                        ** TEST                                                   STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        ***************************************************************************************************************
+                                                        ** test_order_matching_engine.test_order_matching_engine   PASS        3250.00           0.04      83601.06  **
+                                                        ***************************************************************************************************************
+                                                        ** TESTS=1 PASS=1 FAIL=0 SKIP=0                                        3250.00           0.05      70816.60  **
+                                                        ***************************************************************************************************************
+FST info: dumpfile /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/rundir/sim_build/order_matching_engine.fst opened for output.
+[DEBUG] Running simulation with PRICE_WIDTH=12
+[DEBUG] Parameters: {'PRICE_WIDTH': 12}
 PASSED
 
-============================== 2 passed in 0.97s ===============================
+============================== 5 passed in 2.67s ===============================
 
 codex
-The first eval run already passes (`2 passed`), so there is no failing signal to triage and no RTL edit needed. I’ll quickly confirm working tree status, then report iteration result and stop.
+The first evaluation run completed cleanly with all tests passing, so I’m doing a quick workspace check to confirm no RTL edits were needed before I close out iteration 1.
 exec
 /bin/zsh -lc 'git status --short' in /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main
  succeeded in 0ms:
- M my-agent/agent.py
  M work/learnings.json
- M work/raw_result.json
  M work/result.json
  M work/run.log
+?? src/
 
 codex
-iteration count: 1  
-final status: PASS
+iteration count: `1`  
+final status: `PASS`  
+key fixes applied: `None (no RTL changes required; harness passed on first run)`  
+remaining blocker: `None`
 
-key fixes applied:
-- None. `./my-agent/run_local_eval.sh "<harness_path>"` passed on the first run (`2 passed`), so no RTL changes were required.
-
-remaining blocker:
-- None.
+`./my-agent/run_local_eval.sh ".../harness/16"` completed successfully with `5 passed` in local eval.
 tokens used
-15,915
-iteration count: 1  
-final status: PASS
+20,324
+iteration count: `1`  
+final status: `PASS`  
+key fixes applied: `None (no RTL changes required; harness passed on first run)`  
+remaining blocker: `None`
 
-key fixes applied:
-- None. `./my-agent/run_local_eval.sh "<harness_path>"` passed on the first run (`2 passed`), so no RTL changes were required.
-
-remaining blocker:
-- None.
+`./my-agent/run_local_eval.sh ".../harness/16"` completed successfully with `5 passed` in local eval.
 
 [agent.py] Codex exit code: 0
 
@@ -444,44 +746,54 @@ remaining blocker:
 [agent.py] Eval exit code: 0
 
 [agent.py] Eval output (tail):
-                                                          await Timer(duration_ns, units='ns')
-   110.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/src/test_csr_apb_interface.py:38: DeprecationWarning: `logic_array.integer` getter is deprecated. Use `logic_array.to_unsigned()` instead.
-                                                          return dut.prdata.value.integer
-   110.00ns INFO     cocotb.csr_apb_interface           Writing and Reading from DATA_REG : data_read_back = 1109309460, data_to_write = 1109309460
-   190.00ns INFO     cocotb.csr_apb_interface           Writing and Reading from CONTROL_REG : data_read_back = 1554023642, data_to_write = 1554023642
-   270.00ns INFO     cocotb.csr_apb_interface           Writing and Reading from INTERRUPT_REG : data_read_back = 1052221088, data_to_write = 1052221088
-   270.00ns INFO     cocotb.csr_apb_interface           Test Case 5: Write-protected ISR_REG
-   310.00ns INFO     cocotb.csr_apb_interface           Write to ISR_REG correctly caused error (Write-Protected Register)
-   310.00ns INFO     cocotb.csr_apb_interface           Test Case 6: Read ISR_REG
-   350.00ns WARNING  py.warnings                        /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/src/test_csr_apb_interface.py:106: DeprecationWarning: `logic_array.integer` getter is deprecated. Use `logic_array.to_unsigned()` instead.
-                                                          isr_read_value = dut.prdata.value.integer
-   350.00ns INFO     cocotb.csr_apb_interface           ISR_REG read successful: 0
-   450.00ns INFO     cocotb.csr_apb_interface           All test cases passed!
-   450.00ns INFO     cocotb.regression                  test_csr_apb_interface.test_csr_apb_interface passed
-   450.00ns INFO     cocotb.regression                  *******************************************************************************************************
-                                                        ** TEST                                           STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
-                                                        *******************************************************************************************************
-                                                        ** test_csr_apb_interface.test_csr_apb_interface   PASS         450.00           0.01      45009.70  **
-                                                        *******************************************************************************************************
-                                                        ** TESTS=1 PASS=1 FAIL=0 SKIP=0                                 450.00           0.02      27597.33  **
-                                                        *******************************************************************************************************
-FST info: dumpfile /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1/rundir/sim_build/csr_apb_interface.fst opened for output.
+  2730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 8': Measured latency = 21 cycles
+  2730.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 8' PASSED: Best bid = 2919, Best ask = 208, Matched price = 208
+  2750.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  2750.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 9
+  2980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 9': Measured latency = 21 cycles
+  2980.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 9' PASSED: Best bid = 4014, Best ask = 166, Matched price = 166
+  3000.00ns INFO     cocotb.order_matching_engine       ---------------------------------------------------
+  3000.00ns INFO     cocotb.order_matching_engine       Starting test: Random stress test iteration 10
+  3230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 10': Measured latency = 21 cycles
+  3230.00ns INFO     cocotb.order_matching_engine       Test 'Random stress test iteration 10' PASSED: Best bid = 2825, Best ask = 749, Matched price = 749
+  3250.00ns INFO     cocotb.order_matching_engine       All tests passed.
+  3250.00ns INFO     cocotb.regression                  test_order_matching_engine.test_order_matching_engine passed
+  3250.00ns INFO     cocotb.regression                  ***************************************************************************************************************
+                                                        ** TEST                                                   STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        ***************************************************************************************************************
+                                                        ** test_order_matching_engine.test_order_matching_engine   PASS        3250.00           0.04      77885.32  **
+                                                        ***************************************************************************************************************
+                                                        ** TESTS=1 PASS=1 FAIL=0 SKIP=0                                        3250.00           0.05      66449.68  **
+                                                        ***************************************************************************************************************
+FST info: dumpfile /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16/rundir/sim_build/order_matching_engine.fst opened for output.
+[DEBUG] Running simulation with PRICE_WIDTH=12
+[DEBUG] Parameters: {'PRICE_WIDTH': 12}
 PASSED
 
-============================== 2 passed in 1.11s ===============================
+============================== 5 passed in 2.55s ===============================
 
 [agent.py] PASS reached on attempt 1.
 
 [agent.py] Step B: Running single-target local benchmark/report pipeline
 
-[agent.py] Benchmark pipeline exit code: 1
+[agent.py] Benchmark pipeline exit code: 0
 
 [agent.py] Benchmark output (tail):
-Batch run started at Sun Apr  5 01:55:29 MST 2026
+Batch run started at Sun Apr  5 01:59:28 MST 2026
 Repo root: /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main
-Target harness filter: /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1
+Target harness filter: /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_compass_breeze_obsidian/harness/16
 
-=== Running cvdp_agentic_amber_eagle_lambda / 1 ===
+=== Running cvdp_agentic_compass_breeze_obsidian / 16 ===
 Result: PASS (exit=0)
-First error:    310.00ns INFO     cocotb.csr_apb_interface           Write to ISR_REG correctly caused error (Write-Protected Register)
-[Permission Error] Could not generate final report files.
+Generating text report: /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/report.txt
+Text report generated: /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/report.txt
+Wrote /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/result.json
+Wrote /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/raw_result.json
+Wrote /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/report.json
+
+Batch complete.
+Summary CSV: /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/my-agent/batch_reports/local_eval_summary_20260405_015927.csv
+Full log: /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/my-agent/batch_reports/local_eval_batch_20260405_015927.log
+Benchmark artifacts: /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/result.json, /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/raw_result.json, /Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/report.json
+
+[agent.py] Step C: Complete. Target problem final status: PASS
