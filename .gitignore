@@ -27,9 +27,6 @@ NVIDIA-ICLAD25-Hackathon-main/work/**/harness/**/sim_build/
 NVIDIA-ICLAD25-Hackathon-main/work/**/*.vcd
 NVIDIA-ICLAD25-Hackathon-main/work/**/*.fst
 
-# results
-NVIDIA-ICLAD25-Hackathon-main/work/run.log
-
 # Docker helper scripts generated inside harnesses
 NVIDIA-ICLAD25-Hackathon-main/work/**/harness/**/run_docker*.sh
 NVIDIA-ICLAD25-Hackathon-main/work/**/harness/**/run_docker_*.sh
