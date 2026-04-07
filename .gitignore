@@ -11,8 +11,8 @@ agent_env/
 **/agent_env/
 
 # Local agent-generated artifacts
-NVIDIA-ICLAD25-Hackathon-main/my-agent/agent_files/
-NVIDIA-ICLAD25-Hackathon-main/my-agent/batch_reports/
+NVIDIA-ICLAD25-Hackathon-main/my-agent/batch_reports/*.log
+NVIDIA-ICLAD25-Hackathon-main/my-agent/batch_reports/*.json
 
 # Harness runtime outputs (generated per run)
 NVIDIA-ICLAD25-Hackathon-main/work/**/rundir/

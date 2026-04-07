@@ -1,0 +1,2 @@
+problem,issue_id,harness_path,exit_code,status,duration_sec,first_error
+cvdp_agentic_starlight_phoenix_comet,6246,/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase1/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_starlight_phoenix_comet/harness/6246,0,PASS,48,""

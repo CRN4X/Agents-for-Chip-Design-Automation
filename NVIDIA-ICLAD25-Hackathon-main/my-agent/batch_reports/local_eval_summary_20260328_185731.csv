@@ -1,0 +1,2 @@
+problem,issue_id,harness_path,exit_code,status,first_error
+cvdp_agentic_thunder_compass_river,8383,./work/cvdp_agentic_thunder_compass_river/harness/8383,1,FAIL,""
