@@ -214,6 +214,94 @@ python3 my-agent/agent.py -i <new_index>
 - `work/report.json`: report-format benchmark/result summary.
 
 
+## Architeture Block Diagram
+
+  ```mermaid
+
+  flowchart TD
+      A["User CLI<br/>python3 my-agent/agent.py --index N --max-retries R"] --> B["Main Controller<br/>NVIDIA-ICLAD25-Hackathon-main/my-agent/agent.py"]
+
+      subgraph INPUT["Task Selection"]
+          C["Read Dataset Row<br/>dataset/hackathon-agentic-obfuscated_final_corrected.jsonl"]
+          D["Resolve Harness Path<br/>work/problem_name/harness/id/"]
+          C --> D
+      end
+
+      B --> C
+      B --> L1["Write Run Logs<br/>work/run.log"]
+
+      subgraph PLAN["Planner and Role Routing"]
+          E["Load Planning Policy<br/>my-agent/AGENTS.md"]
+          F["HeadAgent<br/>Classify and Route"]
+          G["InfoAgent<br/>Category + one-line learning JSON"]
+          H1["FixRTL"]
+          H2["SpecRTL"]
+          H3["CompleteRTL"]
+          H4["IntegrateRTL"]
+          E --> F
+          F --> G
+          F --> H1
+          F --> H2
+          F --> H3
+          F --> H4
+          G --> M1["Update Learning Memory<br/>work/learnings.json"]
+      end
+
+      D --> E
+
+      subgraph EXEC["Executor: Codex + Staged RTL"]
+          I["Run codex exec<br/>from agent.py"]
+          J["Edit Only Staged RTL<br/>my-agent/agent_files/problem_name/rtl/"]
+          K["Keep before/rtl Unmodified<br/>Harness rtl linked/copied to staged RTL"]
+          I --> J --> K
+      end
+
+      H1 --> I
+      H2 --> I
+      H3 --> I
+      H4 --> I
+
+      subgraph EVAL["Evaluation Layer (Automated)"]
+          N["run_local_eval.sh<br/>my-agent/run_local_eval.sh"]
+          O["Tool and Dependency Checks<br/>iverilog, vvp, pytest, cocotb"]
+          P["Relink Harness RTL<br/>my-agent/link_harness_rtl_to_staged.sh"]
+          Q["Run Test Runner<br/>work/problem_name/harness/id/src/test_runner.py"]
+          R["Debug Artifact<br/>work/problem_name/harness/id/rundir/sim.log"]
+          N --> O --> P --> Q --> R
+      end
+
+      K --> N
+
+      S{"Eval PASS?"}
+      Q --> S
+
+      subgraph FB["Feedback Loop (Core Agentic)"]
+          T["Extract Failure Context in agent.py<br/>first error from sim.log<br/>eval output tail<br/>rundir/agent_report.json tail"]
+          U["Inject Failure Context<br/>into next attempt prompt"]
+          T --> U
+      end
+
+      S -- No --> T
+      U --> I
+
+      subgraph REPORT["Reporting Layer"]
+          V["run_local_eval_batch.sh --harness path<br/>my-agent/run_local_eval_batch.sh"]
+          W1["work/result.json"]
+          W2["work/raw_result.json"]
+          W3["work/report.json"]
+          W4["work/report.txt"]
+          V --> W1
+          V --> W2
+          V --> W3
+          V --> W4
+      end
+
+      S -- Yes --> V
+      S -- Retry Exhausted --> V
+
+  ```
+
+
 ## Troubleshooting (if necessary)
 
 ### `Missing Python deps in current environment`
