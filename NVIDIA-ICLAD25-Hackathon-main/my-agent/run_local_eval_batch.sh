@@ -33,6 +33,7 @@ while [ $# -gt 0 ]; do
 done
 MY_AGENT_DIR="$REPO_ROOT/my-agent"
 WORK_DIR="$REPO_ROOT/work"
+REPO_BASENAME=$(basename "$REPO_ROOT")
 
 if [ ! -d "$MY_AGENT_DIR" ] || [ ! -d "$WORK_DIR" ]; then
   echo "Invalid repo root: $REPO_ROOT"
@@ -47,6 +48,18 @@ LOG="$OUT_DIR/local_eval_batch_$TS.log"
 
 if [ -n "$TARGET_HARNESS" ]; then
   TARGET_HARNESS=$(cd "$TARGET_HARNESS" && pwd)
+fi
+
+PIPELINE_START_SEC=""
+if [ -n "${AGENT_PIPELINE_START_EPOCH:-}" ]; then
+  case "$AGENT_PIPELINE_START_EPOCH" in
+    *[!0-9]*)
+      PIPELINE_START_SEC=""
+      ;;
+    *)
+      PIPELINE_START_SEC="$AGENT_PIPELINE_START_EPOCH"
+      ;;
+  esac
 fi
 
 echo "problem,issue_id,harness_path,exit_code,status,duration_sec,first_error" > "$CSV"
@@ -70,6 +83,12 @@ while IFS= read -r prompt_file; do
 
   problem=$(echo "$harness_path" | awk -F'/work/' '{print $2}' | awk -F'/' '{print $1}')
   issue_id=$(basename "$harness_path")
+  report_harness_path="$harness_path"
+  case "$harness_path" in
+    *"/$REPO_BASENAME/"*)
+      report_harness_path="$REPO_BASENAME/${harness_path#*"/$REPO_BASENAME/"}"
+      ;;
+  esac
 
   echo "\n=== Running $problem / $issue_id ===" | tee -a "$LOG"
 
@@ -80,6 +99,12 @@ while IFS= read -r prompt_file; do
   set -e
   t_end=$(date +%s)
   duration_sec=$((t_end - t_start))
+  if [ -n "$PIPELINE_START_SEC" ] && [ -n "$TARGET_HARNESS" ] && [ "$harness_path" = "$TARGET_HARNESS" ]; then
+    total_duration_sec=$((t_end - PIPELINE_START_SEC))
+    if [ "$total_duration_sec" -ge 0 ]; then
+      duration_sec="$total_duration_sec"
+    fi
+  fi
 
   printf "%s\n" "$run_out" >> "$LOG"
 
@@ -96,7 +121,7 @@ while IFS= read -r prompt_file; do
   fi
 
   esc_error=$(printf '%s' "$first_error" | tr '\n' ' ' | sed 's/"/""/g')
-  echo "$problem,$issue_id,$harness_path,$rc,$status,$duration_sec,\"$esc_error\"" >> "$CSV"
+  echo "$problem,$issue_id,$report_harness_path,$rc,$status,$duration_sec,\"$esc_error\"" >> "$CSV"
 
   echo "Result: $status (exit=$rc)" | tee -a "$LOG"
   if [ -n "$first_error" ]; then

@@ -22,6 +22,7 @@ import subprocess
 import sys
 import time
 import shlex
+import shutil
 from pathlib import Path
 from typing import Dict, List, Optional, TextIO, Tuple
 from init_learnings import init_learnings_json
@@ -316,6 +317,41 @@ def resolve_harness_path(repo_root: Path, problem: str, issue: str) -> Path:
     raise FileNotFoundError(f"Cannot resolve harness path for {problem}_{issue}")
 
 
+def reset_staged_rtl_from_original(repo_root: Path, harness_path: Path, problem: str) -> Path:
+    source_candidates = [
+        harness_path / "before" / "rtl",
+        harness_path / "rtl.orig",
+    ]
+    source_rtl: Optional[Path] = None
+    for candidate in source_candidates:
+        if candidate.exists() and candidate.is_dir():
+            source_rtl = candidate
+            break
+
+    if source_rtl is None:
+        rtl_path = harness_path / "rtl"
+        if rtl_path.exists() and rtl_path.is_dir() and not rtl_path.is_symlink():
+            source_rtl = rtl_path
+
+    if source_rtl is None:
+        raise FileNotFoundError(
+            "Could not find original RTL source. Tried: "
+            f"{harness_path / 'before' / 'rtl'}, {harness_path / 'rtl.orig'}, "
+            f"and non-symlink {harness_path / 'rtl'}"
+        )
+
+    staged_rtl = repo_root / "my-agent" / "agent_files" / problem / "rtl"
+    staged_parent = staged_rtl.parent
+    staged_parent.mkdir(parents=True, exist_ok=True)
+    if staged_rtl.exists() or staged_rtl.is_symlink():
+        if staged_rtl.is_symlink() or staged_rtl.is_file():
+            staged_rtl.unlink()
+        else:
+            shutil.rmtree(staged_rtl)
+    shutil.copytree(source_rtl, staged_rtl)
+    return source_rtl
+
+
 def extract_first_error_from_sim_log(sim_log: Path) -> str:
     if not sim_log.exists():
         return "sim.log missing"
@@ -530,11 +566,16 @@ def run_local_eval(repo_root: Path, harness_path: Path) -> subprocess.CompletedP
     return run_cmd(cmd, cwd=repo_root)
 
 
-def run_post_benchmark(repo_root: Path, harness_path: Path) -> subprocess.CompletedProcess:
+def run_post_benchmark(
+    repo_root: Path,
+    harness_path: Path,
+    pipeline_start_epoch: int,
+) -> subprocess.CompletedProcess:
     cmd = [
         "/bin/zsh",
         "-lc",
         f"source {shlex.quote(str(repo_root / 'agent_env' / 'bin' / 'activate'))} && "
+        f"export AGENT_PIPELINE_START_EPOCH={pipeline_start_epoch} && "
         f"./my-agent/run_local_eval_batch.sh {shlex.quote(str(repo_root))} --harness {shlex.quote(str(harness_path))}",
     ]
     return run_cmd(cmd, cwd=repo_root)
@@ -698,6 +739,7 @@ def main() -> None:
 
 
 def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
+    pipeline_start_epoch = int(time.time())
     log("Step 0: Initializing learnings file")
     learnings_path = repo_root / "work" / "learnings.json"
     init_rc = init_learnings_json(learnings_path)
@@ -737,6 +779,15 @@ def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
         sys.exit(1)
     log(f"Selected dataset index {idx}: {entry_id}")
     log(f"Resolved harness path: {harness_path}")
+    try:
+        source_rtl = reset_staged_rtl_from_original(repo_root, harness_path, problem)
+    except (OSError, FileNotFoundError) as exc:
+        print(f"[RTL Reset Error] Could not reset staged RTL from original source. {exc}", file=sys.stderr)
+        sys.exit(1)
+    log(
+        "Reset staged RTL from original source: "
+        f"{source_rtl} -> {repo_root / 'my-agent' / 'agent_files' / problem / 'rtl'}"
+    )
 
     solved = False
     for run_cycle in range(1, MAX_SOLVE_RUN_CYCLES + 1):
@@ -754,7 +805,7 @@ def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
             )
 
     log("Step B: Running single-target local benchmark/report pipeline")
-    bench = run_post_benchmark(repo_root, harness_path)
+    bench = run_post_benchmark(repo_root, harness_path, pipeline_start_epoch)
     log(f"Benchmark pipeline exit code: {bench.returncode}")
     if bench.stdout.strip():
         log("Benchmark output (tail):")

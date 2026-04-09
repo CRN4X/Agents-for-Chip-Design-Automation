@@ -1,6 +1,6 @@
 {
-  "Modify or Extend Existing RTL": "When extending existing DSP RTL for new control/FSM requirements, first satisfy interface/visibility contracts used by verification (new params/ports and probe-friendly packed signals), then align cycle-by-cycle internal buffering/state updates to the checker\u2019s reference model before optimizing behavior.",
+  "Modify or Extend Existing RTL": "For AES width upgrades, verify interface/key-size and round-count expectations first, then keep module/port compatibility while confirming the existing implementation already satisfies the new spec before editing.",
   "Integrate multiple modules into a top module": "For top-level wrapper tasks, first satisfy required source filenames/modules, then implement minimal glue logic that computes checker-visible outputs directly from post-processed submodule outputs while propagating critical submodule error flags.",
   "Create new RTL from spec": "For APB CSR modules built from spec, lock the register map and transaction-state sequencing first, then enforce register-specific protections and side effects (like ISR clear-on-write semantics) to satisfy protocol and behavioral checks together.",
-  "Debug/fix buggy RTL": "For 2-way cache debug tasks, implement explicit per-way tag/data/valid/dirty state with deterministic hit selection and expose victim-way state so replacement and observability checks both pass."
+  "Debug/fix buggy RTL": "For AES-128 debug tasks, replacing fragile round/key-schedule wiring with a deterministic, spec-aligned implementation that handles simultaneous start+key-update reliably restores model-matching ciphertext behavior."
 }

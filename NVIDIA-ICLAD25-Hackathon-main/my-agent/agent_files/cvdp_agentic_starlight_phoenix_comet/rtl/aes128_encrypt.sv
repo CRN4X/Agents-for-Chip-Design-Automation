@@ -12,216 +12,468 @@ module aes128_encrypt #(
     output logic [NBW_DATA-1:0] o_data
 );
 
-// ----------------------------------------
-// - Internal Parameters
-// ----------------------------------------
-localparam NBW_BYTE   = 'd8;
-localparam STEPS      = 'd10;
-localparam NBW_WORD   = 'd32;
-localparam NBW_EX_KEY = 'd1408;
+localparam int STEPS = 10;
 
-// ----------------------------------------
-// - Wires/Registers creation
-// ----------------------------------------
-logic [NBW_BYTE-1:0]   Rcon   [STEPS];
-logic [NBW_KEY-1:0]    valid_key;
-logic [NBW_KEY-1:0]    step_key[STEPS];
-logic [NBW_EX_KEY-1:0] expanded_key_nx;
-logic [NBW_EX_KEY-1:0] expanded_key_ff;
-logic [NBW_BYTE-1:0]   current_data_nx[4][4];
-logic [NBW_BYTE-1:0]   current_data_ff[4][4];
-logic [NBW_BYTE-1:0]   SubBytes[4][4];
-logic [NBW_BYTE-1:0]   ShiftRows[4][4];
-logic [NBW_BYTE-1:0]   xtimes02[4][4];
-logic [NBW_BYTE-1:0]   xtimes03[4][4];
-logic [NBW_BYTE-1:0]   MixColumns[4][4];
-logic [3:0] round_ff;
+logic [NBW_KEY-1:0] key_ff;
+logic [NBW_DATA-1:0] data_ff;
+logic [3:0] busy_ff;
 
-assign o_done = (round_ff == 4'd0);
-
-generate
-    for(genvar i = 0; i < 4; i++) begin : out_row
-        for(genvar j = 0; j < 4; j++) begin : out_col
-            assign o_data[NBW_DATA-(4*j+i)*NBW_BYTE-1-:NBW_BYTE] = current_data_ff[i][j];
-        end
+function automatic [7:0] sbox_fn(input logic [7:0] x);
+    begin
+        case (x)
+        8'h00: sbox_fn = 8'h63;
+        8'h01: sbox_fn = 8'h7C;
+        8'h02: sbox_fn = 8'h77;
+        8'h03: sbox_fn = 8'h7B;
+        8'h04: sbox_fn = 8'hF2;
+        8'h05: sbox_fn = 8'h6B;
+        8'h06: sbox_fn = 8'h6F;
+        8'h07: sbox_fn = 8'hC5;
+        8'h08: sbox_fn = 8'h30;
+        8'h09: sbox_fn = 8'h01;
+        8'h0A: sbox_fn = 8'h67;
+        8'h0B: sbox_fn = 8'h2B;
+        8'h0C: sbox_fn = 8'hFE;
+        8'h0D: sbox_fn = 8'hD7;
+        8'h0E: sbox_fn = 8'hAB;
+        8'h0F: sbox_fn = 8'h76;
+        8'h10: sbox_fn = 8'hCA;
+        8'h11: sbox_fn = 8'h82;
+        8'h12: sbox_fn = 8'hC9;
+        8'h13: sbox_fn = 8'h7D;
+        8'h14: sbox_fn = 8'hFA;
+        8'h15: sbox_fn = 8'h59;
+        8'h16: sbox_fn = 8'h47;
+        8'h17: sbox_fn = 8'hF0;
+        8'h18: sbox_fn = 8'hAD;
+        8'h19: sbox_fn = 8'hD4;
+        8'h1A: sbox_fn = 8'hA2;
+        8'h1B: sbox_fn = 8'hAF;
+        8'h1C: sbox_fn = 8'h9C;
+        8'h1D: sbox_fn = 8'hA4;
+        8'h1E: sbox_fn = 8'h72;
+        8'h1F: sbox_fn = 8'hC0;
+        8'h20: sbox_fn = 8'hB7;
+        8'h21: sbox_fn = 8'hFD;
+        8'h22: sbox_fn = 8'h93;
+        8'h23: sbox_fn = 8'h26;
+        8'h24: sbox_fn = 8'h36;
+        8'h25: sbox_fn = 8'h3F;
+        8'h26: sbox_fn = 8'hF7;
+        8'h27: sbox_fn = 8'hCC;
+        8'h28: sbox_fn = 8'h34;
+        8'h29: sbox_fn = 8'hA5;
+        8'h2A: sbox_fn = 8'hE5;
+        8'h2B: sbox_fn = 8'hF1;
+        8'h2C: sbox_fn = 8'h71;
+        8'h2D: sbox_fn = 8'hD8;
+        8'h2E: sbox_fn = 8'h31;
+        8'h2F: sbox_fn = 8'h15;
+        8'h30: sbox_fn = 8'h04;
+        8'h31: sbox_fn = 8'hC7;
+        8'h32: sbox_fn = 8'h23;
+        8'h33: sbox_fn = 8'hC3;
+        8'h34: sbox_fn = 8'h18;
+        8'h35: sbox_fn = 8'h96;
+        8'h36: sbox_fn = 8'h05;
+        8'h37: sbox_fn = 8'h9A;
+        8'h38: sbox_fn = 8'h07;
+        8'h39: sbox_fn = 8'h12;
+        8'h3A: sbox_fn = 8'h80;
+        8'h3B: sbox_fn = 8'hE2;
+        8'h3C: sbox_fn = 8'hEB;
+        8'h3D: sbox_fn = 8'h27;
+        8'h3E: sbox_fn = 8'hB2;
+        8'h3F: sbox_fn = 8'h75;
+        8'h40: sbox_fn = 8'h09;
+        8'h41: sbox_fn = 8'h83;
+        8'h42: sbox_fn = 8'h2C;
+        8'h43: sbox_fn = 8'h1A;
+        8'h44: sbox_fn = 8'h1B;
+        8'h45: sbox_fn = 8'h6E;
+        8'h46: sbox_fn = 8'h5A;
+        8'h47: sbox_fn = 8'hA0;
+        8'h48: sbox_fn = 8'h52;
+        8'h49: sbox_fn = 8'h3B;
+        8'h4A: sbox_fn = 8'hD6;
+        8'h4B: sbox_fn = 8'hB3;
+        8'h4C: sbox_fn = 8'h29;
+        8'h4D: sbox_fn = 8'hE3;
+        8'h4E: sbox_fn = 8'h2F;
+        8'h4F: sbox_fn = 8'h84;
+        8'h50: sbox_fn = 8'h53;
+        8'h51: sbox_fn = 8'hD1;
+        8'h52: sbox_fn = 8'h00;
+        8'h53: sbox_fn = 8'hED;
+        8'h54: sbox_fn = 8'h20;
+        8'h55: sbox_fn = 8'hFC;
+        8'h56: sbox_fn = 8'hB1;
+        8'h57: sbox_fn = 8'h5B;
+        8'h58: sbox_fn = 8'h6A;
+        8'h59: sbox_fn = 8'hCB;
+        8'h5A: sbox_fn = 8'hBE;
+        8'h5B: sbox_fn = 8'h39;
+        8'h5C: sbox_fn = 8'h4A;
+        8'h5D: sbox_fn = 8'h4C;
+        8'h5E: sbox_fn = 8'h58;
+        8'h5F: sbox_fn = 8'hCF;
+        8'h60: sbox_fn = 8'hD0;
+        8'h61: sbox_fn = 8'hEF;
+        8'h62: sbox_fn = 8'hAA;
+        8'h63: sbox_fn = 8'hFB;
+        8'h64: sbox_fn = 8'h43;
+        8'h65: sbox_fn = 8'h4D;
+        8'h66: sbox_fn = 8'h33;
+        8'h67: sbox_fn = 8'h85;
+        8'h68: sbox_fn = 8'h45;
+        8'h69: sbox_fn = 8'hF9;
+        8'h6A: sbox_fn = 8'h02;
+        8'h6B: sbox_fn = 8'h7F;
+        8'h6C: sbox_fn = 8'h50;
+        8'h6D: sbox_fn = 8'h3C;
+        8'h6E: sbox_fn = 8'h9F;
+        8'h6F: sbox_fn = 8'hA8;
+        8'h70: sbox_fn = 8'h51;
+        8'h71: sbox_fn = 8'hA3;
+        8'h72: sbox_fn = 8'h40;
+        8'h73: sbox_fn = 8'h8F;
+        8'h74: sbox_fn = 8'h92;
+        8'h75: sbox_fn = 8'h9D;
+        8'h76: sbox_fn = 8'h38;
+        8'h77: sbox_fn = 8'hF5;
+        8'h78: sbox_fn = 8'hBC;
+        8'h79: sbox_fn = 8'hB6;
+        8'h7A: sbox_fn = 8'hDA;
+        8'h7B: sbox_fn = 8'h21;
+        8'h7C: sbox_fn = 8'h10;
+        8'h7D: sbox_fn = 8'hFF;
+        8'h7E: sbox_fn = 8'hF3;
+        8'h7F: sbox_fn = 8'hD2;
+        8'h80: sbox_fn = 8'hCD;
+        8'h81: sbox_fn = 8'h0C;
+        8'h82: sbox_fn = 8'h13;
+        8'h83: sbox_fn = 8'hEC;
+        8'h84: sbox_fn = 8'h5F;
+        8'h85: sbox_fn = 8'h97;
+        8'h86: sbox_fn = 8'h44;
+        8'h87: sbox_fn = 8'h17;
+        8'h88: sbox_fn = 8'hC4;
+        8'h89: sbox_fn = 8'hA7;
+        8'h8A: sbox_fn = 8'h7E;
+        8'h8B: sbox_fn = 8'h3D;
+        8'h8C: sbox_fn = 8'h64;
+        8'h8D: sbox_fn = 8'h5D;
+        8'h8E: sbox_fn = 8'h19;
+        8'h8F: sbox_fn = 8'h73;
+        8'h90: sbox_fn = 8'h60;
+        8'h91: sbox_fn = 8'h81;
+        8'h92: sbox_fn = 8'h4F;
+        8'h93: sbox_fn = 8'hDC;
+        8'h94: sbox_fn = 8'h22;
+        8'h95: sbox_fn = 8'h2A;
+        8'h96: sbox_fn = 8'h90;
+        8'h97: sbox_fn = 8'h88;
+        8'h98: sbox_fn = 8'h46;
+        8'h99: sbox_fn = 8'hEE;
+        8'h9A: sbox_fn = 8'hB8;
+        8'h9B: sbox_fn = 8'h14;
+        8'h9C: sbox_fn = 8'hDE;
+        8'h9D: sbox_fn = 8'h5E;
+        8'h9E: sbox_fn = 8'h0B;
+        8'h9F: sbox_fn = 8'hDB;
+        8'hA0: sbox_fn = 8'hE0;
+        8'hA1: sbox_fn = 8'h32;
+        8'hA2: sbox_fn = 8'h3A;
+        8'hA3: sbox_fn = 8'h0A;
+        8'hA4: sbox_fn = 8'h49;
+        8'hA5: sbox_fn = 8'h06;
+        8'hA6: sbox_fn = 8'h24;
+        8'hA7: sbox_fn = 8'h5C;
+        8'hA8: sbox_fn = 8'hC2;
+        8'hA9: sbox_fn = 8'hD3;
+        8'hAA: sbox_fn = 8'hAC;
+        8'hAB: sbox_fn = 8'h62;
+        8'hAC: sbox_fn = 8'h91;
+        8'hAD: sbox_fn = 8'h95;
+        8'hAE: sbox_fn = 8'hE4;
+        8'hAF: sbox_fn = 8'h79;
+        8'hB0: sbox_fn = 8'hE7;
+        8'hB1: sbox_fn = 8'hC8;
+        8'hB2: sbox_fn = 8'h37;
+        8'hB3: sbox_fn = 8'h6D;
+        8'hB4: sbox_fn = 8'h8D;
+        8'hB5: sbox_fn = 8'hD5;
+        8'hB6: sbox_fn = 8'h4E;
+        8'hB7: sbox_fn = 8'hA9;
+        8'hB8: sbox_fn = 8'h6C;
+        8'hB9: sbox_fn = 8'h56;
+        8'hBA: sbox_fn = 8'hF4;
+        8'hBB: sbox_fn = 8'hEA;
+        8'hBC: sbox_fn = 8'h65;
+        8'hBD: sbox_fn = 8'h7A;
+        8'hBE: sbox_fn = 8'hAE;
+        8'hBF: sbox_fn = 8'h08;
+        8'hC0: sbox_fn = 8'hBA;
+        8'hC1: sbox_fn = 8'h78;
+        8'hC2: sbox_fn = 8'h25;
+        8'hC3: sbox_fn = 8'h2E;
+        8'hC4: sbox_fn = 8'h1C;
+        8'hC5: sbox_fn = 8'hA6;
+        8'hC6: sbox_fn = 8'hB4;
+        8'hC7: sbox_fn = 8'hC6;
+        8'hC8: sbox_fn = 8'hE8;
+        8'hC9: sbox_fn = 8'hDD;
+        8'hCA: sbox_fn = 8'h74;
+        8'hCB: sbox_fn = 8'h1F;
+        8'hCC: sbox_fn = 8'h4B;
+        8'hCD: sbox_fn = 8'hBD;
+        8'hCE: sbox_fn = 8'h8B;
+        8'hCF: sbox_fn = 8'h8A;
+        8'hD0: sbox_fn = 8'h70;
+        8'hD1: sbox_fn = 8'h3E;
+        8'hD2: sbox_fn = 8'hB5;
+        8'hD3: sbox_fn = 8'h66;
+        8'hD4: sbox_fn = 8'h48;
+        8'hD5: sbox_fn = 8'h03;
+        8'hD6: sbox_fn = 8'hF6;
+        8'hD7: sbox_fn = 8'h0E;
+        8'hD8: sbox_fn = 8'h61;
+        8'hD9: sbox_fn = 8'h35;
+        8'hDA: sbox_fn = 8'h57;
+        8'hDB: sbox_fn = 8'hB9;
+        8'hDC: sbox_fn = 8'h86;
+        8'hDD: sbox_fn = 8'hC1;
+        8'hDE: sbox_fn = 8'h1D;
+        8'hDF: sbox_fn = 8'h9E;
+        8'hE0: sbox_fn = 8'hE1;
+        8'hE1: sbox_fn = 8'hF8;
+        8'hE2: sbox_fn = 8'h98;
+        8'hE3: sbox_fn = 8'h11;
+        8'hE4: sbox_fn = 8'h69;
+        8'hE5: sbox_fn = 8'hD9;
+        8'hE6: sbox_fn = 8'h8E;
+        8'hE7: sbox_fn = 8'h94;
+        8'hE8: sbox_fn = 8'h9B;
+        8'hE9: sbox_fn = 8'h1E;
+        8'hEA: sbox_fn = 8'h87;
+        8'hEB: sbox_fn = 8'hE9;
+        8'hEC: sbox_fn = 8'hCE;
+        8'hED: sbox_fn = 8'h55;
+        8'hEE: sbox_fn = 8'h28;
+        8'hEF: sbox_fn = 8'hDF;
+        8'hF0: sbox_fn = 8'h8C;
+        8'hF1: sbox_fn = 8'hA1;
+        8'hF2: sbox_fn = 8'h89;
+        8'hF3: sbox_fn = 8'h0D;
+        8'hF4: sbox_fn = 8'hBF;
+        8'hF5: sbox_fn = 8'hE6;
+        8'hF6: sbox_fn = 8'h42;
+        8'hF7: sbox_fn = 8'h68;
+        8'hF8: sbox_fn = 8'h41;
+        8'hF9: sbox_fn = 8'h99;
+        8'hFA: sbox_fn = 8'h2D;
+        8'hFB: sbox_fn = 8'h0F;
+        8'hFC: sbox_fn = 8'hB0;
+        8'hFD: sbox_fn = 8'h54;
+        8'hFE: sbox_fn = 8'hBB;
+        8'hFF: sbox_fn = 8'h16;
+            default: sbox_fn = 8'h00;
+        endcase
     end
-endgenerate
+endfunction
 
-always_ff @(posedge clk or negedge rst_async_n) begin : cypher_regs
-    if(!rst_async_n) begin
-        round_ff <= 4'd0;
-        for(int i = 0; i < 4; i++) begin
-            for(int j = 0; j < 4; j++) begin
-                current_data_ff[i][j] <= 8'd0;
+function automatic [7:0] xtime_fn(input logic [7:0] x);
+    begin
+        xtime_fn = x[7] ? ({x[6:0], 1'b0} ^ 8'h1B) : {x[6:0], 1'b0};
+    end
+endfunction
+
+function automatic [31:0] rot_word_fn(input logic [31:0] w);
+    begin
+        rot_word_fn = {w[23:0], w[31:24]};
+    end
+endfunction
+
+function automatic [31:0] sub_word_fn(input logic [31:0] w);
+    begin
+        sub_word_fn = {sbox_fn(w[31:24]), sbox_fn(w[23:16]), sbox_fn(w[15:8]), sbox_fn(w[7:0])};
+    end
+endfunction
+
+function automatic [7:0] get_byte_fn(input logic [127:0] v, input int idx);
+    begin
+        get_byte_fn = v[127 - idx*8 -: 8];
+    end
+endfunction
+
+function automatic [127:0] set_byte_fn(input logic [127:0] v, input int idx, input logic [7:0] b);
+    logic [127:0] tmp;
+    begin
+        tmp = v;
+        tmp[127 - idx*8 -: 8] = b;
+        set_byte_fn = tmp;
+    end
+endfunction
+
+function automatic [1407:0] expand_key_fn(input logic [127:0] key);
+    logic [31:0] w [0:43];
+    logic [31:0] temp;
+    logic [1407:0] ex;
+    logic [7:0] rcon [1:10];
+    int i;
+    begin
+        rcon[1] = 8'h01; rcon[2] = 8'h02; rcon[3] = 8'h04; rcon[4] = 8'h08; rcon[5] = 8'h10;
+        rcon[6] = 8'h20; rcon[7] = 8'h40; rcon[8] = 8'h80; rcon[9] = 8'h1B; rcon[10] = 8'h36;
+
+        for (i = 0; i < 4; i++) begin
+            w[i] = key[127 - i*32 -: 32];
+        end
+
+        for (i = 4; i < 44; i++) begin
+            temp = w[i-1];
+            if ((i % 4) == 0) begin
+                temp = sub_word_fn(rot_word_fn(temp)) ^ {rcon[i/4], 24'h0};
+            end
+            w[i] = w[i-4] ^ temp;
+        end
+
+        ex = '0;
+        for (i = 0; i < 44; i++) begin
+            ex[1407 - i*32 -: 32] = w[i];
+        end
+
+        expand_key_fn = ex;
+    end
+endfunction
+
+function automatic [127:0] add_round_key_fn(input logic [127:0] st, input logic [1407:0] ex, input int round);
+    logic [127:0] out;
+    logic [31:0] word;
+    logic [7:0] sb;
+    int i, j;
+    begin
+        out = st;
+        for (j = 0; j < 4; j++) begin
+            word = ex[1407 - (round*4 + j)*32 -: 32];
+            for (i = 0; i < 4; i++) begin
+                sb = word[31 - i*8 -: 8];
+                out = set_byte_fn(out, i + 4*j, get_byte_fn(out, i + 4*j) ^ sb);
             end
         end
+        add_round_key_fn = out;
+    end
+endfunction
+
+function automatic [127:0] sub_bytes_fn(input logic [127:0] st);
+    logic [127:0] out;
+    int i;
+    begin
+        out = st;
+        for (i = 0; i < 16; i++) begin
+            out = set_byte_fn(out, i, sbox_fn(get_byte_fn(st, i)));
+        end
+        sub_bytes_fn = out;
+    end
+endfunction
+
+function automatic [127:0] shift_rows_fn(input logic [127:0] st);
+    logic [127:0] out;
+    begin
+        out = st;
+
+        out = set_byte_fn(out, 1,  get_byte_fn(st, 5));
+        out = set_byte_fn(out, 5,  get_byte_fn(st, 9));
+        out = set_byte_fn(out, 9,  get_byte_fn(st, 13));
+        out = set_byte_fn(out, 13, get_byte_fn(st, 1));
+
+        out = set_byte_fn(out, 2,  get_byte_fn(st, 10));
+        out = set_byte_fn(out, 6,  get_byte_fn(st, 14));
+        out = set_byte_fn(out, 10, get_byte_fn(st, 2));
+        out = set_byte_fn(out, 14, get_byte_fn(st, 6));
+
+        out = set_byte_fn(out, 3,  get_byte_fn(st, 15));
+        out = set_byte_fn(out, 7,  get_byte_fn(st, 3));
+        out = set_byte_fn(out, 11, get_byte_fn(st, 7));
+        out = set_byte_fn(out, 15, get_byte_fn(st, 11));
+
+        shift_rows_fn = out;
+    end
+endfunction
+
+function automatic [127:0] mix_columns_fn(input logic [127:0] st);
+    logic [127:0] out;
+    logic [7:0] a0, a1, a2, a3;
+    logic [7:0] t, u;
+    int j;
+    begin
+        out = st;
+        for (j = 0; j < 4; j++) begin
+            a0 = get_byte_fn(out, 4*j + 0);
+            a1 = get_byte_fn(out, 4*j + 1);
+            a2 = get_byte_fn(out, 4*j + 2);
+            a3 = get_byte_fn(out, 4*j + 3);
+            t  = a0 ^ a1 ^ a2 ^ a3;
+            u  = a0;
+
+            out = set_byte_fn(out, 4*j + 0, a0 ^ t ^ xtime_fn(a0 ^ a1));
+            out = set_byte_fn(out, 4*j + 1, a1 ^ t ^ xtime_fn(a1 ^ a2));
+            out = set_byte_fn(out, 4*j + 2, a2 ^ t ^ xtime_fn(a2 ^ a3));
+            out = set_byte_fn(out, 4*j + 3, a3 ^ t ^ xtime_fn(a3 ^ u));
+        end
+        mix_columns_fn = out;
+    end
+endfunction
+
+function automatic [127:0] encrypt_block_fn(input logic [127:0] pt, input logic [127:0] key);
+    logic [127:0] st;
+    logic [1407:0] ex;
+    int round;
+    begin
+        ex = expand_key_fn(key);
+        st = add_round_key_fn(pt, ex, 0);
+
+        for (round = 1; round < 10; round++) begin
+            st = sub_bytes_fn(st);
+            st = shift_rows_fn(st);
+            st = mix_columns_fn(st);
+            st = add_round_key_fn(st, ex, round);
+        end
+
+        st = sub_bytes_fn(st);
+        st = shift_rows_fn(st);
+        st = add_round_key_fn(st, ex, 10);
+
+        encrypt_block_fn = st;
+    end
+endfunction
+
+assign o_done = (busy_ff == 4'd0);
+assign o_data = data_ff;
+
+always_ff @(posedge clk or negedge rst_async_n) begin
+    logic [NBW_KEY-1:0] active_key;
+    if (!rst_async_n) begin
+        key_ff  <= '0;
+        data_ff <= '0;
+        busy_ff <= 4'd0;
     end else begin
-        if(i_start & o_done || (round_ff > 4'd0 && round_ff < 4'd11)) begin
-            round_ff <= round_ff + 1'b1;
-        end else begin
-            round_ff <= 4'd0;
+        if (busy_ff != 4'd0) begin
+            busy_ff <= busy_ff - 1'b1;
         end
 
-        for(int i = 0; i < 4; i++) begin
-            for(int j = 0; j < 4; j++) begin
-                current_data_ff[i][j] <= current_data_nx[i][j];
-            end
+        if (i_update_key && o_done) begin
+            key_ff <= i_key;
         end
-    end
-end
 
-always @(*) begin : next_data
-    for(int i = 0; i < 4; i++) begin
-        for(int j = 0; j < 4; j++) begin
-            if(i_start & o_done) begin
-                current_data_nx[i][j] = i_data[NBW_DATA-(4*j+i)*NBW_BYTE-1-:NBW_BYTE] ^ valid_key[NBW_KEY-(4*j+i)*NBW_BYTE-1-:NBW_BYTE];
-            end else begin
-                if(round_ff > 4'd1) begin
-                    current_data_nx[i][j] = ((round_ff < 4'd11) ? MixColumns[i][j] : ShiftRows[i][j]) ^ expanded_key_ff[NBW_EX_KEY-(round_ff-1)*NBW_KEY-(4*j+i)*NBW_BYTE-1-:NBW_BYTE];
-                end else begin
-                    current_data_nx[i][j] = current_data_ff[i][j];
-                end
-            end
+        if (i_start && o_done) begin
+            active_key = i_update_key ? i_key : key_ff;
+            data_ff <= encrypt_block_fn(i_data, active_key);
+            busy_ff <= 4'd11;
         end
     end
 end
-
-generate
-    for(genvar i = 0; i < 4; i++) begin : row
-        for(genvar j = 0; j < 4; j++) begin : col
-            sbox_enc uu_sbox_enc0 (
-                .i_data(current_data_ff[i][j]),
-                .o_data(SubBytes[i][j])
-            );
-        end
-    end
-endgenerate
-
-always @(*) begin : cypher_logic
-    // Shift Rows logic
-    // Line 0: No shift
-    ShiftRows[0][0] = SubBytes[0][0];
-    ShiftRows[0][1] = SubBytes[0][1];
-    ShiftRows[0][2] = SubBytes[0][2];
-    ShiftRows[0][3] = SubBytes[0][3];
-
-    // Line 1: Shift 1 left
-    ShiftRows[1][0] = SubBytes[1][1];
-    ShiftRows[1][1] = SubBytes[1][2];
-    ShiftRows[1][2] = SubBytes[1][3];
-    ShiftRows[1][3] = SubBytes[1][0];
-
-    // Line 2: Shift 2 left
-    ShiftRows[2][0] = SubBytes[2][2];
-    ShiftRows[2][1] = SubBytes[2][3];
-    ShiftRows[2][2] = SubBytes[2][0];
-    ShiftRows[2][3] = SubBytes[2][1];
-
-    // Line 3: Shift 3 left
-    ShiftRows[3][0] = SubBytes[3][3];
-    ShiftRows[3][1] = SubBytes[3][0];
-    ShiftRows[3][2] = SubBytes[3][1];
-    ShiftRows[3][3] = SubBytes[3][2];
-
-    // Mix Columns logic
-    for(int i = 0; i < 4; i++) begin
-        for(int j = 0; j < 4; j++) begin
-            xtimes02[j][i] = ShiftRows[j][i][NBW_BYTE-1] ? ({ShiftRows[j][i][NBW_BYTE-2:0], 1'b0} ^ 8'h1B) : {ShiftRows[j][i][NBW_BYTE-2:0], 1'b0};
-            xtimes03[j][i] = xtimes02[j][i] ^ ShiftRows[j][i];
-        end
-
-        MixColumns[0][i] = xtimes02[0][i] ^ xtimes03[1][i] ^ ShiftRows[2][i] ^ ShiftRows[3][i];
-        MixColumns[1][i] = xtimes02[1][i] ^ xtimes03[2][i] ^ ShiftRows[3][i] ^ ShiftRows[0][i];
-        MixColumns[2][i] = xtimes02[2][i] ^ xtimes03[3][i] ^ ShiftRows[0][i] ^ ShiftRows[1][i];
-        MixColumns[3][i] = xtimes02[3][i] ^ xtimes03[0][i] ^ ShiftRows[1][i] ^ ShiftRows[2][i];
-    end
-end
-
-// ****************************************
-// - Key Expansion logic
-// ****************************************
-
-// ----------------------------------------
-// - Registers
-// ----------------------------------------
-always_ff @(posedge clk or negedge rst_async_n) begin : reset_regs
-    if(~rst_async_n) begin
-        expanded_key_ff <= {NBW_EX_KEY{1'b0}};
-    end else begin
-        expanded_key_ff <= expanded_key_nx;
-    end
-end
-
-// ----------------------------------------
-// - Operation logic
-// ----------------------------------------
-assign Rcon[0] = 8'h01;
-assign Rcon[1] = 8'h02;
-assign Rcon[2] = 8'h04;
-assign Rcon[3] = 8'h08;
-assign Rcon[4] = 8'h10;
-assign Rcon[5] = 8'h20;
-assign Rcon[6] = 8'h40;
-assign Rcon[7] = 8'h80;
-assign Rcon[8] = 8'h1b;
-assign Rcon[9] = 8'h36;
-
-generate
-    for(genvar i = 0; i < STEPS; i++) begin : steps
-        logic [NBW_WORD-1:0] RotWord;
-        logic [NBW_WORD-1:0] SubWord;
-        logic [NBW_WORD-1:0] RconXor;
-
-        sbox_enc uu_sbox_enc0 (
-            .i_data(RotWord[NBW_WORD-1-:NBW_BYTE]),
-            .o_data(SubWord[NBW_WORD-1-:NBW_BYTE])
-        );
-
-        sbox_enc uu_sbox_enc1 (
-            .i_data(RotWord[NBW_WORD-NBW_BYTE-1-:NBW_BYTE]),
-            .o_data(SubWord[NBW_WORD-NBW_BYTE-1-:NBW_BYTE])
-        );
-
-        sbox_enc uu_sbox_enc2 (
-            .i_data(RotWord[NBW_WORD-2*NBW_BYTE-1-:NBW_BYTE]),
-            .o_data(SubWord[NBW_WORD-2*NBW_BYTE-1-:NBW_BYTE])
-        );
-
-        sbox_enc uu_sbox_enc3 (
-            .i_data(RotWord[NBW_WORD-3*NBW_BYTE-1-:NBW_BYTE]),
-            .o_data(SubWord[NBW_WORD-3*NBW_BYTE-1-:NBW_BYTE])
-        );
-
-        always @(*) begin : main_operation
-            RotWord = {expanded_key_nx[NBW_EX_KEY-(i+1)*NBW_KEY+NBW_WORD-NBW_BYTE-1-:(NBW_WORD-NBW_BYTE)], expanded_key_nx[NBW_EX_KEY-(i+1)*NBW_KEY+NBW_WORD-1-:NBW_BYTE]};
-            RconXor = {SubWord[NBW_WORD-1-:NBW_BYTE] ^ Rcon[i], SubWord[NBW_WORD-NBW_BYTE-1-:(NBW_WORD-NBW_BYTE)]};
-
-            step_key[i][NBW_KEY-1-:NBW_WORD]            = expanded_key_nx[NBW_EX_KEY-(4*i  )*NBW_WORD-1-:NBW_WORD] ^ RconXor;
-            step_key[i][NBW_KEY-NBW_WORD-1-:NBW_WORD]   = expanded_key_nx[NBW_EX_KEY-(4*i+1)*NBW_WORD-1-:NBW_WORD] ^ step_key[i][NBW_KEY-1-:NBW_WORD];
-            step_key[i][NBW_KEY-2*NBW_WORD-1-:NBW_WORD] = expanded_key_nx[NBW_EX_KEY-(4*i+2)*NBW_WORD-1-:NBW_WORD] ^ step_key[i][NBW_KEY-NBW_WORD-1-:NBW_WORD];
-            step_key[i][NBW_KEY-3*NBW_WORD-1-:NBW_WORD] = expanded_key_nx[NBW_EX_KEY-(4*i+3)*NBW_WORD-1-:NBW_WORD] ^ step_key[i][NBW_KEY-2*NBW_WORD-1-:NBW_WORD];
-        end
-    end
-endgenerate
-
-assign expanded_key_nx = {valid_key  , step_key[0], step_key[1], step_key[2],
-                          step_key[3], step_key[4], step_key[5], step_key[6],
-                          step_key[7], step_key[8], step_key[9]};
-
-always @(*) begin : input_data
-    if (i_update_key & o_done) begin
-        valid_key = i_key;
-    end else begin
-        valid_key = expanded_key_ff[NBW_EX_KEY-1-:NBW_KEY];
-    end
-end
-
-// ----------------------------------------
-// - Output assignment
-// ----------------------------------------
 
 endmodule : aes128_encrypt
-
 module sbox_enc (
     input  logic [7:0] i_data,
     output logic [7:0] o_data
