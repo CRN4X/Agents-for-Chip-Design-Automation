@@ -34,6 +34,7 @@ INFO_CATEGORIES = [
     "Debug/fix buggy RTL",
 ]
 
+MAX_LEARNING_LINES = 5
 CODEX_TIMEOUT_SEC = 1200  # 20 minutes per Codex attempt
 CODEX_TIMEOUT_MINUTES = CODEX_TIMEOUT_SEC // 60
 CODEX_TIMEOUT_BACKOFF_SEC = 10
@@ -440,8 +441,39 @@ def update_learnings_json(repo_root: Path, problem_category: str, learning: str)
         for cat in INFO_CATEGORIES:
             doc.setdefault(cat, "")
 
-        # Keep exactly one summarized statement per category.
-        doc[problem_category] = learning
+        existing_learning = str(doc.get(problem_category, "")).strip()
+
+        def normalize_lines(text: str) -> List[str]:
+            lines = [ln.strip() for ln in text.replace("\r\n", "\n").replace("\r", "\n").split("\n")]
+            lines = [ln for ln in lines if ln]
+            if lines:
+                return lines
+            collapsed = " ".join(text.split()).strip()
+            return [collapsed] if collapsed else []
+
+        if not existing_learning:
+            # First learning entry for a category must be exactly one line.
+            first_line = normalize_lines(learning)
+            doc[problem_category] = first_line[0] if first_line else ""
+        else:
+            # For subsequent entries, allow compact multi-line cumulative summary.
+            existing_lines = normalize_lines(existing_learning)
+            new_lines = normalize_lines(learning)
+
+            # If InfoAgent already returned a multi-line merged summary, prefer it.
+            if len(new_lines) > 1:
+                merged = new_lines
+            else:
+                merged = existing_lines + new_lines
+
+            deduped: List[str] = []
+            for ln in merged:
+                if ln not in deduped:
+                    deduped.append(ln)
+            if len(deduped) > MAX_LEARNING_LINES:
+                deduped = deduped[-MAX_LEARNING_LINES:]
+
+            doc[problem_category] = "\n".join(deduped)
 
         fh.seek(0)
         fh.write(json.dumps(doc, indent=2) + "\n")
@@ -495,6 +527,9 @@ Rules:
 - Do not modify before/ originals.
 - Keep edits minimal, compile-safe first.
 - Use sim.log first-error lines as primary guidance.
+- InfoAgent learning format:
+  - If selected category has no prior learning: return exactly 1 line in `learning`.
+  - If selected category already has prior learning: merge old+new and return up to 5 lines in `learning`.
 
 Attempt: {attempt}/{max_retries}
 """
