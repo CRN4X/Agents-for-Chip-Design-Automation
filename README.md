@@ -113,6 +113,8 @@ Behavior summary:
 
 ## Output Description
 
+- Location of Updated Verilog Files: 
+  - `/NVIDIA-ICLAD25-Hackathon-main/my-agent/agent_files/<problem_name>/rtl/`: location of the verilog file(s) modified by the AI agent.
 - Benchmark/report artifacts in `work/`:
   - `work/result.json`: summarized pass/fail results for evaluated targets in a compact machine-readable format.
   - `work/raw_result.json`: detailed per-run raw benchmark output (more granular execution data).
