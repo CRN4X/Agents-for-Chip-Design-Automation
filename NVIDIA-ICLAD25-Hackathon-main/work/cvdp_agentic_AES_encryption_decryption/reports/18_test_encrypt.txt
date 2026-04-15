@@ -1,0 +1,92 @@
+Running harness with project name: cvdp_agentic_aes_encryption_decryption_18_1776234304
+============================= test session starts ==============================
+platform linux -- Python 3.9.2, pytest-8.3.2, pluggy-1.5.0 -- /usr/bin/python3
+cachedir: /rundir/harness/.cache
+rootdir: /src
+collecting ... collected 1 item
+
+../../src/test_runner_enc_top.py::test_data      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234306
+     0.00ns INFO     cocotb.regression                  running test_aes_enc_top.test_aes_enc_top (1/1)
+                                                            Test the aes_enc_top module with edge cases and random data.
+     0.00ns WARNING  gpi                                VPI: Not able to map type vpiNamedBegin(33) to object.
+     0.00ns WARNING  gpi                                Unable to create data_regs via any registered implementation
+     0.00ns WARNING  gpi                                VPI: Not able to map type vpiNamedBegin(33) to object.
+     0.00ns WARNING  gpi                                Unable to create reset_regs via any registered implementation
+
+------ Reset 0, run 0 ------
+ECB mode
+CBC mode
+PCBC mode
+CFB mode
+OFB mode
+CTR mode
+180310.00ns INFO     cocotb.regression                  test_aes_enc_top.test_aes_enc_top failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_aes_enc_top.py", line 250, in test_aes_enc_top
+                                                            compare_values(dut, model)
+                                                          File "/src/test_aes_enc_top.py", line 16, in compare_values
+                                                            assert dut_data == model_data,  f"[ERROR] DUT o_ciphertext does not match model o_ciphertext: {hex(dut_data)} != {hex(model_data)}"
+                                                        AssertionError: [ERROR] DUT o_ciphertext does not match model o_ciphertext: 0xb2ddc40a49f43efd62a53783a61e648b != 0x6f692d4e17da0aeba26acdf5697b3b87
+                                                        assert 237754057022902844230629862742849119371 == 148090417597882411856025700522971052935
+180310.00ns INFO     cocotb.regression                  *******************************************************************************************
+                                                        ** TEST                               STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *******************************************************************************************
+                                                        ** test_aes_enc_top.test_aes_enc_top   FAIL      180310.00           8.71      20691.70  **
+                                                        *******************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                  180310.00           8.73      20662.64  **
+                                                        *******************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/aes_enc_top.fst opened for output.
+FAILED
+
+=================================== FAILURES ===================================
+__________________________________ test_data ___________________________________
+
+    def test_data():
+        # Run the simulation with specified parameters
+>       runner()
+
+/src/test_runner_enc_top.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def runner():
+        # Configure and run the simulation
+        sim_runner = get_runner(sim)
+        sim_runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log"
+        )
+    
+        # Run the test
+>       sim_runner.test(hdl_toplevel=toplevel, test_module=module, waves=True)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner_enc_top.py:30: SystemExit
+=============================== warnings summary ===============================
+../../usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:477
+  /usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:477: PytestCacheWarning: could not create cache path /rundir/harness/.cache/v/cache/nodeids: [Errno 13] Permission denied: '/rundir'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+../../usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:429
+  /usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:429: PytestCacheWarning: could not create cache path /rundir/harness/.cache/v/cache/lastfailed: [Errno 13] Permission denied: '/rundir'
+    config.cache.set("cache/lastfailed", self.lastfailed)
+
+../../usr/local/lib/python3.9/dist-packages/_pytest/stepwise.py:51
+  /usr/local/lib/python3.9/dist-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /rundir/harness/.cache/v/cache/stepwise: [Errno 13] Permission denied: '/rundir'
+    session.config.cache.set(STEPWISE_CACHE_DIR, [])
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../src/test_runner_enc_top.py::test_data - SystemExit: ERROR: Faile...
+======================== 1 failed, 3 warnings in 9.53s =========================
+Cleaning up Docker resources...

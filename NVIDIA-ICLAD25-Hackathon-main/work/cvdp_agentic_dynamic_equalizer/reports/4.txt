@@ -1,0 +1,150 @@
+Running harness with project name: cvdp_agentic_dynamic_equalizer_4_1776234422
+#1 [internal] load local bake definitions
+#1 reading from stdin 762B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 212B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for ghcr.io/hdl/sim/osvb:latest
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [1/2] FROM ghcr.io/hdl/sim/osvb:latest@sha256:6fc999d943f1b8f8c49e7221459ae01e57afd33f7e73c3734b9a65be25e7f434
+#5 resolve ghcr.io/hdl/sim/osvb:latest@sha256:6fc999d943f1b8f8c49e7221459ae01e57afd33f7e73c3734b9a65be25e7f434 0.0s done
+#5 DONE 0.0s
+
+#6 [2/2] RUN pip3 install cocotb-bus==0.2.1
+#6 CACHED
+
+#7 exporting to image
+#7 exporting layers done
+#7 exporting manifest sha256:6fd18fc7341eec6eff0d133320278adb2b289779864f12436f4747ee86735a96 0.0s done
+#7 exporting config sha256:d510bf523cad2f0710091d24a3b8768ed014e24b6bb823acc4b5b3d2a1685708 0.0s done
+#7 exporting attestation manifest sha256:fa6590f0b3f71b2429ab0f226f1c4bac2a6c1833f558ff27be63c85228c697aa 0.0s done
+#7 exporting manifest list sha256:4ce5fd3a5e0355799b3b636d8312b0ad7ef56a8cf5f7c00695f410d90e248e60 0.0s done
+#7 naming to docker.io/library/cvdp_agentic_dynamic_equalizer_4_1776234422-direct:latest done
+#7 unpacking to docker.io/library/cvdp_agentic_dynamic_equalizer_4_1776234422-direct:latest
+#7 unpacking to docker.io/library/cvdp_agentic_dynamic_equalizer_4_1776234422-direct:latest 0.2s done
+#7 DONE 0.4s
+
+#8 resolving provenance for metadata file
+#8 DONE 0.0s
+============================= test session starts ==============================
+platform linux -- Python 3.9.2, pytest-8.3.2, pluggy-1.5.0 -- /usr/bin/python3
+cachedir: /code/rundir/.cache
+rootdir: /src
+collecting ... collected 1 item
+
+../../src/test_runner.py::test_cvdp_agentic_dynamic_equalizer[7-16-16-15] FAILED [100%]
+
+=================================== FAILURES ===================================
+_______________ test_cvdp_agentic_dynamic_equalizer[7-16-16-15] ________________
+
+TAP_NUM = 7, DATA_WIDTH = 16, COEFF_WIDTH = 16, MU = 15
+
+    @pytest.mark.parametrize("TAP_NUM, DATA_WIDTH, COEFF_WIDTH, MU", [(7, 16, 16, 15)])
+    def test_cvdp_agentic_dynamic_equalizer(TAP_NUM, DATA_WIDTH, COEFF_WIDTH, MU):
+        try:
+>           runner(TAP_NUM, DATA_WIDTH, COEFF_WIDTH, MU)
+
+/src/test_runner.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+TAP_NUM = 7, DATA_WIDTH = 16, COEFF_WIDTH = 16, MU = 15
+
+    def runner(TAP_NUM, DATA_WIDTH, COEFF_WIDTH, MU):
+        # Initialize the simulator runner
+        runner = get_runner(sim)
+    
+        # Build the simulation with the specified TAP_NUM, DATA_WIDTH, COEFF_WIDTH, and MU parameters
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            parameters={
+                "TAP_NUM": TAP_NUM,
+                "DATA_WIDTH": DATA_WIDTH,
+                "COEFF_WIDTH": COEFF_WIDTH,
+                "MU": MU},
+            # Simulator Arguments
+            always=True,
+            clean=True,
+            waves=True,        # Disable waveform generation for faster runs
+            verbose=True,      # Set to True for detailed simulator logs
+            timescale=("1ns", "1ps"),
+            log_file=f"sim_{toplevel}.log"
+        )
+    
+        # Run the simulation
+>       runner.test(
+            hdl_toplevel=toplevel,
+            test_module=module,
+            waves=True
+        )
+E       SystemExit: ERROR: Failed 2 of 2 tests.
+
+/src/test_runner.py:42: SystemExit
+----------------------------- Captured stdout call -----------------------------
+INFO: Running command iverilog -o /code/rundir/sim_build/sim.vvp -D COCOTB_SIM=1 -s dynamic_equalizer -g2012 -Pdynamic_equalizer.TAP_NUM=7 -Pdynamic_equalizer.DATA_WIDTH=16 -Pdynamic_equalizer.COEFF_WIDTH=16 -Pdynamic_equalizer.MU=15 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/dynamic_equalizer.sv /code/rtl/error_calc.sv /code/rtl/coeff_update.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+INFO: Running command vvp -M /usr/local/lib/python3.9/dist-packages/cocotb/libs -m libcocotbvpi_icarus /code/rundir/sim_build/sim.vvp -fst in directory /code/rundir/sim_build
+     -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v1.9.2 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234425
+     0.00ns INFO     cocotb.regression                  Found test test_dynamic_equalizer_harness.test_equalizer_learns_identity
+     0.00ns INFO     cocotb.regression                  Found test test_dynamic_equalizer_harness.test_equalizer_data_quadrant
+     0.00ns INFO     cocotb.regression                  running test_equalizer_learns_identity (1/2)
+                                                          Test if output equals input after 3 cycles when input == desired
+     0.00ns INFO     cocotb.dynamic_equalizer           Test if output equals input after 3 cycles when input == desired
+    70.00ns INFO     cocotb.regression                  test_equalizer_learns_identity failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_dynamic_equalizer_harness.py", line 57, in test_equalizer_learns_identity
+                                                            out_real = dut.data_out_real.value.signed_integer
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/binary.py", line 420, in signed_integer
+                                                            ival = int(self._str.translate(_resolve_table), 2)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/binary.py", line 109, in __missing__
+                                                            return self.resolve_x(key)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/binary.py", line 84, in resolve_error
+                                                            raise ValueError(
+                                                        ValueError: Unresolvable bit in binary string: 'x'. Set the COCOTB_RESOLVE_X environment variable to configure how special values are resolved.
+    70.00ns INFO     cocotb.regression                  running test_equalizer_data_quadrant (2/2)
+                                                          Test if output data quadrant is the desired
+    70.00ns INFO     cocotb.dynamic_equalizer           Test if output data quadrant is the desired
+   150.00ns INFO     cocotb.regression                  test_equalizer_data_quadrant failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_dynamic_equalizer_harness.py", line 130, in test_equalizer_data_quadrant
+                                                            out_real = dut.data_out_real.value.signed_integer
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/binary.py", line 420, in signed_integer
+                                                            ival = int(self._str.translate(_resolve_table), 2)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/binary.py", line 109, in __missing__
+                                                            return self.resolve_x(key)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/binary.py", line 84, in resolve_error
+                                                            raise ValueError(
+                                                        ValueError: Unresolvable bit in binary string: 'x'. Set the COCOTB_RESOLVE_X environment variable to configure how special values are resolved.
+   150.00ns INFO     cocotb.regression                  ***********************************************************************************************************************
+                                                        ** TEST                                                           STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        ***********************************************************************************************************************
+                                                        ** test_dynamic_equalizer_harness.test_equalizer_learns_identity   FAIL          70.00           0.01      10964.84  **
+                                                        ** test_dynamic_equalizer_harness.test_equalizer_data_quadrant     FAIL          80.00           0.00      22865.32  **
+                                                        ***********************************************************************************************************************
+                                                        ** TESTS=2 PASS=0 FAIL=2 SKIP=0                                                 150.00           0.06       2345.23  **
+                                                        ***********************************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/dynamic_equalizer.fst opened for output.
+=============================== warnings summary ===============================
+../../src/test_runner.py:4
+  /src/test_runner.py:4: UserWarning: Python runners and associated APIs are an experimental feature and subject to change.
+    from cocotb.runner import get_runner
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../src/test_runner.py::test_cvdp_agentic_dynamic_equalizer[7-16-16-15]
+========================= 1 failed, 1 warning in 0.45s =========================
+Cleaning up Docker resources...
+Untagged: cvdp_agentic_dynamic_equalizer_4_1776234422-direct:latest
+Deleted: sha256:4ce5fd3a5e0355799b3b636d8312b0ad7ef56a8cf5f7c00695f410d90e248e60

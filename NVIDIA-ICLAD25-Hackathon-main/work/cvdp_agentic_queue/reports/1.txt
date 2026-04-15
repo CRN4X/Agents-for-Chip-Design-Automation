@@ -1,0 +1,195 @@
+Running harness with project name: cvdp_agentic_queue_1_1776234696
+#1 [internal] load local bake definitions
+#1 reading from stdin 714B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 212B 0.0s done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for ghcr.io/hdl/sim/osvb:latest
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [1/2] FROM ghcr.io/hdl/sim/osvb:latest@sha256:6fc999d943f1b8f8c49e7221459ae01e57afd33f7e73c3734b9a65be25e7f434
+#5 resolve ghcr.io/hdl/sim/osvb:latest@sha256:6fc999d943f1b8f8c49e7221459ae01e57afd33f7e73c3734b9a65be25e7f434 0.0s done
+#5 DONE 0.0s
+
+#6 [2/2] RUN pip3 install cocotb-bus==0.2.1
+#6 CACHED
+
+#7 exporting to image
+#7 exporting layers 0.0s done
+#7 exporting manifest sha256:efc10a5ca884f764507c05febc1d86070d08abab6e3c59b590d835acfa116265 0.0s done
+#7 exporting config sha256:113316709a99bc46c62cc0a6bc24802ba3489b89b70bc41c26f536862ef55fcd 0.0s done
+#7 exporting attestation manifest sha256:7f566a65ad100a25f5477b24b6f1f5b6ad1e143a9a23a6c4764324f715631e19 0.0s done
+#7 exporting manifest list sha256:a992ad038cab31b8a60822e99238b486149dae203082d572ce0628b09513f5ec
+#7 exporting manifest list sha256:a992ad038cab31b8a60822e99238b486149dae203082d572ce0628b09513f5ec 0.0s done
+#7 naming to docker.io/library/cvdp_agentic_queue_1_1776234696-direct:latest done
+#7 unpacking to docker.io/library/cvdp_agentic_queue_1_1776234696-direct:latest
+#7 unpacking to docker.io/library/cvdp_agentic_queue_1_1776234696-direct:latest 0.4s done
+#7 DONE 0.6s
+
+#8 resolving provenance for metadata file
+#8 DONE 0.0s
+============================= test session starts ==============================
+platform linux -- Python 3.9.2, pytest-8.3.2, pluggy-1.5.0 -- /usr/bin/python3
+cachedir: /code/rundir/.cache
+rootdir: /src
+collecting ... collected 1 item
+
+../../src/test_runner.py::test_runner FAILED                             [100%]
+
+=================================== FAILURES ===================================
+_________________________________ test_runner __________________________________
+
+    @pytest.mark.tb
+    def test_runner():
+    
+        runner = get_runner(sim)
+>       runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            always=True,
+            clean=True,
+            waves=True,
+            verbose=True,
+            timescale=("1ns", "1ps"),
+            log_file="sim.log")
+
+/src/test_runner.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <cocotb.runner.Icarus object at 0x7f7a0b9b9670>, hdl_library = 'top'
+verilog_sources = [], vhdl_sources = [], sources = ['/code/rtl/queue.sv']
+includes = [], defines = {}, parameters = {}, build_args = []
+hdl_toplevel = 'queue', always = True, build_dir = 'sim_build', clean = True
+verbose = True, timescale = ('1ns', '1ps'), waves = True, log_file = 'sim.log'
+
+    def build(
+        self,
+        hdl_library: str = "top",
+        verilog_sources: Sequence[PathLike] = [],
+        vhdl_sources: Sequence[PathLike] = [],
+        sources: Sequence[Union[PathLike, VHDL, Verilog]] = [],
+        includes: Sequence[PathLike] = [],
+        defines: Mapping[str, object] = {},
+        parameters: Mapping[str, object] = {},
+        build_args: Sequence[Union[str, VHDL, Verilog]] = [],
+        hdl_toplevel: Optional[str] = None,
+        always: bool = False,
+        build_dir: PathLike = "sim_build",
+        clean: bool = False,
+        verbose: bool = False,
+        timescale: Optional[Timescale] = None,
+        waves: Optional[bool] = None,
+        log_file: Optional[PathLike] = None,
+    ) -> None:
+        """Build the HDL sources.
+    
+        With mixed language simulators, *sources* will be built,
+        followed by *vhdl_sources*, then *verilog_sources*.
+        With simulators that only support either VHDL or Verilog, *sources* will be built,
+        followed by *vhdl_sources* and *verilog_sources*, respectively.
+    
+        If your source files use an atypical file extension,
+        use :class:`VHDL` and :class:`Verilog` to tag the path as a VHDL or Verilog source file, respectively.
+        If the filepaths aren't tagged, the extension is used to determine if they are VHDL or Verilog files.
+    
+        +----------+------------------------------------+
+        | Language | File Extensions                    |
+        +==========+====================================+
+        | VHDL     | ``.vhd``, ``.vhdl``                |
+        +----------+------------------------------------+
+        | Verilog  | ``.v``, ``.sv``, ``.vh``, ``.svh`` |
+        +----------+------------------------------------+
+    
+    
+        .. code-block:: python3
+    
+            runner.build(
+                sources=[
+                    VHDL("/my/file.is_actually_vhdl"),
+                    Verilog("/other/file.verilog"),
+                ],
+            )
+    
+        The same tagging works for *build_args*.
+        Tagged *build_args* only supply that option to the compiler when building the source file for the tagged language.
+        Non-tagged *build_args* are supplied when compiling any language.
+    
+        Args:
+            hdl_library: The library name to compile into.
+            verilog_sources: Verilog source files to build.
+            vhdl_sources: VHDL source files to build.
+            sources: Language-agnostic list of source files to build.
+            includes: Verilog include directories.
+            defines: Defines to set.
+            parameters: Verilog parameters or VHDL generics.
+            build_args: Extra build arguments for the simulator.
+            hdl_toplevel: The name of the HDL toplevel module.
+            always: Always run the build step.
+            build_dir: Directory to run the build step in.
+            clean: Delete build_dir before building
+            verbose: Enable verbose messages.
+            timescale: Tuple containing time unit and time precision for simulation.
+            waves: Record signal traces.
+            log_file: File to write the build log to.
+        """
+    
+        self.clean: bool = clean
+        self.build_dir = get_abs_path(build_dir)
+        if self.clean:
+            self.rm_build_folder(self.build_dir)
+        os.makedirs(self.build_dir, exist_ok=True)
+    
+        # note: to avoid mutating argument defaults, we ensure that no value
+        # is written without a copy. This is much more concise and leads to
+        # a better docstring than using `None` as a default in the parameters
+        # list.
+        self.hdl_library: str = hdl_library
+        self.verilog_sources: List[Path] = get_abs_paths(verilog_sources)
+        self.vhdl_sources: List[Path] = get_abs_paths(vhdl_sources)
+        self.sources: List[Path] = get_abs_paths(sources)
+        self.includes: List[Path] = get_abs_paths(includes)
+        self.defines = dict(defines)
+        self.parameters = dict(parameters)
+        self.build_args = list(build_args)
+        self.always: bool = always
+        self.hdl_toplevel: Optional[str] = hdl_toplevel
+        self.verbose: bool = verbose
+        self.timescale: Optional[Timescale] = timescale
+        self.log_file: Optional[PathLike] = log_file
+    
+        self.waves = bool(waves)
+    
+        for e in os.environ:
+            self.env[e] = os.environ[e]
+    
+        cmds: Sequence[Command] = self._build_command()
+>       self._execute(cmds, cwd=self.build_dir)
+E       SystemExit: Process 'iverilog' terminated with error 2
+
+/usr/local/lib/python3.9/dist-packages/cocotb/runner.py:264: SystemExit
+----------------------------- Captured stdout call -----------------------------
+INFO: Running command iverilog -o /code/rundir/sim_build/sim.vvp -D COCOTB_SIM=1 -s queue -g2012 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/queue.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+=============================== warnings summary ===============================
+../../src/test_runner.py:7
+  /src/test_runner.py:7: UserWarning: Python runners and associated APIs are an experimental feature and subject to change.
+    from cocotb.runner import get_runner
+
+../../src/test_runner.py:17
+  /src/test_runner.py:17: PytestUnknownMarkWarning: Unknown pytest.mark.tb - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.tb
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../src/test_runner.py::test_runner - SystemExit: Process 'iverilog'...
+======================== 1 failed, 2 warnings in 0.30s =========================
+Cleaning up Docker resources...
+Untagged: cvdp_agentic_queue_1_1776234696-direct:latest
+Deleted: sha256:a992ad038cab31b8a60822e99238b486149dae203082d572ce0628b09513f5ec

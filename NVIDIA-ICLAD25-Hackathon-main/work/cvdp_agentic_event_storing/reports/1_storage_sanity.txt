@@ -1,0 +1,275 @@
+Running harness with project name: cvdp_agentic_event_storing_1_1776234442
+============================= test session starts ==============================
+platform linux -- Python 3.9.2, pytest-8.3.2, pluggy-1.5.0 -- /usr/bin/python3
+cachedir: /rundir/harness/.cache
+rootdir: /src
+collecting ... collected 4 items
+
+../../src/test_runner_event_storage.py::test_data[2-4]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234443
+     0.00ns INFO     cocotb.regression                  running test_event_storage.test_event_storage (1/1)
+                                                            Test the event_storage module with edge cases and random data.
+     0.00ns WARNING  gpi                                VPI: Not able to map type vpiNamedBegin(33) to object.
+     0.00ns WARNING  gpi                                Unable to create output_assignment via any registered implementation
+  1670.00ns INFO     cocotb.regression                  test_event_storage.test_event_storage passed
+  1670.00ns INFO     cocotb.regression                  ***********************************************************************************************
+                                                        ** TEST                                   STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        ***********************************************************************************************
+                                                        ** test_event_storage.test_event_storage   PASS        1670.00           0.05      34107.50  **
+                                                        ***********************************************************************************************
+                                                        ** TESTS=1 PASS=1 FAIL=0 SKIP=0                        1670.00           0.06      29475.20  **
+                                                        ***********************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/event_storage.fst opened for output.
+[DEBUG] Parameters: {'NBW_STR': 4, 'NS_EVT': 4, 'NBW_EVT': 2}
+PASSED
+../../src/test_runner_event_storage.py::test_data[2-6]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234444
+     0.00ns INFO     cocotb.regression                  running test_event_storage.test_event_storage (1/1)
+                                                            Test the event_storage module with edge cases and random data.
+     0.00ns WARNING  gpi                                VPI: Not able to map type vpiNamedBegin(33) to object.
+     0.00ns WARNING  gpi                                Unable to create output_assignment via any registered implementation
+  1340.00ns INFO     cocotb.regression                  test_event_storage.test_event_storage failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_event_storage.py", line 103, in test_event_storage
+                                                            compare_values(dut, model)
+                                                          File "/src/test_event_storage.py", line 16, in compare_values
+                                                            assert dut_data == model_data,  f"[ERROR] DUT o_data does not match model o_data: {hex(dut_data)} != {hex(model_data)}"
+                                                        AssertionError: [ERROR] DUT o_data does not match model o_data: 0xf != 0x3f
+                                                        assert 15 == 63
+  1340.00ns INFO     cocotb.regression                  ***********************************************************************************************
+                                                        ** TEST                                   STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        ***********************************************************************************************
+                                                        ** test_event_storage.test_event_storage   FAIL        1340.00           0.02      57800.71  **
+                                                        ***********************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                        1340.00           0.03      44011.93  **
+                                                        ***********************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/event_storage.fst opened for output.
+[DEBUG] Parameters: {'NBW_STR': 6, 'NS_EVT': 4, 'NBW_EVT': 2}
+FAILED
+../../src/test_runner_event_storage.py::test_data[4-4]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234444
+     0.00ns INFO     cocotb.regression                  running test_event_storage.test_event_storage (1/1)
+                                                            Test the event_storage module with edge cases and random data.
+     0.00ns WARNING  gpi                                VPI: Not able to map type vpiNamedBegin(33) to object.
+     0.00ns WARNING  gpi                                Unable to create output_assignment via any registered implementation
+    10.00ns INFO     cocotb.regression                  test_event_storage.test_event_storage failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_event_storage.py", line 75, in test_event_storage
+                                                            dut.i_event.value       = event
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 986, in value
+                                                            self.set(value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 700, in set
+                                                            self._set_value(value_, action, _inertial_write)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 923, in _set_value
+                                                            raise OverflowError(
+                                                        OverflowError: Int value (63443) out of range for assignment of 4-bit signal ('i_event')
+    10.00ns INFO     cocotb.regression                  ***********************************************************************************************
+                                                        ** TEST                                   STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        ***********************************************************************************************
+                                                        ** test_event_storage.test_event_storage   FAIL          10.00           0.01       1406.30  **
+                                                        ***********************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                          10.00           0.01        677.12  **
+                                                        ***********************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/event_storage.fst opened for output.
+[DEBUG] Parameters: {'NBW_STR': 4, 'NS_EVT': 16, 'NBW_EVT': 4}
+FAILED
+../../src/test_runner_event_storage.py::test_data[4-6]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234444
+     0.00ns INFO     cocotb.regression                  running test_event_storage.test_event_storage (1/1)
+                                                            Test the event_storage module with edge cases and random data.
+     0.00ns WARNING  gpi                                VPI: Not able to map type vpiNamedBegin(33) to object.
+     0.00ns WARNING  gpi                                Unable to create output_assignment via any registered implementation
+    10.00ns INFO     cocotb.regression                  test_event_storage.test_event_storage failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_event_storage.py", line 75, in test_event_storage
+                                                            dut.i_event.value       = event
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 986, in value
+                                                            self.set(value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 700, in set
+                                                            self._set_value(value_, action, _inertial_write)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 923, in _set_value
+                                                            raise OverflowError(
+                                                        OverflowError: Int value (63443) out of range for assignment of 4-bit signal ('i_event')
+    10.00ns INFO     cocotb.regression                  ***********************************************************************************************
+                                                        ** TEST                                   STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        ***********************************************************************************************
+                                                        ** test_event_storage.test_event_storage   FAIL          10.00           0.00       2191.61  **
+                                                        ***********************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                          10.00           0.01        907.90  **
+                                                        ***********************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/event_storage.fst opened for output.
+[DEBUG] Parameters: {'NBW_STR': 6, 'NS_EVT': 16, 'NBW_EVT': 4}
+FAILED
+
+=================================== FAILURES ===================================
+________________________________ test_data[2-6] ________________________________
+
+NBW_STR = 6, NBW_EVT = 2
+
+    @pytest.mark.parametrize("NBW_STR", random_nbw_str)
+    @pytest.mark.parametrize("NBW_EVT", random_nbw_evt)
+    def test_data(NBW_STR, NBW_EVT):
+        NS_EVT  = 2**NBW_EVT
+        # Run the simulation with specified parameters
+>       runner(NBW_STR=NBW_STR, NS_EVT=NS_EVT, NBW_EVT=NBW_EVT)
+
+/src/test_runner_event_storage.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+NBW_STR = 6, NS_EVT = 4, NBW_EVT = 2
+
+    def runner(NBW_STR: int = 8, NS_EVT: int = 8, NBW_EVT: int = 3):
+    
+        parameter = {
+            "NBW_STR": NBW_STR,
+            "NS_EVT": NS_EVT,
+            "NBW_EVT": NBW_EVT
+        }
+    
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        # Configure and run the simulation
+        sim_runner = get_runner(sim)
+        sim_runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log"
+        )
+    
+        # Run the test
+>       sim_runner.test(hdl_toplevel=toplevel, test_module=module, waves=True)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner_event_storage.py:40: SystemExit
+________________________________ test_data[4-4] ________________________________
+
+NBW_STR = 4, NBW_EVT = 4
+
+    @pytest.mark.parametrize("NBW_STR", random_nbw_str)
+    @pytest.mark.parametrize("NBW_EVT", random_nbw_evt)
+    def test_data(NBW_STR, NBW_EVT):
+        NS_EVT  = 2**NBW_EVT
+        # Run the simulation with specified parameters
+>       runner(NBW_STR=NBW_STR, NS_EVT=NS_EVT, NBW_EVT=NBW_EVT)
+
+/src/test_runner_event_storage.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+NBW_STR = 4, NS_EVT = 16, NBW_EVT = 4
+
+    def runner(NBW_STR: int = 8, NS_EVT: int = 8, NBW_EVT: int = 3):
+    
+        parameter = {
+            "NBW_STR": NBW_STR,
+            "NS_EVT": NS_EVT,
+            "NBW_EVT": NBW_EVT
+        }
+    
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        # Configure and run the simulation
+        sim_runner = get_runner(sim)
+        sim_runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log"
+        )
+    
+        # Run the test
+>       sim_runner.test(hdl_toplevel=toplevel, test_module=module, waves=True)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner_event_storage.py:40: SystemExit
+________________________________ test_data[4-6] ________________________________
+
+NBW_STR = 6, NBW_EVT = 4
+
+    @pytest.mark.parametrize("NBW_STR", random_nbw_str)
+    @pytest.mark.parametrize("NBW_EVT", random_nbw_evt)
+    def test_data(NBW_STR, NBW_EVT):
+        NS_EVT  = 2**NBW_EVT
+        # Run the simulation with specified parameters
+>       runner(NBW_STR=NBW_STR, NS_EVT=NS_EVT, NBW_EVT=NBW_EVT)
+
+/src/test_runner_event_storage.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+NBW_STR = 6, NS_EVT = 16, NBW_EVT = 4
+
+    def runner(NBW_STR: int = 8, NS_EVT: int = 8, NBW_EVT: int = 3):
+    
+        parameter = {
+            "NBW_STR": NBW_STR,
+            "NS_EVT": NS_EVT,
+            "NBW_EVT": NBW_EVT
+        }
+    
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        # Configure and run the simulation
+        sim_runner = get_runner(sim)
+        sim_runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log"
+        )
+    
+        # Run the test
+>       sim_runner.test(hdl_toplevel=toplevel, test_module=module, waves=True)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner_event_storage.py:40: SystemExit
+=============================== warnings summary ===============================
+../../usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:477
+  /usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:477: PytestCacheWarning: could not create cache path /rundir/harness/.cache/v/cache/nodeids: [Errno 13] Permission denied: '/rundir'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+../../usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:429
+  /usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:429: PytestCacheWarning: could not create cache path /rundir/harness/.cache/v/cache/lastfailed: [Errno 13] Permission denied: '/rundir'
+    config.cache.set("cache/lastfailed", self.lastfailed)
+
+../../usr/local/lib/python3.9/dist-packages/_pytest/stepwise.py:51
+  /usr/local/lib/python3.9/dist-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /rundir/harness/.cache/v/cache/stepwise: [Errno 13] Permission denied: '/rundir'
+    session.config.cache.set(STEPWISE_CACHE_DIR, [])
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../src/test_runner_event_storage.py::test_data[2-6] - SystemExit: E...
+FAILED ../../src/test_runner_event_storage.py::test_data[4-4] - SystemExit: E...
+FAILED ../../src/test_runner_event_storage.py::test_data[4-6] - SystemExit: E...
+=================== 3 failed, 1 passed, 3 warnings in 1.37s ====================
+Cleaning up Docker resources...

@@ -1,0 +1,13 @@
+networks:
+  default:
+    external: true
+    name: cvdp-bridge-dataset-f655bdfe
+services:
+  test_poly_decimator:
+    command: pytest --log-cli-level=INFO -o cache_dir=/code/rundir/.cache /src/test_poly_decimator/test_runner.py
+      -v -s
+    env_file: ./src/test_poly_decimator/.env
+    image: ghcr.io/hdl/sim/osvb
+    volumes:
+    - ./src/:/src/:ro
+    working_dir: /code/rundir

@@ -1,0 +1,1260 @@
+Running harness with project name: cvdp_agentic_direct_map_cache_3_1776234403
+============================= test session starts ==============================
+platform linux -- Python 3.9.2, pytest-8.3.2, pluggy-1.5.0 -- /usr/bin/python3
+cachedir: /code/rundir/.cache
+rootdir: /src
+collecting ... collected 16 items
+
+../../src/test_runner.py::test_direct_cache[3-3-8-64-0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234405
+     0.00ns INFO     cocotb.regression                  running test_direct_map_cache.test_direct_map_cache (1/1)
+    30.00ns INFO     cocotb.direct_map_cache            [RESET] Complete
+    40.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP0] idx=31, off=2, tag=1, data=00AA
+    60.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=31, off=2, tag=1, dout=00AA, hit=1, valid=1
+    70.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP1] dirty=0, hit=1, data=00F6
+    90.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=31, off=2, tag=1, dout=00F6, hit=1, valid=1
+   110.00ns INFO     cocotb.direct_map_cache            [MISS_TEST] idx=32, off=6, tag=7, hit=0
+   110.00ns INFO     cocotb.direct_map_cache              [PASS] Expected miss
+   130.00ns INFO     cocotb.direct_map_cache            [READ_COMP0] idx=31, off=2, tag=1, dout=00F6, hit=0, valid=1
+   150.00ns INFO     cocotb.direct_map_cache              [PASS] ERROR asserted as expected in OFFSET_ERROR (offset LSB=1)
+   160.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with zero index and zero tag
+   170.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with max index and max tag
+   180.00ns INFO     cocotb.direct_map_cache            [CORNER] Access with enable low
+   180.00ns INFO     cocotb.direct_map_cache              [PASS] Outputs correctly reset when enable is low
+   190.00ns INFO     cocotb.direct_map_cache            [VICTIM] Filled index 7 with tag 0xA (access write updates both ways)
+   190.00ns INFO     cocotb.regression                  test_direct_map_cache.test_direct_map_cache failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_direct_map_cache.py", line 29, in test_direct_map_cache
+                                                            await victimway_assertion(dut)
+                                                          File "/src/test_direct_map_cache.py", line 231, in victimway_assertion
+                                                            prev_victim = int(dut.victimway.value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'direct_map_cache contains no child object named victimway'
+   190.00ns INFO     cocotb.regression                  *****************************************************************************************************
+                                                        ** TEST                                         STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *****************************************************************************************************
+                                                        ** test_direct_map_cache.test_direct_map_cache   FAIL         190.00           0.01      16756.40  **
+                                                        *****************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                               190.00           0.02      10578.04  **
+                                                        *****************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/direct_map_cache.fst opened for output.
+[DEBUG] Parameters: {'CACHE_SIZE': 64, 'DATA_WIDTH': 8, 'TAG_WIDTH': 3, 'OFFSET_WIDTH': 3}
+FAILED
+../../src/test_runner.py::test_direct_cache[3-3-8-256-0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234405
+     0.00ns INFO     cocotb.regression                  running test_direct_map_cache.test_direct_map_cache (1/1)
+    30.00ns INFO     cocotb.direct_map_cache            [RESET] Complete
+    40.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP0] idx=124, off=2, tag=1, data=00AA
+    60.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=124, off=2, tag=1, dout=00AA, hit=1, valid=1
+    70.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP1] dirty=0, hit=1, data=00F6
+    90.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=124, off=2, tag=1, dout=00F6, hit=1, valid=1
+   110.00ns INFO     cocotb.direct_map_cache            [MISS_TEST] idx=125, off=6, tag=7, hit=0
+   110.00ns INFO     cocotb.direct_map_cache              [PASS] Expected miss
+   130.00ns INFO     cocotb.direct_map_cache            [READ_COMP0] idx=124, off=2, tag=1, dout=00F6, hit=0, valid=1
+   150.00ns INFO     cocotb.direct_map_cache              [PASS] ERROR asserted as expected in OFFSET_ERROR (offset LSB=1)
+   160.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with zero index and zero tag
+   170.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with max index and max tag
+   180.00ns INFO     cocotb.direct_map_cache            [CORNER] Access with enable low
+   180.00ns INFO     cocotb.direct_map_cache              [PASS] Outputs correctly reset when enable is low
+   190.00ns INFO     cocotb.direct_map_cache            [VICTIM] Filled index 7 with tag 0xA (access write updates both ways)
+   190.00ns INFO     cocotb.regression                  test_direct_map_cache.test_direct_map_cache failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_direct_map_cache.py", line 29, in test_direct_map_cache
+                                                            await victimway_assertion(dut)
+                                                          File "/src/test_direct_map_cache.py", line 231, in victimway_assertion
+                                                            prev_victim = int(dut.victimway.value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'direct_map_cache contains no child object named victimway'
+   190.00ns INFO     cocotb.regression                  *****************************************************************************************************
+                                                        ** TEST                                         STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *****************************************************************************************************
+                                                        ** test_direct_map_cache.test_direct_map_cache   FAIL         190.00           0.02      12568.89  **
+                                                        *****************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                               190.00           0.02       9395.62  **
+                                                        *****************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/direct_map_cache.fst opened for output.
+[DEBUG] Parameters: {'CACHE_SIZE': 256, 'DATA_WIDTH': 8, 'TAG_WIDTH': 3, 'OFFSET_WIDTH': 3}
+FAILED
+../../src/test_runner.py::test_direct_cache[3-3-16-64-0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234405
+     0.00ns INFO     cocotb.regression                  running test_direct_map_cache.test_direct_map_cache (1/1)
+    30.00ns INFO     cocotb.direct_map_cache            [RESET] Complete
+    40.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP0] idx=31, off=2, tag=1, data=AACA
+    60.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=31, off=2, tag=1, dout=AACA, hit=1, valid=1
+    70.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP1] dirty=0, hit=1, data=F6CA
+    90.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=31, off=2, tag=1, dout=F6CA, hit=1, valid=1
+   110.00ns INFO     cocotb.direct_map_cache            [MISS_TEST] idx=32, off=6, tag=7, hit=0
+   110.00ns INFO     cocotb.direct_map_cache              [PASS] Expected miss
+   130.00ns INFO     cocotb.direct_map_cache            [READ_COMP0] idx=31, off=2, tag=1, dout=F6CA, hit=0, valid=1
+   150.00ns INFO     cocotb.direct_map_cache              [PASS] ERROR asserted as expected in OFFSET_ERROR (offset LSB=1)
+   160.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with zero index and zero tag
+   170.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with max index and max tag
+   180.00ns INFO     cocotb.direct_map_cache            [CORNER] Access with enable low
+   180.00ns INFO     cocotb.direct_map_cache              [PASS] Outputs correctly reset when enable is low
+   190.00ns INFO     cocotb.direct_map_cache            [VICTIM] Filled index 7 with tag 0xA (access write updates both ways)
+   190.00ns INFO     cocotb.regression                  test_direct_map_cache.test_direct_map_cache failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_direct_map_cache.py", line 29, in test_direct_map_cache
+                                                            await victimway_assertion(dut)
+                                                          File "/src/test_direct_map_cache.py", line 231, in victimway_assertion
+                                                            prev_victim = int(dut.victimway.value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'direct_map_cache contains no child object named victimway'
+   190.00ns INFO     cocotb.regression                  *****************************************************************************************************
+                                                        ** TEST                                         STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *****************************************************************************************************
+                                                        ** test_direct_map_cache.test_direct_map_cache   FAIL         190.00           0.01      14604.39  **
+                                                        *****************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                               190.00           0.02      10334.42  **
+                                                        *****************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/direct_map_cache.fst opened for output.
+[DEBUG] Parameters: {'CACHE_SIZE': 64, 'DATA_WIDTH': 16, 'TAG_WIDTH': 3, 'OFFSET_WIDTH': 3}
+FAILED
+../../src/test_runner.py::test_direct_cache[3-3-16-256-0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234405
+     0.00ns INFO     cocotb.regression                  running test_direct_map_cache.test_direct_map_cache (1/1)
+    30.00ns INFO     cocotb.direct_map_cache            [RESET] Complete
+    40.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP0] idx=124, off=2, tag=1, data=AACA
+    60.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=124, off=2, tag=1, dout=AACA, hit=1, valid=1
+    70.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP1] dirty=0, hit=1, data=F6CA
+    90.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=124, off=2, tag=1, dout=F6CA, hit=1, valid=1
+   110.00ns INFO     cocotb.direct_map_cache            [MISS_TEST] idx=125, off=6, tag=7, hit=0
+   110.00ns INFO     cocotb.direct_map_cache              [PASS] Expected miss
+   130.00ns INFO     cocotb.direct_map_cache            [READ_COMP0] idx=124, off=2, tag=1, dout=F6CA, hit=0, valid=1
+   150.00ns INFO     cocotb.direct_map_cache              [PASS] ERROR asserted as expected in OFFSET_ERROR (offset LSB=1)
+   160.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with zero index and zero tag
+   170.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with max index and max tag
+   180.00ns INFO     cocotb.direct_map_cache            [CORNER] Access with enable low
+   180.00ns INFO     cocotb.direct_map_cache              [PASS] Outputs correctly reset when enable is low
+   190.00ns INFO     cocotb.direct_map_cache            [VICTIM] Filled index 7 with tag 0xA (access write updates both ways)
+   190.00ns INFO     cocotb.regression                  test_direct_map_cache.test_direct_map_cache failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_direct_map_cache.py", line 29, in test_direct_map_cache
+                                                            await victimway_assertion(dut)
+                                                          File "/src/test_direct_map_cache.py", line 231, in victimway_assertion
+                                                            prev_victim = int(dut.victimway.value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'direct_map_cache contains no child object named victimway'
+   190.00ns INFO     cocotb.regression                  *****************************************************************************************************
+                                                        ** TEST                                         STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *****************************************************************************************************
+                                                        ** test_direct_map_cache.test_direct_map_cache   FAIL         190.00           0.02      12088.06  **
+                                                        *****************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                               190.00           0.02       9173.68  **
+                                                        *****************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/direct_map_cache.fst opened for output.
+[DEBUG] Parameters: {'CACHE_SIZE': 256, 'DATA_WIDTH': 16, 'TAG_WIDTH': 3, 'OFFSET_WIDTH': 3}
+FAILED
+../../src/test_runner.py::test_direct_cache[3-5-8-64-0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234406
+     0.00ns INFO     cocotb.regression                  running test_direct_map_cache.test_direct_map_cache (1/1)
+    30.00ns INFO     cocotb.direct_map_cache            [RESET] Complete
+    40.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP0] idx=47, off=6, tag=27, data=00B1
+    60.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=47, off=6, tag=27, dout=00B1, hit=1, valid=1
+    70.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP1] dirty=0, hit=1, data=00B7
+    90.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=47, off=6, tag=27, dout=00B7, hit=1, valid=1
+   110.00ns INFO     cocotb.direct_map_cache            [MISS_TEST] idx=48, off=4, tag=4, hit=0
+   110.00ns INFO     cocotb.direct_map_cache              [PASS] Expected miss
+   130.00ns INFO     cocotb.direct_map_cache            [READ_COMP0] idx=47, off=6, tag=27, dout=00B7, hit=0, valid=1
+   150.00ns INFO     cocotb.direct_map_cache              [PASS] ERROR asserted as expected in OFFSET_ERROR (offset LSB=1)
+   160.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with zero index and zero tag
+   170.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with max index and max tag
+   180.00ns INFO     cocotb.direct_map_cache            [CORNER] Access with enable low
+   180.00ns INFO     cocotb.direct_map_cache              [PASS] Outputs correctly reset when enable is low
+   190.00ns INFO     cocotb.direct_map_cache            [VICTIM] Filled index 7 with tag 0xA (access write updates both ways)
+   190.00ns INFO     cocotb.regression                  test_direct_map_cache.test_direct_map_cache failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_direct_map_cache.py", line 29, in test_direct_map_cache
+                                                            await victimway_assertion(dut)
+                                                          File "/src/test_direct_map_cache.py", line 231, in victimway_assertion
+                                                            prev_victim = int(dut.victimway.value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'direct_map_cache contains no child object named victimway'
+   190.00ns INFO     cocotb.regression                  *****************************************************************************************************
+                                                        ** TEST                                         STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *****************************************************************************************************
+                                                        ** test_direct_map_cache.test_direct_map_cache   FAIL         190.00           0.01      16274.92  **
+                                                        *****************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                               190.00           0.02      11158.03  **
+                                                        *****************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/direct_map_cache.fst opened for output.
+[DEBUG] Parameters: {'CACHE_SIZE': 64, 'DATA_WIDTH': 8, 'TAG_WIDTH': 5, 'OFFSET_WIDTH': 3}
+FAILED
+../../src/test_runner.py::test_direct_cache[3-5-8-256-0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234406
+     0.00ns INFO     cocotb.regression                  running test_direct_map_cache.test_direct_map_cache (1/1)
+    30.00ns INFO     cocotb.direct_map_cache            [RESET] Complete
+    40.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP0] idx=190, off=6, tag=27, data=00B1
+    60.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=190, off=6, tag=27, dout=00B1, hit=1, valid=1
+    70.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP1] dirty=0, hit=1, data=00B7
+    90.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=190, off=6, tag=27, dout=00B7, hit=1, valid=1
+   110.00ns INFO     cocotb.direct_map_cache            [MISS_TEST] idx=191, off=4, tag=4, hit=0
+   110.00ns INFO     cocotb.direct_map_cache              [PASS] Expected miss
+   130.00ns INFO     cocotb.direct_map_cache            [READ_COMP0] idx=190, off=6, tag=27, dout=00B7, hit=0, valid=1
+   150.00ns INFO     cocotb.direct_map_cache              [PASS] ERROR asserted as expected in OFFSET_ERROR (offset LSB=1)
+   160.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with zero index and zero tag
+   170.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with max index and max tag
+   180.00ns INFO     cocotb.direct_map_cache            [CORNER] Access with enable low
+   180.00ns INFO     cocotb.direct_map_cache              [PASS] Outputs correctly reset when enable is low
+   190.00ns INFO     cocotb.direct_map_cache            [VICTIM] Filled index 7 with tag 0xA (access write updates both ways)
+   190.00ns INFO     cocotb.regression                  test_direct_map_cache.test_direct_map_cache failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_direct_map_cache.py", line 29, in test_direct_map_cache
+                                                            await victimway_assertion(dut)
+                                                          File "/src/test_direct_map_cache.py", line 231, in victimway_assertion
+                                                            prev_victim = int(dut.victimway.value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'direct_map_cache contains no child object named victimway'
+   190.00ns INFO     cocotb.regression                  *****************************************************************************************************
+                                                        ** TEST                                         STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *****************************************************************************************************
+                                                        ** test_direct_map_cache.test_direct_map_cache   FAIL         190.00           0.01      13837.54  **
+                                                        *****************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                               190.00           0.02       9777.29  **
+                                                        *****************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/direct_map_cache.fst opened for output.
+[DEBUG] Parameters: {'CACHE_SIZE': 256, 'DATA_WIDTH': 8, 'TAG_WIDTH': 5, 'OFFSET_WIDTH': 3}
+FAILED
+../../src/test_runner.py::test_direct_cache[3-5-16-64-0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234406
+     0.00ns INFO     cocotb.regression                  running test_direct_map_cache.test_direct_map_cache (1/1)
+    30.00ns INFO     cocotb.direct_map_cache            [RESET] Complete
+    40.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP0] idx=47, off=6, tag=27, data=B1C3
+    60.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=47, off=6, tag=27, dout=B1C3, hit=1, valid=1
+    70.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP1] dirty=0, hit=1, data=B79C
+    90.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=47, off=6, tag=27, dout=B79C, hit=1, valid=1
+   110.00ns INFO     cocotb.direct_map_cache            [MISS_TEST] idx=48, off=4, tag=4, hit=0
+   110.00ns INFO     cocotb.direct_map_cache              [PASS] Expected miss
+   130.00ns INFO     cocotb.direct_map_cache            [READ_COMP0] idx=47, off=6, tag=27, dout=B79C, hit=0, valid=1
+   150.00ns INFO     cocotb.direct_map_cache              [PASS] ERROR asserted as expected in OFFSET_ERROR (offset LSB=1)
+   160.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with zero index and zero tag
+   170.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with max index and max tag
+   180.00ns INFO     cocotb.direct_map_cache            [CORNER] Access with enable low
+   180.00ns INFO     cocotb.direct_map_cache              [PASS] Outputs correctly reset when enable is low
+   190.00ns INFO     cocotb.direct_map_cache            [VICTIM] Filled index 7 with tag 0xA (access write updates both ways)
+   190.00ns INFO     cocotb.regression                  test_direct_map_cache.test_direct_map_cache failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_direct_map_cache.py", line 29, in test_direct_map_cache
+                                                            await victimway_assertion(dut)
+                                                          File "/src/test_direct_map_cache.py", line 231, in victimway_assertion
+                                                            prev_victim = int(dut.victimway.value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'direct_map_cache contains no child object named victimway'
+   190.00ns INFO     cocotb.regression                  *****************************************************************************************************
+                                                        ** TEST                                         STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *****************************************************************************************************
+                                                        ** test_direct_map_cache.test_direct_map_cache   FAIL         190.00           0.01      14917.97  **
+                                                        *****************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                               190.00           0.02      10526.34  **
+                                                        *****************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/direct_map_cache.fst opened for output.
+[DEBUG] Parameters: {'CACHE_SIZE': 64, 'DATA_WIDTH': 16, 'TAG_WIDTH': 5, 'OFFSET_WIDTH': 3}
+FAILED
+../../src/test_runner.py::test_direct_cache[3-5-16-256-0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234407
+     0.00ns INFO     cocotb.regression                  running test_direct_map_cache.test_direct_map_cache (1/1)
+    30.00ns INFO     cocotb.direct_map_cache            [RESET] Complete
+    40.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP0] idx=41, off=4, tag=23, data=C0B2
+    60.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=41, off=4, tag=23, dout=C0B2, hit=1, valid=1
+    70.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP1] dirty=0, hit=1, data=9DA6
+    90.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=41, off=4, tag=23, dout=9DA6, hit=1, valid=1
+   110.00ns INFO     cocotb.direct_map_cache            [MISS_TEST] idx=42, off=0, tag=12, hit=0
+   110.00ns INFO     cocotb.direct_map_cache              [PASS] Expected miss
+   130.00ns INFO     cocotb.direct_map_cache            [READ_COMP0] idx=41, off=4, tag=23, dout=9DA6, hit=0, valid=1
+   150.00ns INFO     cocotb.direct_map_cache              [PASS] ERROR asserted as expected in OFFSET_ERROR (offset LSB=1)
+   160.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with zero index and zero tag
+   170.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with max index and max tag
+   180.00ns INFO     cocotb.direct_map_cache            [CORNER] Access with enable low
+   180.00ns INFO     cocotb.direct_map_cache              [PASS] Outputs correctly reset when enable is low
+   190.00ns INFO     cocotb.direct_map_cache            [VICTIM] Filled index 7 with tag 0xA (access write updates both ways)
+   190.00ns INFO     cocotb.regression                  test_direct_map_cache.test_direct_map_cache failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_direct_map_cache.py", line 29, in test_direct_map_cache
+                                                            await victimway_assertion(dut)
+                                                          File "/src/test_direct_map_cache.py", line 231, in victimway_assertion
+                                                            prev_victim = int(dut.victimway.value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'direct_map_cache contains no child object named victimway'
+   190.00ns INFO     cocotb.regression                  *****************************************************************************************************
+                                                        ** TEST                                         STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *****************************************************************************************************
+                                                        ** test_direct_map_cache.test_direct_map_cache   FAIL         190.00           0.02      11686.21  **
+                                                        *****************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                               190.00           0.02       8550.44  **
+                                                        *****************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/direct_map_cache.fst opened for output.
+[DEBUG] Parameters: {'CACHE_SIZE': 256, 'DATA_WIDTH': 16, 'TAG_WIDTH': 5, 'OFFSET_WIDTH': 3}
+FAILED
+../../src/test_runner.py::test_direct_cache[6-3-8-64-0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234407
+     0.00ns INFO     cocotb.regression                  running test_direct_map_cache.test_direct_map_cache (1/1)
+    30.00ns INFO     cocotb.direct_map_cache            [RESET] Complete
+    40.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP0] idx=10, off=34, tag=5, data=00C0
+    60.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=10, off=34, tag=5, dout=00C0, hit=1, valid=1
+    70.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP1] dirty=0, hit=1, data=009D
+    90.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=10, off=34, tag=5, dout=009D, hit=1, valid=1
+   110.00ns INFO     cocotb.direct_map_cache            [MISS_TEST] idx=11, off=10, tag=3, hit=0
+   110.00ns INFO     cocotb.direct_map_cache              [PASS] Expected miss
+   130.00ns INFO     cocotb.direct_map_cache            [READ_COMP0] idx=10, off=34, tag=5, dout=009D, hit=0, valid=1
+   150.00ns INFO     cocotb.direct_map_cache              [PASS] ERROR asserted as expected in OFFSET_ERROR (offset LSB=1)
+   160.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with zero index and zero tag
+   170.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with max index and max tag
+   180.00ns INFO     cocotb.direct_map_cache            [CORNER] Access with enable low
+   180.00ns INFO     cocotb.direct_map_cache              [PASS] Outputs correctly reset when enable is low
+   190.00ns INFO     cocotb.direct_map_cache            [VICTIM] Filled index 7 with tag 0xA (access write updates both ways)
+   190.00ns INFO     cocotb.regression                  test_direct_map_cache.test_direct_map_cache failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_direct_map_cache.py", line 29, in test_direct_map_cache
+                                                            await victimway_assertion(dut)
+                                                          File "/src/test_direct_map_cache.py", line 231, in victimway_assertion
+                                                            prev_victim = int(dut.victimway.value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'direct_map_cache contains no child object named victimway'
+   190.00ns INFO     cocotb.regression                  *****************************************************************************************************
+                                                        ** TEST                                         STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *****************************************************************************************************
+                                                        ** test_direct_map_cache.test_direct_map_cache   FAIL         190.00           0.01      14045.08  **
+                                                        *****************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                               190.00           0.02       9968.45  **
+                                                        *****************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/direct_map_cache.fst opened for output.
+[DEBUG] Parameters: {'CACHE_SIZE': 64, 'DATA_WIDTH': 8, 'TAG_WIDTH': 3, 'OFFSET_WIDTH': 6}
+FAILED
+../../src/test_runner.py::test_direct_cache[6-3-8-256-0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234407
+     0.00ns INFO     cocotb.regression                  running test_direct_map_cache.test_direct_map_cache (1/1)
+    30.00ns INFO     cocotb.direct_map_cache            [RESET] Complete
+    40.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP0] idx=41, off=34, tag=5, data=00C0
+    60.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=41, off=34, tag=5, dout=00C0, hit=1, valid=1
+    70.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP1] dirty=0, hit=1, data=009D
+    90.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=41, off=34, tag=5, dout=009D, hit=1, valid=1
+   110.00ns INFO     cocotb.direct_map_cache            [MISS_TEST] idx=42, off=10, tag=3, hit=0
+   110.00ns INFO     cocotb.direct_map_cache              [PASS] Expected miss
+   130.00ns INFO     cocotb.direct_map_cache            [READ_COMP0] idx=41, off=34, tag=5, dout=009D, hit=0, valid=1
+   150.00ns INFO     cocotb.direct_map_cache              [PASS] ERROR asserted as expected in OFFSET_ERROR (offset LSB=1)
+   160.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with zero index and zero tag
+   170.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with max index and max tag
+   180.00ns INFO     cocotb.direct_map_cache            [CORNER] Access with enable low
+   180.00ns INFO     cocotb.direct_map_cache              [PASS] Outputs correctly reset when enable is low
+   190.00ns INFO     cocotb.direct_map_cache            [VICTIM] Filled index 7 with tag 0xA (access write updates both ways)
+   190.00ns INFO     cocotb.regression                  test_direct_map_cache.test_direct_map_cache failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_direct_map_cache.py", line 29, in test_direct_map_cache
+                                                            await victimway_assertion(dut)
+                                                          File "/src/test_direct_map_cache.py", line 231, in victimway_assertion
+                                                            prev_victim = int(dut.victimway.value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'direct_map_cache contains no child object named victimway'
+   190.00ns INFO     cocotb.regression                  *****************************************************************************************************
+                                                        ** TEST                                         STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *****************************************************************************************************
+                                                        ** test_direct_map_cache.test_direct_map_cache   FAIL         190.00           0.01      12895.53  **
+                                                        *****************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                               190.00           0.02       9570.86  **
+                                                        *****************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/direct_map_cache.fst opened for output.
+[DEBUG] Parameters: {'CACHE_SIZE': 256, 'DATA_WIDTH': 8, 'TAG_WIDTH': 3, 'OFFSET_WIDTH': 6}
+FAILED
+../../src/test_runner.py::test_direct_cache[6-3-16-64-0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234407
+     0.00ns INFO     cocotb.regression                  running test_direct_map_cache.test_direct_map_cache (1/1)
+    30.00ns INFO     cocotb.direct_map_cache            [RESET] Complete
+    40.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP0] idx=10, off=34, tag=5, data=C0B2
+    60.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=10, off=34, tag=5, dout=C0B2, hit=1, valid=1
+    70.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP1] dirty=0, hit=1, data=9DA6
+    90.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=10, off=34, tag=5, dout=9DA6, hit=1, valid=1
+   110.00ns INFO     cocotb.direct_map_cache            [MISS_TEST] idx=11, off=10, tag=3, hit=0
+   110.00ns INFO     cocotb.direct_map_cache              [PASS] Expected miss
+   130.00ns INFO     cocotb.direct_map_cache            [READ_COMP0] idx=10, off=34, tag=5, dout=9DA6, hit=0, valid=1
+   150.00ns INFO     cocotb.direct_map_cache              [PASS] ERROR asserted as expected in OFFSET_ERROR (offset LSB=1)
+   160.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with zero index and zero tag
+   170.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with max index and max tag
+   180.00ns INFO     cocotb.direct_map_cache            [CORNER] Access with enable low
+   180.00ns INFO     cocotb.direct_map_cache              [PASS] Outputs correctly reset when enable is low
+   190.00ns INFO     cocotb.direct_map_cache            [VICTIM] Filled index 7 with tag 0xA (access write updates both ways)
+   190.00ns INFO     cocotb.regression                  test_direct_map_cache.test_direct_map_cache failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_direct_map_cache.py", line 29, in test_direct_map_cache
+                                                            await victimway_assertion(dut)
+                                                          File "/src/test_direct_map_cache.py", line 231, in victimway_assertion
+                                                            prev_victim = int(dut.victimway.value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'direct_map_cache contains no child object named victimway'
+   190.00ns INFO     cocotb.regression                  *****************************************************************************************************
+                                                        ** TEST                                         STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *****************************************************************************************************
+                                                        ** test_direct_map_cache.test_direct_map_cache   FAIL         190.00           0.01      16149.92  **
+                                                        *****************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                               190.00           0.02      10946.82  **
+                                                        *****************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/direct_map_cache.fst opened for output.
+[DEBUG] Parameters: {'CACHE_SIZE': 64, 'DATA_WIDTH': 16, 'TAG_WIDTH': 3, 'OFFSET_WIDTH': 6}
+FAILED
+../../src/test_runner.py::test_direct_cache[6-3-16-256-0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234408
+     0.00ns INFO     cocotb.regression                  running test_direct_map_cache.test_direct_map_cache (1/1)
+    30.00ns INFO     cocotb.direct_map_cache            [RESET] Complete
+    40.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP0] idx=150, off=14, tag=3, data=A9E0
+    60.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=150, off=14, tag=3, dout=A9E0, hit=1, valid=1
+    70.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP1] dirty=0, hit=1, data=8125
+    90.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=150, off=14, tag=3, dout=8125, hit=1, valid=1
+   110.00ns INFO     cocotb.direct_map_cache            [MISS_TEST] idx=151, off=34, tag=0, hit=0
+   110.00ns INFO     cocotb.direct_map_cache              [PASS] Expected miss
+   130.00ns INFO     cocotb.direct_map_cache            [READ_COMP0] idx=150, off=14, tag=3, dout=8125, hit=0, valid=1
+   150.00ns INFO     cocotb.direct_map_cache              [PASS] ERROR asserted as expected in OFFSET_ERROR (offset LSB=1)
+   160.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with zero index and zero tag
+   170.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with max index and max tag
+   180.00ns INFO     cocotb.direct_map_cache            [CORNER] Access with enable low
+   180.00ns INFO     cocotb.direct_map_cache              [PASS] Outputs correctly reset when enable is low
+   190.00ns INFO     cocotb.direct_map_cache            [VICTIM] Filled index 7 with tag 0xA (access write updates both ways)
+   190.00ns INFO     cocotb.regression                  test_direct_map_cache.test_direct_map_cache failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_direct_map_cache.py", line 29, in test_direct_map_cache
+                                                            await victimway_assertion(dut)
+                                                          File "/src/test_direct_map_cache.py", line 231, in victimway_assertion
+                                                            prev_victim = int(dut.victimway.value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'direct_map_cache contains no child object named victimway'
+   190.00ns INFO     cocotb.regression                  *****************************************************************************************************
+                                                        ** TEST                                         STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *****************************************************************************************************
+                                                        ** test_direct_map_cache.test_direct_map_cache   FAIL         190.00           0.02      11018.11  **
+                                                        *****************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                               190.00           0.02       8476.05  **
+                                                        *****************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/direct_map_cache.fst opened for output.
+[DEBUG] Parameters: {'CACHE_SIZE': 256, 'DATA_WIDTH': 16, 'TAG_WIDTH': 3, 'OFFSET_WIDTH': 6}
+FAILED
+../../src/test_runner.py::test_direct_cache[6-5-8-64-0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234408
+     0.00ns INFO     cocotb.regression                  running test_direct_map_cache.test_direct_map_cache (1/1)
+    30.00ns INFO     cocotb.direct_map_cache            [RESET] Complete
+    40.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP0] idx=37, off=14, tag=13, data=00A9
+    60.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=37, off=14, tag=13, dout=00A9, hit=1, valid=1
+    70.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP1] dirty=0, hit=1, data=0081
+    90.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=37, off=14, tag=13, dout=0081, hit=1, valid=1
+   110.00ns INFO     cocotb.direct_map_cache            [MISS_TEST] idx=38, off=34, tag=3, hit=0
+   110.00ns INFO     cocotb.direct_map_cache              [PASS] Expected miss
+   130.00ns INFO     cocotb.direct_map_cache            [READ_COMP0] idx=37, off=14, tag=13, dout=0081, hit=0, valid=1
+   150.00ns INFO     cocotb.direct_map_cache              [PASS] ERROR asserted as expected in OFFSET_ERROR (offset LSB=1)
+   160.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with zero index and zero tag
+   170.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with max index and max tag
+   180.00ns INFO     cocotb.direct_map_cache            [CORNER] Access with enable low
+   180.00ns INFO     cocotb.direct_map_cache              [PASS] Outputs correctly reset when enable is low
+   190.00ns INFO     cocotb.direct_map_cache            [VICTIM] Filled index 7 with tag 0xA (access write updates both ways)
+   190.00ns INFO     cocotb.regression                  test_direct_map_cache.test_direct_map_cache failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_direct_map_cache.py", line 29, in test_direct_map_cache
+                                                            await victimway_assertion(dut)
+                                                          File "/src/test_direct_map_cache.py", line 231, in victimway_assertion
+                                                            prev_victim = int(dut.victimway.value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'direct_map_cache contains no child object named victimway'
+   190.00ns INFO     cocotb.regression                  *****************************************************************************************************
+                                                        ** TEST                                         STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *****************************************************************************************************
+                                                        ** test_direct_map_cache.test_direct_map_cache   FAIL         190.00           0.01      15904.32  **
+                                                        *****************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                               190.00           0.02      10278.43  **
+                                                        *****************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/direct_map_cache.fst opened for output.
+[DEBUG] Parameters: {'CACHE_SIZE': 64, 'DATA_WIDTH': 8, 'TAG_WIDTH': 5, 'OFFSET_WIDTH': 6}
+FAILED
+../../src/test_runner.py::test_direct_cache[6-5-8-256-0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234408
+     0.00ns INFO     cocotb.regression                  running test_direct_map_cache.test_direct_map_cache (1/1)
+    30.00ns INFO     cocotb.direct_map_cache            [RESET] Complete
+    40.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP0] idx=150, off=14, tag=13, data=00A9
+    60.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=150, off=14, tag=13, dout=00A9, hit=1, valid=1
+    70.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP1] dirty=0, hit=1, data=0081
+    90.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=150, off=14, tag=13, dout=0081, hit=1, valid=1
+   110.00ns INFO     cocotb.direct_map_cache            [MISS_TEST] idx=151, off=34, tag=3, hit=0
+   110.00ns INFO     cocotb.direct_map_cache              [PASS] Expected miss
+   130.00ns INFO     cocotb.direct_map_cache            [READ_COMP0] idx=150, off=14, tag=13, dout=0081, hit=0, valid=1
+   150.00ns INFO     cocotb.direct_map_cache              [PASS] ERROR asserted as expected in OFFSET_ERROR (offset LSB=1)
+   160.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with zero index and zero tag
+   170.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with max index and max tag
+   180.00ns INFO     cocotb.direct_map_cache            [CORNER] Access with enable low
+   180.00ns INFO     cocotb.direct_map_cache              [PASS] Outputs correctly reset when enable is low
+   190.00ns INFO     cocotb.direct_map_cache            [VICTIM] Filled index 7 with tag 0xA (access write updates both ways)
+   190.00ns INFO     cocotb.regression                  test_direct_map_cache.test_direct_map_cache failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_direct_map_cache.py", line 29, in test_direct_map_cache
+                                                            await victimway_assertion(dut)
+                                                          File "/src/test_direct_map_cache.py", line 231, in victimway_assertion
+                                                            prev_victim = int(dut.victimway.value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'direct_map_cache contains no child object named victimway'
+   190.00ns INFO     cocotb.regression                  *****************************************************************************************************
+                                                        ** TEST                                         STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *****************************************************************************************************
+                                                        ** test_direct_map_cache.test_direct_map_cache   FAIL         190.00           0.02      11668.93  **
+                                                        *****************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                               190.00           0.02       9005.13  **
+                                                        *****************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/direct_map_cache.fst opened for output.
+[DEBUG] Parameters: {'CACHE_SIZE': 256, 'DATA_WIDTH': 8, 'TAG_WIDTH': 5, 'OFFSET_WIDTH': 6}
+FAILED
+../../src/test_runner.py::test_direct_cache[6-5-16-64-0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234408
+     0.00ns INFO     cocotb.regression                  running test_direct_map_cache.test_direct_map_cache (1/1)
+    30.00ns INFO     cocotb.direct_map_cache            [RESET] Complete
+    40.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP0] idx=37, off=14, tag=13, data=A9E0
+    60.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=37, off=14, tag=13, dout=A9E0, hit=1, valid=1
+    70.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP1] dirty=0, hit=1, data=8125
+    90.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=37, off=14, tag=13, dout=8125, hit=1, valid=1
+   110.00ns INFO     cocotb.direct_map_cache            [MISS_TEST] idx=38, off=34, tag=3, hit=0
+   110.00ns INFO     cocotb.direct_map_cache              [PASS] Expected miss
+   130.00ns INFO     cocotb.direct_map_cache            [READ_COMP0] idx=37, off=14, tag=13, dout=8125, hit=0, valid=1
+   150.00ns INFO     cocotb.direct_map_cache              [PASS] ERROR asserted as expected in OFFSET_ERROR (offset LSB=1)
+   160.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with zero index and zero tag
+   170.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with max index and max tag
+   180.00ns INFO     cocotb.direct_map_cache            [CORNER] Access with enable low
+   180.00ns INFO     cocotb.direct_map_cache              [PASS] Outputs correctly reset when enable is low
+   190.00ns INFO     cocotb.direct_map_cache            [VICTIM] Filled index 7 with tag 0xA (access write updates both ways)
+   190.00ns INFO     cocotb.regression                  test_direct_map_cache.test_direct_map_cache failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_direct_map_cache.py", line 29, in test_direct_map_cache
+                                                            await victimway_assertion(dut)
+                                                          File "/src/test_direct_map_cache.py", line 231, in victimway_assertion
+                                                            prev_victim = int(dut.victimway.value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'direct_map_cache contains no child object named victimway'
+   190.00ns INFO     cocotb.regression                  *****************************************************************************************************
+                                                        ** TEST                                         STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *****************************************************************************************************
+                                                        ** test_direct_map_cache.test_direct_map_cache   FAIL         190.00           0.01      16354.08  **
+                                                        *****************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                               190.00           0.02      10015.56  **
+                                                        *****************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/direct_map_cache.fst opened for output.
+[DEBUG] Parameters: {'CACHE_SIZE': 64, 'DATA_WIDTH': 16, 'TAG_WIDTH': 5, 'OFFSET_WIDTH': 6}
+FAILED
+../../src/test_runner.py::test_direct_cache[6-5-16-256-0]      -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234409
+     0.00ns INFO     cocotb.regression                  running test_direct_map_cache.test_direct_map_cache (1/1)
+    30.00ns INFO     cocotb.direct_map_cache            [RESET] Complete
+    40.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP0] idx=92, off=60, tag=9, data=B6FA
+    60.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=92, off=60, tag=9, dout=B6FA, hit=1, valid=1
+    70.00ns INFO     cocotb.direct_map_cache            [WRITE_COMP1] dirty=0, hit=1, data=8AF5
+    90.00ns INFO     cocotb.direct_map_cache            [READ_COMP1] idx=92, off=60, tag=9, dout=8AF5, hit=1, valid=1
+   110.00ns INFO     cocotb.direct_map_cache            [MISS_TEST] idx=93, off=48, tag=31, hit=0
+   110.00ns INFO     cocotb.direct_map_cache              [PASS] Expected miss
+   130.00ns INFO     cocotb.direct_map_cache            [READ_COMP0] idx=92, off=60, tag=9, dout=8AF5, hit=0, valid=1
+   150.00ns INFO     cocotb.direct_map_cache              [PASS] ERROR asserted as expected in OFFSET_ERROR (offset LSB=1)
+   160.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with zero index and zero tag
+   170.00ns INFO     cocotb.direct_map_cache            [CORNER] Write with max index and max tag
+   180.00ns INFO     cocotb.direct_map_cache            [CORNER] Access with enable low
+   180.00ns INFO     cocotb.direct_map_cache              [PASS] Outputs correctly reset when enable is low
+   190.00ns INFO     cocotb.direct_map_cache            [VICTIM] Filled index 7 with tag 0xA (access write updates both ways)
+   190.00ns INFO     cocotb.regression                  test_direct_map_cache.test_direct_map_cache failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_direct_map_cache.py", line 29, in test_direct_map_cache
+                                                            await victimway_assertion(dut)
+                                                          File "/src/test_direct_map_cache.py", line 231, in victimway_assertion
+                                                            prev_victim = int(dut.victimway.value)
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'direct_map_cache contains no child object named victimway'
+   190.00ns INFO     cocotb.regression                  *****************************************************************************************************
+                                                        ** TEST                                         STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *****************************************************************************************************
+                                                        ** test_direct_map_cache.test_direct_map_cache   FAIL         190.00           0.02      11887.91  **
+                                                        *****************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                               190.00           0.02       9007.47  **
+                                                        *****************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/direct_map_cache.fst opened for output.
+[DEBUG] Parameters: {'CACHE_SIZE': 256, 'DATA_WIDTH': 16, 'TAG_WIDTH': 5, 'OFFSET_WIDTH': 6}
+FAILED
+
+=================================== FAILURES ===================================
+________________________ test_direct_cache[3-3-8-64-0] _________________________
+
+CACHE_SIZE = 64, DATA_WIDTH = 8, TAG_WIDTH = 3, OFFSET_WIDTH = 3, test = 0
+
+    @pytest.mark.parametrize("test", range(1))
+    @pytest.mark.parametrize("CACHE_SIZE", [64,256])
+    @pytest.mark.parametrize("DATA_WIDTH", [8,16])
+    @pytest.mark.parametrize("TAG_WIDTH", [3,5])
+    @pytest.mark.parametrize("OFFSET_WIDTH", [3,6])
+    def test_direct_cache(CACHE_SIZE,DATA_WIDTH,TAG_WIDTH,OFFSET_WIDTH, test):
+>       runner(CACHE_SIZE=CACHE_SIZE,DATA_WIDTH=DATA_WIDTH,TAG_WIDTH=TAG_WIDTH,OFFSET_WIDTH=OFFSET_WIDTH)
+
+/src/test_runner.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+CACHE_SIZE = 64, DATA_WIDTH = 8, TAG_WIDTH = 3, OFFSET_WIDTH = 3
+
+    def runner(CACHE_SIZE: int = 256,DATA_WIDTH: int = 16,TAG_WIDTH: int = 5,OFFSET_WIDTH: int = 3):
+        parameter = {"CACHE_SIZE": CACHE_SIZE,"DATA_WIDTH":DATA_WIDTH,"TAG_WIDTH": TAG_WIDTH,"OFFSET_WIDTH":OFFSET_WIDTH}
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log")
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=wave)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:27: SystemExit
+________________________ test_direct_cache[3-3-8-256-0] ________________________
+
+CACHE_SIZE = 256, DATA_WIDTH = 8, TAG_WIDTH = 3, OFFSET_WIDTH = 3, test = 0
+
+    @pytest.mark.parametrize("test", range(1))
+    @pytest.mark.parametrize("CACHE_SIZE", [64,256])
+    @pytest.mark.parametrize("DATA_WIDTH", [8,16])
+    @pytest.mark.parametrize("TAG_WIDTH", [3,5])
+    @pytest.mark.parametrize("OFFSET_WIDTH", [3,6])
+    def test_direct_cache(CACHE_SIZE,DATA_WIDTH,TAG_WIDTH,OFFSET_WIDTH, test):
+>       runner(CACHE_SIZE=CACHE_SIZE,DATA_WIDTH=DATA_WIDTH,TAG_WIDTH=TAG_WIDTH,OFFSET_WIDTH=OFFSET_WIDTH)
+
+/src/test_runner.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+CACHE_SIZE = 256, DATA_WIDTH = 8, TAG_WIDTH = 3, OFFSET_WIDTH = 3
+
+    def runner(CACHE_SIZE: int = 256,DATA_WIDTH: int = 16,TAG_WIDTH: int = 5,OFFSET_WIDTH: int = 3):
+        parameter = {"CACHE_SIZE": CACHE_SIZE,"DATA_WIDTH":DATA_WIDTH,"TAG_WIDTH": TAG_WIDTH,"OFFSET_WIDTH":OFFSET_WIDTH}
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log")
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=wave)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:27: SystemExit
+________________________ test_direct_cache[3-3-16-64-0] ________________________
+
+CACHE_SIZE = 64, DATA_WIDTH = 16, TAG_WIDTH = 3, OFFSET_WIDTH = 3, test = 0
+
+    @pytest.mark.parametrize("test", range(1))
+    @pytest.mark.parametrize("CACHE_SIZE", [64,256])
+    @pytest.mark.parametrize("DATA_WIDTH", [8,16])
+    @pytest.mark.parametrize("TAG_WIDTH", [3,5])
+    @pytest.mark.parametrize("OFFSET_WIDTH", [3,6])
+    def test_direct_cache(CACHE_SIZE,DATA_WIDTH,TAG_WIDTH,OFFSET_WIDTH, test):
+>       runner(CACHE_SIZE=CACHE_SIZE,DATA_WIDTH=DATA_WIDTH,TAG_WIDTH=TAG_WIDTH,OFFSET_WIDTH=OFFSET_WIDTH)
+
+/src/test_runner.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+CACHE_SIZE = 64, DATA_WIDTH = 16, TAG_WIDTH = 3, OFFSET_WIDTH = 3
+
+    def runner(CACHE_SIZE: int = 256,DATA_WIDTH: int = 16,TAG_WIDTH: int = 5,OFFSET_WIDTH: int = 3):
+        parameter = {"CACHE_SIZE": CACHE_SIZE,"DATA_WIDTH":DATA_WIDTH,"TAG_WIDTH": TAG_WIDTH,"OFFSET_WIDTH":OFFSET_WIDTH}
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log")
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=wave)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:27: SystemExit
+_______________________ test_direct_cache[3-3-16-256-0] ________________________
+
+CACHE_SIZE = 256, DATA_WIDTH = 16, TAG_WIDTH = 3, OFFSET_WIDTH = 3, test = 0
+
+    @pytest.mark.parametrize("test", range(1))
+    @pytest.mark.parametrize("CACHE_SIZE", [64,256])
+    @pytest.mark.parametrize("DATA_WIDTH", [8,16])
+    @pytest.mark.parametrize("TAG_WIDTH", [3,5])
+    @pytest.mark.parametrize("OFFSET_WIDTH", [3,6])
+    def test_direct_cache(CACHE_SIZE,DATA_WIDTH,TAG_WIDTH,OFFSET_WIDTH, test):
+>       runner(CACHE_SIZE=CACHE_SIZE,DATA_WIDTH=DATA_WIDTH,TAG_WIDTH=TAG_WIDTH,OFFSET_WIDTH=OFFSET_WIDTH)
+
+/src/test_runner.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+CACHE_SIZE = 256, DATA_WIDTH = 16, TAG_WIDTH = 3, OFFSET_WIDTH = 3
+
+    def runner(CACHE_SIZE: int = 256,DATA_WIDTH: int = 16,TAG_WIDTH: int = 5,OFFSET_WIDTH: int = 3):
+        parameter = {"CACHE_SIZE": CACHE_SIZE,"DATA_WIDTH":DATA_WIDTH,"TAG_WIDTH": TAG_WIDTH,"OFFSET_WIDTH":OFFSET_WIDTH}
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log")
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=wave)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:27: SystemExit
+________________________ test_direct_cache[3-5-8-64-0] _________________________
+
+CACHE_SIZE = 64, DATA_WIDTH = 8, TAG_WIDTH = 5, OFFSET_WIDTH = 3, test = 0
+
+    @pytest.mark.parametrize("test", range(1))
+    @pytest.mark.parametrize("CACHE_SIZE", [64,256])
+    @pytest.mark.parametrize("DATA_WIDTH", [8,16])
+    @pytest.mark.parametrize("TAG_WIDTH", [3,5])
+    @pytest.mark.parametrize("OFFSET_WIDTH", [3,6])
+    def test_direct_cache(CACHE_SIZE,DATA_WIDTH,TAG_WIDTH,OFFSET_WIDTH, test):
+>       runner(CACHE_SIZE=CACHE_SIZE,DATA_WIDTH=DATA_WIDTH,TAG_WIDTH=TAG_WIDTH,OFFSET_WIDTH=OFFSET_WIDTH)
+
+/src/test_runner.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+CACHE_SIZE = 64, DATA_WIDTH = 8, TAG_WIDTH = 5, OFFSET_WIDTH = 3
+
+    def runner(CACHE_SIZE: int = 256,DATA_WIDTH: int = 16,TAG_WIDTH: int = 5,OFFSET_WIDTH: int = 3):
+        parameter = {"CACHE_SIZE": CACHE_SIZE,"DATA_WIDTH":DATA_WIDTH,"TAG_WIDTH": TAG_WIDTH,"OFFSET_WIDTH":OFFSET_WIDTH}
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log")
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=wave)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:27: SystemExit
+________________________ test_direct_cache[3-5-8-256-0] ________________________
+
+CACHE_SIZE = 256, DATA_WIDTH = 8, TAG_WIDTH = 5, OFFSET_WIDTH = 3, test = 0
+
+    @pytest.mark.parametrize("test", range(1))
+    @pytest.mark.parametrize("CACHE_SIZE", [64,256])
+    @pytest.mark.parametrize("DATA_WIDTH", [8,16])
+    @pytest.mark.parametrize("TAG_WIDTH", [3,5])
+    @pytest.mark.parametrize("OFFSET_WIDTH", [3,6])
+    def test_direct_cache(CACHE_SIZE,DATA_WIDTH,TAG_WIDTH,OFFSET_WIDTH, test):
+>       runner(CACHE_SIZE=CACHE_SIZE,DATA_WIDTH=DATA_WIDTH,TAG_WIDTH=TAG_WIDTH,OFFSET_WIDTH=OFFSET_WIDTH)
+
+/src/test_runner.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+CACHE_SIZE = 256, DATA_WIDTH = 8, TAG_WIDTH = 5, OFFSET_WIDTH = 3
+
+    def runner(CACHE_SIZE: int = 256,DATA_WIDTH: int = 16,TAG_WIDTH: int = 5,OFFSET_WIDTH: int = 3):
+        parameter = {"CACHE_SIZE": CACHE_SIZE,"DATA_WIDTH":DATA_WIDTH,"TAG_WIDTH": TAG_WIDTH,"OFFSET_WIDTH":OFFSET_WIDTH}
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log")
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=wave)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:27: SystemExit
+________________________ test_direct_cache[3-5-16-64-0] ________________________
+
+CACHE_SIZE = 64, DATA_WIDTH = 16, TAG_WIDTH = 5, OFFSET_WIDTH = 3, test = 0
+
+    @pytest.mark.parametrize("test", range(1))
+    @pytest.mark.parametrize("CACHE_SIZE", [64,256])
+    @pytest.mark.parametrize("DATA_WIDTH", [8,16])
+    @pytest.mark.parametrize("TAG_WIDTH", [3,5])
+    @pytest.mark.parametrize("OFFSET_WIDTH", [3,6])
+    def test_direct_cache(CACHE_SIZE,DATA_WIDTH,TAG_WIDTH,OFFSET_WIDTH, test):
+>       runner(CACHE_SIZE=CACHE_SIZE,DATA_WIDTH=DATA_WIDTH,TAG_WIDTH=TAG_WIDTH,OFFSET_WIDTH=OFFSET_WIDTH)
+
+/src/test_runner.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+CACHE_SIZE = 64, DATA_WIDTH = 16, TAG_WIDTH = 5, OFFSET_WIDTH = 3
+
+    def runner(CACHE_SIZE: int = 256,DATA_WIDTH: int = 16,TAG_WIDTH: int = 5,OFFSET_WIDTH: int = 3):
+        parameter = {"CACHE_SIZE": CACHE_SIZE,"DATA_WIDTH":DATA_WIDTH,"TAG_WIDTH": TAG_WIDTH,"OFFSET_WIDTH":OFFSET_WIDTH}
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log")
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=wave)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:27: SystemExit
+_______________________ test_direct_cache[3-5-16-256-0] ________________________
+
+CACHE_SIZE = 256, DATA_WIDTH = 16, TAG_WIDTH = 5, OFFSET_WIDTH = 3, test = 0
+
+    @pytest.mark.parametrize("test", range(1))
+    @pytest.mark.parametrize("CACHE_SIZE", [64,256])
+    @pytest.mark.parametrize("DATA_WIDTH", [8,16])
+    @pytest.mark.parametrize("TAG_WIDTH", [3,5])
+    @pytest.mark.parametrize("OFFSET_WIDTH", [3,6])
+    def test_direct_cache(CACHE_SIZE,DATA_WIDTH,TAG_WIDTH,OFFSET_WIDTH, test):
+>       runner(CACHE_SIZE=CACHE_SIZE,DATA_WIDTH=DATA_WIDTH,TAG_WIDTH=TAG_WIDTH,OFFSET_WIDTH=OFFSET_WIDTH)
+
+/src/test_runner.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+CACHE_SIZE = 256, DATA_WIDTH = 16, TAG_WIDTH = 5, OFFSET_WIDTH = 3
+
+    def runner(CACHE_SIZE: int = 256,DATA_WIDTH: int = 16,TAG_WIDTH: int = 5,OFFSET_WIDTH: int = 3):
+        parameter = {"CACHE_SIZE": CACHE_SIZE,"DATA_WIDTH":DATA_WIDTH,"TAG_WIDTH": TAG_WIDTH,"OFFSET_WIDTH":OFFSET_WIDTH}
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log")
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=wave)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:27: SystemExit
+________________________ test_direct_cache[6-3-8-64-0] _________________________
+
+CACHE_SIZE = 64, DATA_WIDTH = 8, TAG_WIDTH = 3, OFFSET_WIDTH = 6, test = 0
+
+    @pytest.mark.parametrize("test", range(1))
+    @pytest.mark.parametrize("CACHE_SIZE", [64,256])
+    @pytest.mark.parametrize("DATA_WIDTH", [8,16])
+    @pytest.mark.parametrize("TAG_WIDTH", [3,5])
+    @pytest.mark.parametrize("OFFSET_WIDTH", [3,6])
+    def test_direct_cache(CACHE_SIZE,DATA_WIDTH,TAG_WIDTH,OFFSET_WIDTH, test):
+>       runner(CACHE_SIZE=CACHE_SIZE,DATA_WIDTH=DATA_WIDTH,TAG_WIDTH=TAG_WIDTH,OFFSET_WIDTH=OFFSET_WIDTH)
+
+/src/test_runner.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+CACHE_SIZE = 64, DATA_WIDTH = 8, TAG_WIDTH = 3, OFFSET_WIDTH = 6
+
+    def runner(CACHE_SIZE: int = 256,DATA_WIDTH: int = 16,TAG_WIDTH: int = 5,OFFSET_WIDTH: int = 3):
+        parameter = {"CACHE_SIZE": CACHE_SIZE,"DATA_WIDTH":DATA_WIDTH,"TAG_WIDTH": TAG_WIDTH,"OFFSET_WIDTH":OFFSET_WIDTH}
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log")
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=wave)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:27: SystemExit
+________________________ test_direct_cache[6-3-8-256-0] ________________________
+
+CACHE_SIZE = 256, DATA_WIDTH = 8, TAG_WIDTH = 3, OFFSET_WIDTH = 6, test = 0
+
+    @pytest.mark.parametrize("test", range(1))
+    @pytest.mark.parametrize("CACHE_SIZE", [64,256])
+    @pytest.mark.parametrize("DATA_WIDTH", [8,16])
+    @pytest.mark.parametrize("TAG_WIDTH", [3,5])
+    @pytest.mark.parametrize("OFFSET_WIDTH", [3,6])
+    def test_direct_cache(CACHE_SIZE,DATA_WIDTH,TAG_WIDTH,OFFSET_WIDTH, test):
+>       runner(CACHE_SIZE=CACHE_SIZE,DATA_WIDTH=DATA_WIDTH,TAG_WIDTH=TAG_WIDTH,OFFSET_WIDTH=OFFSET_WIDTH)
+
+/src/test_runner.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+CACHE_SIZE = 256, DATA_WIDTH = 8, TAG_WIDTH = 3, OFFSET_WIDTH = 6
+
+    def runner(CACHE_SIZE: int = 256,DATA_WIDTH: int = 16,TAG_WIDTH: int = 5,OFFSET_WIDTH: int = 3):
+        parameter = {"CACHE_SIZE": CACHE_SIZE,"DATA_WIDTH":DATA_WIDTH,"TAG_WIDTH": TAG_WIDTH,"OFFSET_WIDTH":OFFSET_WIDTH}
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log")
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=wave)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:27: SystemExit
+________________________ test_direct_cache[6-3-16-64-0] ________________________
+
+CACHE_SIZE = 64, DATA_WIDTH = 16, TAG_WIDTH = 3, OFFSET_WIDTH = 6, test = 0
+
+    @pytest.mark.parametrize("test", range(1))
+    @pytest.mark.parametrize("CACHE_SIZE", [64,256])
+    @pytest.mark.parametrize("DATA_WIDTH", [8,16])
+    @pytest.mark.parametrize("TAG_WIDTH", [3,5])
+    @pytest.mark.parametrize("OFFSET_WIDTH", [3,6])
+    def test_direct_cache(CACHE_SIZE,DATA_WIDTH,TAG_WIDTH,OFFSET_WIDTH, test):
+>       runner(CACHE_SIZE=CACHE_SIZE,DATA_WIDTH=DATA_WIDTH,TAG_WIDTH=TAG_WIDTH,OFFSET_WIDTH=OFFSET_WIDTH)
+
+/src/test_runner.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+CACHE_SIZE = 64, DATA_WIDTH = 16, TAG_WIDTH = 3, OFFSET_WIDTH = 6
+
+    def runner(CACHE_SIZE: int = 256,DATA_WIDTH: int = 16,TAG_WIDTH: int = 5,OFFSET_WIDTH: int = 3):
+        parameter = {"CACHE_SIZE": CACHE_SIZE,"DATA_WIDTH":DATA_WIDTH,"TAG_WIDTH": TAG_WIDTH,"OFFSET_WIDTH":OFFSET_WIDTH}
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log")
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=wave)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:27: SystemExit
+_______________________ test_direct_cache[6-3-16-256-0] ________________________
+
+CACHE_SIZE = 256, DATA_WIDTH = 16, TAG_WIDTH = 3, OFFSET_WIDTH = 6, test = 0
+
+    @pytest.mark.parametrize("test", range(1))
+    @pytest.mark.parametrize("CACHE_SIZE", [64,256])
+    @pytest.mark.parametrize("DATA_WIDTH", [8,16])
+    @pytest.mark.parametrize("TAG_WIDTH", [3,5])
+    @pytest.mark.parametrize("OFFSET_WIDTH", [3,6])
+    def test_direct_cache(CACHE_SIZE,DATA_WIDTH,TAG_WIDTH,OFFSET_WIDTH, test):
+>       runner(CACHE_SIZE=CACHE_SIZE,DATA_WIDTH=DATA_WIDTH,TAG_WIDTH=TAG_WIDTH,OFFSET_WIDTH=OFFSET_WIDTH)
+
+/src/test_runner.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+CACHE_SIZE = 256, DATA_WIDTH = 16, TAG_WIDTH = 3, OFFSET_WIDTH = 6
+
+    def runner(CACHE_SIZE: int = 256,DATA_WIDTH: int = 16,TAG_WIDTH: int = 5,OFFSET_WIDTH: int = 3):
+        parameter = {"CACHE_SIZE": CACHE_SIZE,"DATA_WIDTH":DATA_WIDTH,"TAG_WIDTH": TAG_WIDTH,"OFFSET_WIDTH":OFFSET_WIDTH}
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log")
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=wave)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:27: SystemExit
+________________________ test_direct_cache[6-5-8-64-0] _________________________
+
+CACHE_SIZE = 64, DATA_WIDTH = 8, TAG_WIDTH = 5, OFFSET_WIDTH = 6, test = 0
+
+    @pytest.mark.parametrize("test", range(1))
+    @pytest.mark.parametrize("CACHE_SIZE", [64,256])
+    @pytest.mark.parametrize("DATA_WIDTH", [8,16])
+    @pytest.mark.parametrize("TAG_WIDTH", [3,5])
+    @pytest.mark.parametrize("OFFSET_WIDTH", [3,6])
+    def test_direct_cache(CACHE_SIZE,DATA_WIDTH,TAG_WIDTH,OFFSET_WIDTH, test):
+>       runner(CACHE_SIZE=CACHE_SIZE,DATA_WIDTH=DATA_WIDTH,TAG_WIDTH=TAG_WIDTH,OFFSET_WIDTH=OFFSET_WIDTH)
+
+/src/test_runner.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+CACHE_SIZE = 64, DATA_WIDTH = 8, TAG_WIDTH = 5, OFFSET_WIDTH = 6
+
+    def runner(CACHE_SIZE: int = 256,DATA_WIDTH: int = 16,TAG_WIDTH: int = 5,OFFSET_WIDTH: int = 3):
+        parameter = {"CACHE_SIZE": CACHE_SIZE,"DATA_WIDTH":DATA_WIDTH,"TAG_WIDTH": TAG_WIDTH,"OFFSET_WIDTH":OFFSET_WIDTH}
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log")
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=wave)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:27: SystemExit
+________________________ test_direct_cache[6-5-8-256-0] ________________________
+
+CACHE_SIZE = 256, DATA_WIDTH = 8, TAG_WIDTH = 5, OFFSET_WIDTH = 6, test = 0
+
+    @pytest.mark.parametrize("test", range(1))
+    @pytest.mark.parametrize("CACHE_SIZE", [64,256])
+    @pytest.mark.parametrize("DATA_WIDTH", [8,16])
+    @pytest.mark.parametrize("TAG_WIDTH", [3,5])
+    @pytest.mark.parametrize("OFFSET_WIDTH", [3,6])
+    def test_direct_cache(CACHE_SIZE,DATA_WIDTH,TAG_WIDTH,OFFSET_WIDTH, test):
+>       runner(CACHE_SIZE=CACHE_SIZE,DATA_WIDTH=DATA_WIDTH,TAG_WIDTH=TAG_WIDTH,OFFSET_WIDTH=OFFSET_WIDTH)
+
+/src/test_runner.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+CACHE_SIZE = 256, DATA_WIDTH = 8, TAG_WIDTH = 5, OFFSET_WIDTH = 6
+
+    def runner(CACHE_SIZE: int = 256,DATA_WIDTH: int = 16,TAG_WIDTH: int = 5,OFFSET_WIDTH: int = 3):
+        parameter = {"CACHE_SIZE": CACHE_SIZE,"DATA_WIDTH":DATA_WIDTH,"TAG_WIDTH": TAG_WIDTH,"OFFSET_WIDTH":OFFSET_WIDTH}
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log")
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=wave)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:27: SystemExit
+________________________ test_direct_cache[6-5-16-64-0] ________________________
+
+CACHE_SIZE = 64, DATA_WIDTH = 16, TAG_WIDTH = 5, OFFSET_WIDTH = 6, test = 0
+
+    @pytest.mark.parametrize("test", range(1))
+    @pytest.mark.parametrize("CACHE_SIZE", [64,256])
+    @pytest.mark.parametrize("DATA_WIDTH", [8,16])
+    @pytest.mark.parametrize("TAG_WIDTH", [3,5])
+    @pytest.mark.parametrize("OFFSET_WIDTH", [3,6])
+    def test_direct_cache(CACHE_SIZE,DATA_WIDTH,TAG_WIDTH,OFFSET_WIDTH, test):
+>       runner(CACHE_SIZE=CACHE_SIZE,DATA_WIDTH=DATA_WIDTH,TAG_WIDTH=TAG_WIDTH,OFFSET_WIDTH=OFFSET_WIDTH)
+
+/src/test_runner.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+CACHE_SIZE = 64, DATA_WIDTH = 16, TAG_WIDTH = 5, OFFSET_WIDTH = 6
+
+    def runner(CACHE_SIZE: int = 256,DATA_WIDTH: int = 16,TAG_WIDTH: int = 5,OFFSET_WIDTH: int = 3):
+        parameter = {"CACHE_SIZE": CACHE_SIZE,"DATA_WIDTH":DATA_WIDTH,"TAG_WIDTH": TAG_WIDTH,"OFFSET_WIDTH":OFFSET_WIDTH}
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log")
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=wave)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:27: SystemExit
+_______________________ test_direct_cache[6-5-16-256-0] ________________________
+
+CACHE_SIZE = 256, DATA_WIDTH = 16, TAG_WIDTH = 5, OFFSET_WIDTH = 6, test = 0
+
+    @pytest.mark.parametrize("test", range(1))
+    @pytest.mark.parametrize("CACHE_SIZE", [64,256])
+    @pytest.mark.parametrize("DATA_WIDTH", [8,16])
+    @pytest.mark.parametrize("TAG_WIDTH", [3,5])
+    @pytest.mark.parametrize("OFFSET_WIDTH", [3,6])
+    def test_direct_cache(CACHE_SIZE,DATA_WIDTH,TAG_WIDTH,OFFSET_WIDTH, test):
+>       runner(CACHE_SIZE=CACHE_SIZE,DATA_WIDTH=DATA_WIDTH,TAG_WIDTH=TAG_WIDTH,OFFSET_WIDTH=OFFSET_WIDTH)
+
+/src/test_runner.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+CACHE_SIZE = 256, DATA_WIDTH = 16, TAG_WIDTH = 5, OFFSET_WIDTH = 6
+
+    def runner(CACHE_SIZE: int = 256,DATA_WIDTH: int = 16,TAG_WIDTH: int = 5,OFFSET_WIDTH: int = 3):
+        parameter = {"CACHE_SIZE": CACHE_SIZE,"DATA_WIDTH":DATA_WIDTH,"TAG_WIDTH": TAG_WIDTH,"OFFSET_WIDTH":OFFSET_WIDTH}
+        print(f"[DEBUG] Parameters: {parameter}")
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            parameters=parameter,
+            always=True,
+            clean=True,
+            waves=wave,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="sim.log")
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=wave)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:27: SystemExit
+=========================== short test summary info ============================
+FAILED ../../src/test_runner.py::test_direct_cache[3-3-8-64-0] - SystemExit: ...
+FAILED ../../src/test_runner.py::test_direct_cache[3-3-8-256-0] - SystemExit:...
+FAILED ../../src/test_runner.py::test_direct_cache[3-3-16-64-0] - SystemExit:...
+FAILED ../../src/test_runner.py::test_direct_cache[3-3-16-256-0] - SystemExit...
+FAILED ../../src/test_runner.py::test_direct_cache[3-5-8-64-0] - SystemExit: ...
+FAILED ../../src/test_runner.py::test_direct_cache[3-5-8-256-0] - SystemExit:...
+FAILED ../../src/test_runner.py::test_direct_cache[3-5-16-64-0] - SystemExit:...
+FAILED ../../src/test_runner.py::test_direct_cache[3-5-16-256-0] - SystemExit...
+FAILED ../../src/test_runner.py::test_direct_cache[6-3-8-64-0] - SystemExit: ...
+FAILED ../../src/test_runner.py::test_direct_cache[6-3-8-256-0] - SystemExit:...
+FAILED ../../src/test_runner.py::test_direct_cache[6-3-16-64-0] - SystemExit:...
+FAILED ../../src/test_runner.py::test_direct_cache[6-3-16-256-0] - SystemExit...
+FAILED ../../src/test_runner.py::test_direct_cache[6-5-8-64-0] - SystemExit: ...
+FAILED ../../src/test_runner.py::test_direct_cache[6-5-8-256-0] - SystemExit:...
+FAILED ../../src/test_runner.py::test_direct_cache[6-5-16-64-0] - SystemExit:...
+FAILED ../../src/test_runner.py::test_direct_cache[6-5-16-256-0] - SystemExit...
+============================== 16 failed in 4.44s ==============================
+Cleaning up Docker resources...

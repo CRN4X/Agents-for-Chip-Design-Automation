@@ -1,0 +1,1 @@
+{"prompt": "Design a `universal_shift_register` module in SystemVerilog. Refer to the specification provided in `docs/Universal_Shift_Register_spec.md` to implement the RTL. The specification outlines a parameterizable, synchronous N-bit shift register that supports multiple operational modes, including Hold, Shift (left/right), Rotate (left/right), and Parallel Load.\n"}

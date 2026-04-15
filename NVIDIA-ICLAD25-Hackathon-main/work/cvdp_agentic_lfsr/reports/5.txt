@@ -1,0 +1,132 @@
+Running harness with project name: cvdp_agentic_lfsr_5_1776234459
+============================= test session starts ==============================
+platform linux -- Python 3.9.2, pytest-8.3.2, pluggy-1.5.0 -- /usr/bin/python3
+cachedir: /rundir/harness/.cache
+rootdir: /src
+collecting ... collected 1 item
+
+../../src/test_runner.py::test_runner 
+-------------------------------- live log call ---------------------------------
+INFO     Icarus:runner.py:468 Running command iverilog -o /code/rundir/sim_build/sim.vvp -s bit16_lfsr -g2012 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/bit16_lfsr.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command vvp -M /usr/local/lib/python3.9/dist-packages/cocotb/libs -m libcocotbvpi_icarus /code/rundir/sim_build/sim.vvp -fst in directory /code/rundir/sim_build
+     -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234462
+     0.00ns INFO     cocotb.regression                  running test_bit16_lfsr.test_lfsr_with_Fixed_seed (1/4)
+                                                            Test LFSR with a given seed value
+Seed value: 0xace1
+LFSR output at cycle 0: 1101011001110000
+Computed next value (cycle 1): 0x6b38
+LFSR output at cycle 1 (DUT): 0xeb38
+LFSR output at cycle 65535: 1000101000110100
+655380.00ns INFO     cocotb.regression                  test_bit16_lfsr.test_lfsr_with_Fixed_seed failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_bit16_lfsr.py", line 31, in test_lfsr_with_Fixed_seed
+                                                            await run_lfsr_sequence_check(dut, cycles=65536, check_maximal_length=True)
+                                                          File "/src/test_bit16_lfsr.py", line 153, in run_lfsr_sequence_check
+                                                            assert first_value == last_value, f"LFSR does not support maximal length sequence, first value {hex(first_value)} does not match last value {hex(last_value)}"
+                                                        AssertionError: LFSR does not support maximal length sequence, first value 0xd670 does not match last value 0x8a34
+                                                        assert 54896 == 35380
+655380.00ns INFO     cocotb.regression                  running test_bit16_lfsr.test_lfsr_random_seed (2/4)
+                                                            Test LFSR with a random seed value
+Seed value: 0x56fc
+LFSR output at cycle 0: 1010101101111110
+Computed next value (cycle 1): 0xd5bf
+LFSR output at cycle 1 (DUT): 0xd5bf
+LFSR output at cycle 65535: 1110001011000101
+1310771.00ns INFO     cocotb.regression                  test_bit16_lfsr.test_lfsr_random_seed failed
+                                                         Traceback (most recent call last):
+                                                           File "/src/test_bit16_lfsr.py", line 58, in test_lfsr_random_seed
+                                                             await run_lfsr_sequence_check(dut, cycles=65536, check_maximal_length=True)
+                                                           File "/src/test_bit16_lfsr.py", line 153, in run_lfsr_sequence_check
+                                                             assert first_value == last_value, f"LFSR does not support maximal length sequence, first value {hex(first_value)} does not match last value {hex(last_value)}"
+                                                         AssertionError: LFSR does not support maximal length sequence, first value 0xab7e does not match last value 0xe2c5
+                                                         assert 43902 == 58053
+1310771.00ns INFO     cocotb.regression                  running test_bit16_lfsr.test_lfsr_all_bits_set_seed (3/4)
+                                                             Test LFSR with all bits set (0xFFFF) seed value
+Seed value: 0xffff
+LFSR output at cycle 0: 0111111111111111
+Computed next value (cycle 1): 0x3fff
+LFSR output at cycle 1 (DUT): 0x3fff
+LFSR output at cycle 65535: 0100001111101111
+1966162.00ns INFO     cocotb.regression                  test_bit16_lfsr.test_lfsr_all_bits_set_seed failed
+                                                         Traceback (most recent call last):
+                                                           File "/src/test_bit16_lfsr.py", line 85, in test_lfsr_all_bits_set_seed
+                                                             await run_lfsr_sequence_check(dut, cycles=65536, check_maximal_length=True)
+                                                           File "/src/test_bit16_lfsr.py", line 153, in run_lfsr_sequence_check
+                                                             assert first_value == last_value, f"LFSR does not support maximal length sequence, first value {hex(first_value)} does not match last value {hex(last_value)}"
+                                                         AssertionError: LFSR does not support maximal length sequence, first value 0x7fff does not match last value 0x43ef
+                                                         assert 32767 == 17391
+1966162.00ns INFO     cocotb.regression                  running test_bit16_lfsr.test_lfsr_alternating_bits_seed (4/4)
+                                                             Test LFSR with alternating bits (0xAAAA) seed value
+Seed value: 0xaaaa
+LFSR output at cycle 0: 1101010101010101
+Computed next value (cycle 1): 0x6aaa
+LFSR output at cycle 1 (DUT): 0xeaaa
+LFSR output at cycle 65535: 1100000101011010
+2621553.00ns INFO     cocotb.regression                  test_bit16_lfsr.test_lfsr_alternating_bits_seed failed
+                                                         Traceback (most recent call last):
+                                                           File "/src/test_bit16_lfsr.py", line 112, in test_lfsr_alternating_bits_seed
+                                                             await run_lfsr_sequence_check(dut, cycles=65536, check_maximal_length=True)
+                                                           File "/src/test_bit16_lfsr.py", line 153, in run_lfsr_sequence_check
+                                                             assert first_value == last_value, f"LFSR does not support maximal length sequence, first value {hex(first_value)} does not match last value {hex(last_value)}"
+                                                         AssertionError: LFSR does not support maximal length sequence, first value 0xd555 does not match last value 0xc15a
+                                                         assert 54613 == 49498
+2621553.00ns INFO     cocotb.regression                  *********************************************************************************************************
+                                                         ** TEST                                             STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                         *********************************************************************************************************
+                                                         ** test_bit16_lfsr.test_lfsr_with_Fixed_seed         FAIL      655380.00          12.46      52584.56  **
+                                                         ** test_bit16_lfsr.test_lfsr_random_seed             FAIL      655391.00          10.50      62434.98  **
+                                                         ** test_bit16_lfsr.test_lfsr_all_bits_set_seed       FAIL      655391.00          11.48      57102.27  **
+                                                         ** test_bit16_lfsr.test_lfsr_alternating_bits_seed   FAIL      655391.00          10.41      62958.56  **
+                                                         *********************************************************************************************************
+                                                         ** TESTS=4 PASS=0 FAIL=4 SKIP=0                               2621553.00          44.86      58432.79  **
+                                                         *********************************************************************************************************
+                                                         
+FST info: dumpfile /code/rundir/sim_build/bit16_lfsr.fst opened for output.
+FAILED
+
+=================================== FAILURES ===================================
+_________________________________ test_runner __________________________________
+
+    def test_runner():
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            always=True,
+            clean=True,
+            waves=True,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="build.log")
+    
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=True)
+E       SystemExit: ERROR: Failed 4 of 4 tests.
+
+/src/test_runner.py:25: SystemExit
+------------------------------ Captured log call -------------------------------
+INFO     Icarus:runner.py:468 Running command iverilog -o /code/rundir/sim_build/sim.vvp -s bit16_lfsr -g2012 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/bit16_lfsr.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command vvp -M /usr/local/lib/python3.9/dist-packages/cocotb/libs -m libcocotbvpi_icarus /code/rundir/sim_build/sim.vvp -fst in directory /code/rundir/sim_build
+=============================== warnings summary ===============================
+../../usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:477
+  /usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:477: PytestCacheWarning: could not create cache path /rundir/harness/.cache/v/cache/nodeids: [Errno 13] Permission denied: '/rundir'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+../../usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:429
+  /usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:429: PytestCacheWarning: could not create cache path /rundir/harness/.cache/v/cache/lastfailed: [Errno 13] Permission denied: '/rundir'
+    config.cache.set("cache/lastfailed", self.lastfailed)
+
+../../usr/local/lib/python3.9/dist-packages/_pytest/stepwise.py:51
+  /usr/local/lib/python3.9/dist-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /rundir/harness/.cache/v/cache/stepwise: [Errno 13] Permission denied: '/rundir'
+    session.config.cache.set(STEPWISE_CACHE_DIR, [])
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../src/test_runner.py::test_runner - SystemExit: ERROR: Failed 4 of...
+======================== 1 failed, 3 warnings in 45.54s ========================
+Cleaning up Docker resources...

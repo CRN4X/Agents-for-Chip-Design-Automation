@@ -1,0 +1,110 @@
+Running harness with project name: cvdp_agentic_caesar_cipher_1_1776234376
+============================= test session starts ==============================
+platform linux -- Python 3.9.2, pytest-8.3.2, pluggy-1.5.0 -- /usr/bin/python3
+cachedir: /rundir/harness/.cache
+rootdir: /src
+collecting ... collected 1 item
+
+../../src/test_runner.py::test_runner 
+-------------------------------- live log call ---------------------------------
+INFO     Icarus:runner.py:468 Running command iverilog -o /code/rundir/sim_build/sim.vvp -s caesar_cipher -g2012 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/caesar_cipher.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command vvp -M /usr/local/lib/python3.9/dist-packages/cocotb/libs -m libcocotbvpi_icarus /code/rundir/sim_build/sim.vvp -fst in directory /code/rundir/sim_build
+     -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234377
+     0.00ns INFO     cocotb.regression                  running test_caesar_cipher.test_predefined_cases (1/4)
+                                                            Test caesar_cipher with predefined cases
+     0.00ns INFO     cocotb.caesar_cipher               Testing Caesar cipher with input 'hello', key = 3
+     5.00ns INFO     cocotb.regression                  test_caesar_cipher.test_predefined_cases failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_caesar_cipher.py", line 48, in test_predefined_cases
+                                                            assert output == expected, f"Failed for input '{text}' with key {key}: expected '{expected}', got '{output}'"
+                                                        AssertionError: Failed for input 'hello' with key 3: expected 'khoor', got 'QNUUX'
+                                                        assert 'QNUUX' == 'khoor'
+     5.00ns INFO     cocotb.regression                  running test_caesar_cipher.test_boundary_conditions (2/4)
+                                                            Test caesar_cipher with boundary conditions
+     6.00ns INFO     cocotb.caesar_cipher               Testing boundary condition with input 'Z', key = 1
+     7.00ns INFO     cocotb.caesar_cipher               Passed boundary condition test for input 'Z' with key 1: output 'A'
+     7.00ns INFO     cocotb.caesar_cipher               Testing boundary condition with input 'z', key = 1
+     8.00ns INFO     cocotb.regression                  test_caesar_cipher.test_boundary_conditions failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_caesar_cipher.py", line 79, in test_boundary_conditions
+                                                            assert output == expected, f"Failed for input '{text}' with key {key}: expected '{expected}', got '{output}'"
+                                                        AssertionError: Failed for input 'z' with key 1: expected 'a', got 'G'
+                                                        assert 'G' == 'a'
+     8.00ns INFO     cocotb.regression                  running test_caesar_cipher.test_random_cases (3/4)
+                                                            Test caesar_cipher with random inputs and keys
+     9.00ns INFO     cocotb.caesar_cipher               Testing random input 'lzOUmADo', key = 3
+    17.00ns INFO     cocotb.regression                  test_caesar_cipher.test_random_cases failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_caesar_cipher.py", line 104, in test_random_cases
+                                                            assert output == expected, f"Random test failed for input '{random_text}' with key {random_key}: expected '{expected}', got '{output}'"
+                                                        AssertionError: Random test failed for input 'lzOUmADo' with key 3: expected 'ocRXpDGr', got 'UIOUVADX'
+                                                        assert 'UIOUVADX' == 'ocRXpDGr'
+    17.00ns INFO     cocotb.regression                  running test_caesar_cipher.test_with_numbers_and_symbols (4/4)
+                                                            Test caesar_cipher with numbers and symbols to ensure they remain unchanged
+    18.00ns INFO     cocotb.caesar_cipher               Testing Caesar cipher with input 'Hello123!@#World', key = 3 (includes numbers and symbols)
+    34.00ns INFO     cocotb.regression                  test_caesar_cipher.test_with_numbers_and_symbols failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_caesar_cipher.py", line 128, in test_with_numbers_and_symbols
+                                                            assert output == expected, f"Failed for input '{text}' with key {key}: expected '{expected}', got '{output}'"
+                                                        AssertionError: Failed for input 'Hello123!@#World' with key 3: expected 'Khoor123!@#Zruog', got 'HNUUX123!@#WXAUM'
+                                                        assert 'HNUUX123!@#WXAUM' == 'Khoor123!@#Zruog'
+    34.00ns INFO     cocotb.regression                  **********************************************************************************************************
+                                                        ** TEST                                              STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        **********************************************************************************************************
+                                                        ** test_caesar_cipher.test_predefined_cases           FAIL           5.00           0.01        851.46  **
+                                                        ** test_caesar_cipher.test_boundary_conditions        FAIL           3.00           0.00       2763.05  **
+                                                        ** test_caesar_cipher.test_random_cases               FAIL           9.00           0.00       9506.10  **
+                                                        ** test_caesar_cipher.test_with_numbers_and_symbols   FAIL          17.00           0.00      14254.93  **
+                                                        **********************************************************************************************************
+                                                        ** TESTS=4 PASS=0 FAIL=4 SKIP=0                                     34.00           0.02       1789.27  **
+                                                        **********************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/caesar_cipher.fst opened for output.
+FAILED
+
+=================================== FAILURES ===================================
+_________________________________ test_runner __________________________________
+
+    def test_runner():
+    
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            # Arguments
+            always=True,
+            clean=True,
+            waves=True,
+            verbose=True,
+            timescale=("1ns", "1ns"),
+            log_file="build.log")
+    
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=True)
+E       SystemExit: ERROR: Failed 4 of 4 tests.
+
+/src/test_runner.py:28: SystemExit
+------------------------------ Captured log call -------------------------------
+INFO     Icarus:runner.py:468 Running command iverilog -o /code/rundir/sim_build/sim.vvp -s caesar_cipher -g2012 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/caesar_cipher.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command vvp -M /usr/local/lib/python3.9/dist-packages/cocotb/libs -m libcocotbvpi_icarus /code/rundir/sim_build/sim.vvp -fst in directory /code/rundir/sim_build
+=============================== warnings summary ===============================
+../../usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:477
+  /usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:477: PytestCacheWarning: could not create cache path /rundir/harness/.cache/v/cache/nodeids: [Errno 13] Permission denied: '/rundir'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+../../usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:429
+  /usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:429: PytestCacheWarning: could not create cache path /rundir/harness/.cache/v/cache/lastfailed: [Errno 13] Permission denied: '/rundir'
+    config.cache.set("cache/lastfailed", self.lastfailed)
+
+../../usr/local/lib/python3.9/dist-packages/_pytest/stepwise.py:51
+  /usr/local/lib/python3.9/dist-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /rundir/harness/.cache/v/cache/stepwise: [Errno 13] Permission denied: '/rundir'
+    session.config.cache.set(STEPWISE_CACHE_DIR, [])
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../src/test_runner.py::test_runner - SystemExit: ERROR: Failed 4 of...
+======================== 1 failed, 3 warnings in 0.34s =========================
+Cleaning up Docker resources...

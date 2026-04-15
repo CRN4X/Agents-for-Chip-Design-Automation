@@ -1,0 +1,333 @@
+Running harness with project name: cvdp_agentic_elevator_control_4_1776234429
+============================= test session starts ==============================
+platform linux -- Python 3.9.2, pytest-8.3.2, pluggy-1.5.0 -- /usr/bin/python3
+cachedir: /code/rundir/.cache
+rootdir: /src
+collecting ... collected 4 items
+
+../../src/test_runner.py::test_runner script: N=8
+
+-------------------------------- live log call ---------------------------------
+INFO     Icarus:runner.py:468 Running command iverilog -o /code/rundir/sim_build/sim.vvp -s elevator_control_system -g2012 -DSIMULATION=None -Pelevator_control_system.N=8 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/elevator_control_system.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command vvp -M /usr/local/lib/python3.9/dist-packages/cocotb/libs -m libcocotbvpi_icarus /code/rundir/sim_build/sim.vvp +N=8 -fst in directory /code/rundir/sim_build
+     -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234430
+     0.00ns INFO     cocotb.regression                  running elevator_control.test_elevator_control_system (1/1)
+                                                            Main test function for elevator control system
+     0.00ns INFO     cocotb.regression                  elevator_control.test_elevator_control_system failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/elevator_control.py", line 205, in test_elevator_control_system
+                                                            dut.overload.value = 0
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'elevator_control_system contains no child object named overload'
+     0.00ns INFO     cocotb.regression                  *******************************************************************************************************
+                                                        ** TEST                                           STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *******************************************************************************************************
+                                                        ** elevator_control.test_elevator_control_system   FAIL           0.00           0.00          0.00  **
+                                                        *******************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                                   0.00           0.01          0.00  **
+                                                        *******************************************************************************************************
+                                                        
+FAILED
+../../src/test_runner.py::test_elevator_control_system[8] Runner script: N=8
+script: N=8
+
+-------------------------------- live log call ---------------------------------
+INFO     Icarus:runner.py:480 Removing: /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command iverilog -o /code/rundir/sim_build/sim.vvp -s elevator_control_system -g2012 -DSIMULATION=None -Pelevator_control_system.N=8 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/elevator_control_system.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command vvp -M /usr/local/lib/python3.9/dist-packages/cocotb/libs -m libcocotbvpi_icarus /code/rundir/sim_build/sim.vvp +N=8 -fst in directory /code/rundir/sim_build
+     -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234430
+     0.00ns INFO     cocotb.regression                  running elevator_control.test_elevator_control_system (1/1)
+                                                            Main test function for elevator control system
+     0.00ns INFO     cocotb.regression                  elevator_control.test_elevator_control_system failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/elevator_control.py", line 205, in test_elevator_control_system
+                                                            dut.overload.value = 0
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'elevator_control_system contains no child object named overload'
+     0.00ns INFO     cocotb.regression                  *******************************************************************************************************
+                                                        ** TEST                                           STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *******************************************************************************************************
+                                                        ** elevator_control.test_elevator_control_system   FAIL           0.00           0.00          0.00  **
+                                                        *******************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                                   0.00           0.01          0.00  **
+                                                        *******************************************************************************************************
+                                                        
+FAILED
+../../src/test_runner.py::test_elevator_control_system[5] Runner script: N=5
+script: N=5
+
+-------------------------------- live log call ---------------------------------
+INFO     Icarus:runner.py:480 Removing: /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command iverilog -o /code/rundir/sim_build/sim.vvp -s elevator_control_system -g2012 -DSIMULATION=None -Pelevator_control_system.N=5 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/elevator_control_system.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command vvp -M /usr/local/lib/python3.9/dist-packages/cocotb/libs -m libcocotbvpi_icarus /code/rundir/sim_build/sim.vvp +N=5 -fst in directory /code/rundir/sim_build
+     -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234431
+     0.00ns INFO     cocotb.regression                  running elevator_control.test_elevator_control_system (1/1)
+                                                            Main test function for elevator control system
+     0.00ns INFO     cocotb.regression                  elevator_control.test_elevator_control_system failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/elevator_control.py", line 205, in test_elevator_control_system
+                                                            dut.overload.value = 0
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'elevator_control_system contains no child object named overload'
+     0.00ns INFO     cocotb.regression                  *******************************************************************************************************
+                                                        ** TEST                                           STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *******************************************************************************************************
+                                                        ** elevator_control.test_elevator_control_system   FAIL           0.00           0.00          0.00  **
+                                                        *******************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                                   0.00           0.01          0.00  **
+                                                        *******************************************************************************************************
+                                                        
+FAILED
+../../src/test_runner.py::test_elevator_control_system[10] Runner script: N=10
+script: N=10
+
+-------------------------------- live log call ---------------------------------
+INFO     Icarus:runner.py:480 Removing: /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command iverilog -o /code/rundir/sim_build/sim.vvp -s elevator_control_system -g2012 -DSIMULATION=None -Pelevator_control_system.N=10 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/elevator_control_system.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command vvp -M /usr/local/lib/python3.9/dist-packages/cocotb/libs -m libcocotbvpi_icarus /code/rundir/sim_build/sim.vvp +N=10 -fst in directory /code/rundir/sim_build
+     -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234431
+     0.00ns INFO     cocotb.regression                  running elevator_control.test_elevator_control_system (1/1)
+                                                            Main test function for elevator control system
+     0.00ns INFO     cocotb.regression                  elevator_control.test_elevator_control_system failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/elevator_control.py", line 205, in test_elevator_control_system
+                                                            dut.overload.value = 0
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'elevator_control_system contains no child object named overload'
+     0.00ns INFO     cocotb.regression                  *******************************************************************************************************
+                                                        ** TEST                                           STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        *******************************************************************************************************
+                                                        ** elevator_control.test_elevator_control_system   FAIL           0.00           0.00          0.00  **
+                                                        *******************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                                   0.00           0.01          0.00  **
+                                                        *******************************************************************************************************
+                                                        
+FAILED
+
+=================================== FAILURES ===================================
+_________________________________ test_runner __________________________________
+
+FLOOR = 8
+
+    def test_runner(FLOOR: int=8):
+    
+        ## Note: To reduce the sim time, design is passed with SIMULATION define to have door open time of 0.05 ms
+        ##Note: Harness if not intended to test for various DOOR OPEN TIME.
+        ##      It only test for multiple floors.
+    
+        # Parameterize the test
+        parameter_defines = {
+            "N": FLOOR,
+        }
+        print(f"script: N={FLOOR}")
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+    
+            # Arguments
+            parameters=parameter_defines,
+            always=True,
+            clean=True,
+            waves=True,
+            verbose=True,
+            timescale=("1ns", "1ps"),
+            log_file="sim.log",
+            defines={"SIMULATION": None}
+    
+        )
+    
+        plusargs = [f"+N={FLOOR}"]
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=True, plusargs=plusargs)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:46: SystemExit
+------------------------------ Captured log call -------------------------------
+INFO     Icarus:runner.py:468 Running command iverilog -o /code/rundir/sim_build/sim.vvp -s elevator_control_system -g2012 -DSIMULATION=None -Pelevator_control_system.N=8 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/elevator_control_system.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command vvp -M /usr/local/lib/python3.9/dist-packages/cocotb/libs -m libcocotbvpi_icarus /code/rundir/sim_build/sim.vvp +N=8 -fst in directory /code/rundir/sim_build
+_______________________ test_elevator_control_system[8] ________________________
+
+FLOOR = 8
+
+    @pytest.mark.parametrize("FLOOR", [8,5,10])
+    def test_elevator_control_system(FLOOR):
+        """Parameterized test for elevator control system"""
+    
+        print(f"Runner script: N={FLOOR}")
+>       test_runner(FLOOR=FLOOR)
+
+/src/test_runner.py:55: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+FLOOR = 8
+
+    def test_runner(FLOOR: int=8):
+    
+        ## Note: To reduce the sim time, design is passed with SIMULATION define to have door open time of 0.05 ms
+        ##Note: Harness if not intended to test for various DOOR OPEN TIME.
+        ##      It only test for multiple floors.
+    
+        # Parameterize the test
+        parameter_defines = {
+            "N": FLOOR,
+        }
+        print(f"script: N={FLOOR}")
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+    
+            # Arguments
+            parameters=parameter_defines,
+            always=True,
+            clean=True,
+            waves=True,
+            verbose=True,
+            timescale=("1ns", "1ps"),
+            log_file="sim.log",
+            defines={"SIMULATION": None}
+    
+        )
+    
+        plusargs = [f"+N={FLOOR}"]
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=True, plusargs=plusargs)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:46: SystemExit
+------------------------------ Captured log call -------------------------------
+INFO     Icarus:runner.py:480 Removing: /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command iverilog -o /code/rundir/sim_build/sim.vvp -s elevator_control_system -g2012 -DSIMULATION=None -Pelevator_control_system.N=8 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/elevator_control_system.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command vvp -M /usr/local/lib/python3.9/dist-packages/cocotb/libs -m libcocotbvpi_icarus /code/rundir/sim_build/sim.vvp +N=8 -fst in directory /code/rundir/sim_build
+_______________________ test_elevator_control_system[5] ________________________
+
+FLOOR = 5
+
+    @pytest.mark.parametrize("FLOOR", [8,5,10])
+    def test_elevator_control_system(FLOOR):
+        """Parameterized test for elevator control system"""
+    
+        print(f"Runner script: N={FLOOR}")
+>       test_runner(FLOOR=FLOOR)
+
+/src/test_runner.py:55: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+FLOOR = 5
+
+    def test_runner(FLOOR: int=8):
+    
+        ## Note: To reduce the sim time, design is passed with SIMULATION define to have door open time of 0.05 ms
+        ##Note: Harness if not intended to test for various DOOR OPEN TIME.
+        ##      It only test for multiple floors.
+    
+        # Parameterize the test
+        parameter_defines = {
+            "N": FLOOR,
+        }
+        print(f"script: N={FLOOR}")
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+    
+            # Arguments
+            parameters=parameter_defines,
+            always=True,
+            clean=True,
+            waves=True,
+            verbose=True,
+            timescale=("1ns", "1ps"),
+            log_file="sim.log",
+            defines={"SIMULATION": None}
+    
+        )
+    
+        plusargs = [f"+N={FLOOR}"]
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=True, plusargs=plusargs)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:46: SystemExit
+------------------------------ Captured log call -------------------------------
+INFO     Icarus:runner.py:480 Removing: /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command iverilog -o /code/rundir/sim_build/sim.vvp -s elevator_control_system -g2012 -DSIMULATION=None -Pelevator_control_system.N=5 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/elevator_control_system.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command vvp -M /usr/local/lib/python3.9/dist-packages/cocotb/libs -m libcocotbvpi_icarus /code/rundir/sim_build/sim.vvp +N=5 -fst in directory /code/rundir/sim_build
+_______________________ test_elevator_control_system[10] _______________________
+
+FLOOR = 10
+
+    @pytest.mark.parametrize("FLOOR", [8,5,10])
+    def test_elevator_control_system(FLOOR):
+        """Parameterized test for elevator control system"""
+    
+        print(f"Runner script: N={FLOOR}")
+>       test_runner(FLOOR=FLOOR)
+
+/src/test_runner.py:55: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+FLOOR = 10
+
+    def test_runner(FLOOR: int=8):
+    
+        ## Note: To reduce the sim time, design is passed with SIMULATION define to have door open time of 0.05 ms
+        ##Note: Harness if not intended to test for various DOOR OPEN TIME.
+        ##      It only test for multiple floors.
+    
+        # Parameterize the test
+        parameter_defines = {
+            "N": FLOOR,
+        }
+        print(f"script: N={FLOOR}")
+        runner = get_runner(sim)
+        runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+    
+            # Arguments
+            parameters=parameter_defines,
+            always=True,
+            clean=True,
+            waves=True,
+            verbose=True,
+            timescale=("1ns", "1ps"),
+            log_file="sim.log",
+            defines={"SIMULATION": None}
+    
+        )
+    
+        plusargs = [f"+N={FLOOR}"]
+>       runner.test(hdl_toplevel=toplevel, test_module=module, waves=True, plusargs=plusargs)
+E       SystemExit: ERROR: Failed 1 of 1 tests.
+
+/src/test_runner.py:46: SystemExit
+------------------------------ Captured log call -------------------------------
+INFO     Icarus:runner.py:480 Removing: /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command iverilog -o /code/rundir/sim_build/sim.vvp -s elevator_control_system -g2012 -DSIMULATION=None -Pelevator_control_system.N=10 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/elevator_control_system.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command vvp -M /usr/local/lib/python3.9/dist-packages/cocotb/libs -m libcocotbvpi_icarus /code/rundir/sim_build/sim.vvp +N=10 -fst in directory /code/rundir/sim_build
+=========================== short test summary info ============================
+FAILED ../../src/test_runner.py::test_runner - SystemExit: ERROR: Failed 1 of...
+FAILED ../../src/test_runner.py::test_elevator_control_system[8] - SystemExit...
+FAILED ../../src/test_runner.py::test_elevator_control_system[5] - SystemExit...
+FAILED ../../src/test_runner.py::test_elevator_control_system[10] - SystemExi...
+============================== 4 failed in 1.18s ===============================
+Cleaning up Docker resources...

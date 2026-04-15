@@ -1,13 +1,13 @@
 {
-  "cvdp_agentic_summit_horizon_diamond_3314": {
-    "category": "cid005",
-    "difficulty": "hard",
+  "cvdp_agentic_universal_shift_reg_3": {
+    "category": "cid004",
+    "difficulty": "medium",
     "tests": [
       {
         "result": 0,
-        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_summit_horizon_diamond/harness/3314/rundir/sim.log",
+        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_universal_shift_reg/harness/3/rundir/sim.log",
         "error_msg": null,
-        "execution": 359.0,
+        "execution": 133.0,
         "pid": 0
       }
     ],

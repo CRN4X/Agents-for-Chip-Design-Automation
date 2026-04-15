@@ -1,0 +1,220 @@
+Running harness with project name: cvdp_agentic_event_scheduler_4_1776234437
+============================= test session starts ==============================
+platform linux -- Python 3.9.2, pytest-8.3.2, pluggy-1.5.0 -- /usr/bin/python3
+cachedir: /rundir/harness/.cache
+rootdir: /src
+collecting ... collected 1 item
+
+../../src/test_runner.py::test_event_scheduler Running event scheduler testbench...
+
+-------------------------------- live log call ---------------------------------
+INFO     Icarus:runner.py:468 Running command iverilog -o /code/rundir/sim_build/sim.vvp -s event_scheduler -g2012 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/event_scheduler.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command vvp -M /usr/local/lib/python3.9/dist-packages/cocotb/libs -m libcocotbvpi_icarus /code/rundir/sim_build/sim.vvp -fst in directory /code/rundir/sim_build
+     -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:79   in set_program_name_in_venv        Did not detect Python virtual environment. Using system-wide Python interpreter
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:101  in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (devel)
+     0.00ns INFO     cocotb                             Running tests with cocotb v2.0.0.dev0+8d6c1a63 from /usr/local/lib/python3.9/dist-packages/cocotb
+     0.00ns INFO     cocotb                             Seeding Python random module with 1776234438
+     0.00ns INFO     cocotb.regression                  running test_event_scheduler.tc1_add_event_and_trigger (1/10)
+                                                            TC1: Add event ID=1 with timestamp = current_time+30, priority=2 and wait for trigger.
+     0.00ns INFO     cocotb                             TC1: Starting test: add event and trigger
+    20.00ns INFO     cocotb.regression                  test_event_scheduler.tc1_add_event_and_trigger failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_event_scheduler.py", line 56, in tc1_add_event_and_trigger
+                                                            await clear_signals(dut)
+                                                          File "/src/test_event_scheduler.py", line 22, in clear_signals
+                                                            dut.modify_event.value = 0
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'event_scheduler contains no child object named modify_event'
+    20.00ns INFO     cocotb.regression                  running test_event_scheduler.tc2_cancel_event (2/10)
+                                                            TC2: Add event ID=2 with timestamp=current_time+50 then cancel it before trigger.
+    21.00ns INFO     cocotb                             TC2: Starting test: add event then cancel it
+    51.00ns INFO     cocotb.regression                  test_event_scheduler.tc2_cancel_event failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_event_scheduler.py", line 80, in tc2_cancel_event
+                                                            await clear_signals(dut)
+                                                          File "/src/test_event_scheduler.py", line 22, in clear_signals
+                                                            dut.modify_event.value = 0
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'event_scheduler contains no child object named modify_event'
+    51.00ns INFO     cocotb.regression                  running test_event_scheduler.tc3_modify_event (3/10)
+                                                            TC3: Add event ID=3, then modify it (timestamp=current_time+90, priority=4) and wait for trigger.
+    52.00ns INFO     cocotb                             TC3: Starting test: add event then modify it
+    82.00ns INFO     cocotb.regression                  test_event_scheduler.tc3_modify_event failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_event_scheduler.py", line 110, in tc3_modify_event
+                                                            await clear_signals(dut)
+                                                          File "/src/test_event_scheduler.py", line 22, in clear_signals
+                                                            dut.modify_event.value = 0
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'event_scheduler contains no child object named modify_event'
+    82.00ns INFO     cocotb.regression                  running test_event_scheduler.tc4_duplicate_add (4/10)
+                                                            TC4: Add event ID=4 twice; expect error on duplicate addition.
+    83.00ns INFO     cocotb                             TC4: Starting test: duplicate add event
+   113.00ns INFO     cocotb.regression                  test_event_scheduler.tc4_duplicate_add failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_event_scheduler.py", line 142, in tc4_duplicate_add
+                                                            await clear_signals(dut)
+                                                          File "/src/test_event_scheduler.py", line 22, in clear_signals
+                                                            dut.modify_event.value = 0
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'event_scheduler contains no child object named modify_event'
+   113.00ns INFO     cocotb.regression                  running test_event_scheduler.tc5_modify_nonexistent (5/10)
+                                                            TC5: Attempt to modify event ID=5 (which hasn't been added); expect error.
+   114.00ns INFO     cocotb                             TC5: Starting test: modify non-existent event
+   144.00ns INFO     cocotb.regression                  test_event_scheduler.tc5_modify_nonexistent failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_event_scheduler.py", line 175, in tc5_modify_nonexistent
+                                                            await clear_signals(dut)
+                                                          File "/src/test_event_scheduler.py", line 22, in clear_signals
+                                                            dut.modify_event.value = 0
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'event_scheduler contains no child object named modify_event'
+   144.00ns INFO     cocotb.regression                  running test_event_scheduler.tc6_cancel_nonexistent (6/10)
+                                                            TC6: Attempt to cancel event ID=6 (which hasn't been added); expect error.
+   145.00ns INFO     cocotb                             TC6: Starting test: cancel non-existent event
+   175.00ns INFO     cocotb.regression                  test_event_scheduler.tc6_cancel_nonexistent failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_event_scheduler.py", line 196, in tc6_cancel_nonexistent
+                                                            await clear_signals(dut)
+                                                          File "/src/test_event_scheduler.py", line 22, in clear_signals
+                                                            dut.modify_event.value = 0
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'event_scheduler contains no child object named modify_event'
+   175.00ns INFO     cocotb.regression                  running test_event_scheduler.tc7_recurring_event (7/10)
+                                                            TC7: Add recurring event ID=7 with recurring_interval=20 and verify repeated triggers.
+   176.00ns INFO     cocotb                             TC7: Starting test: recurring event
+   206.00ns INFO     cocotb.regression                  test_event_scheduler.tc7_recurring_event failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_event_scheduler.py", line 215, in tc7_recurring_event
+                                                            await clear_signals(dut)
+                                                          File "/src/test_event_scheduler.py", line 22, in clear_signals
+                                                            dut.modify_event.value = 0
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'event_scheduler contains no child object named modify_event'
+   206.00ns INFO     cocotb.regression                  running test_event_scheduler.tc8_logging (8/10)
+                                                            TC8: Add event ID=8 and verify log_event_time and log_event_id outputs.
+   207.00ns INFO     cocotb                             TC8: Starting test: event logging
+   237.00ns INFO     cocotb.regression                  test_event_scheduler.tc8_logging failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_event_scheduler.py", line 243, in tc8_logging
+                                                            await clear_signals(dut)
+                                                          File "/src/test_event_scheduler.py", line 22, in clear_signals
+                                                            dut.modify_event.value = 0
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'event_scheduler contains no child object named modify_event'
+   237.00ns INFO     cocotb.regression                  running test_event_scheduler.tc9_modify_then_cancel (9/10)
+                                                            TC9: Add event ID=9, then modify and cancel it; expect no trigger.
+   238.00ns INFO     cocotb                             TC9: Starting test: modify then cancel event
+   268.00ns INFO     cocotb.regression                  test_event_scheduler.tc9_modify_then_cancel failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_event_scheduler.py", line 267, in tc9_modify_then_cancel
+                                                            await clear_signals(dut)
+                                                          File "/src/test_event_scheduler.py", line 22, in clear_signals
+                                                            dut.modify_event.value = 0
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'event_scheduler contains no child object named modify_event'
+   268.00ns INFO     cocotb.regression                  running test_event_scheduler.tc10_priority_selection (10/10)
+                                                            TC10: Add event ID=10 and then event ID=11 (with same target timestamp) in consecutive cycles; expect event with higher priority (ID 11) to trigger.
+   269.00ns INFO     cocotb                             TC10: Starting test: concurrent events with priority selection
+   299.00ns INFO     cocotb.regression                  test_event_scheduler.tc10_priority_selection failed
+                                                        Traceback (most recent call last):
+                                                          File "/src/test_event_scheduler.py", line 308, in tc10_priority_selection
+                                                            await clear_signals(dut)
+                                                          File "/src/test_event_scheduler.py", line 22, in clear_signals
+                                                            dut.modify_event.value = 0
+                                                          File "/usr/local/lib/python3.9/dist-packages/cocotb/handle.py", line 450, in __getattr__
+                                                            raise AttributeError(str(e)) from None
+                                                        AttributeError: 'event_scheduler contains no child object named modify_event'
+   299.00ns INFO     cocotb.regression                  ********************************************************************************************************
+                                                        ** TEST                                            STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        ********************************************************************************************************
+                                                        ** test_event_scheduler.tc1_add_event_and_trigger   FAIL          20.00           0.00       4354.55  **
+                                                        ** test_event_scheduler.tc2_cancel_event            FAIL          31.00           0.00      34663.67  **
+                                                        ** test_event_scheduler.tc3_modify_event            FAIL          31.00           0.00      18819.43  **
+                                                        ** test_event_scheduler.tc4_duplicate_add           FAIL          31.00           0.00      38434.36  **
+                                                        ** test_event_scheduler.tc5_modify_nonexistent      FAIL          31.00           0.00      25222.78  **
+                                                        ** test_event_scheduler.tc6_cancel_nonexistent      FAIL          31.00           0.00      29597.87  **
+                                                        ** test_event_scheduler.tc7_recurring_event         FAIL          31.00           0.00      36349.85  **
+                                                        ** test_event_scheduler.tc8_logging                 FAIL          31.00           0.00      38685.93  **
+                                                        ** test_event_scheduler.tc9_modify_then_cancel      FAIL          31.00           0.00      21677.80  **
+                                                        ** test_event_scheduler.tc10_priority_selection     FAIL          31.00           0.00      35789.55  **
+                                                        ********************************************************************************************************
+                                                        ** TESTS=10 PASS=0 FAIL=10 SKIP=0                                299.00           0.03       8942.76  **
+                                                        ********************************************************************************************************
+                                                        
+FST info: dumpfile /code/rundir/sim_build/event_scheduler.fst opened for output.
+FAILED
+
+=================================== FAILURES ===================================
+_____________________________ test_event_scheduler _____________________________
+
+    @pytest.mark.simulation
+    def test_event_scheduler():
+        """Pytest function to execute the event scheduler testbench."""
+        print("Running event scheduler testbench...")
+>       runner()
+
+/src/test_runner.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def runner():
+        """Runs the simulation for the Event Scheduler."""
+        # Get the simulation runner
+        simulation_runner = get_runner(sim)
+    
+        # Build the simulation environment
+        simulation_runner.build(
+            sources=verilog_sources,
+            hdl_toplevel=toplevel,
+            always=True,         # Always rebuild
+            clean=True,          # Clean previous build files
+            waves=True ,   # Enable waveform generation if WAVE=1
+            verbose=True,        # Verbose build and simulation output
+            timescale=("1ns", "1ns"),  # Set the timescale for simulation
+            log_file="build.log"      # Log file for the build process
+        )
+    
+        # Run the testbench
+>       simulation_runner.test(
+            hdl_toplevel=toplevel,
+            test_module=module,
+            waves=True    # Enable waveform dump if WAVE=1
+        )
+E       SystemExit: ERROR: Failed 10 of 10 tests.
+
+/src/test_runner.py:33: SystemExit
+------------------------------ Captured log call -------------------------------
+INFO     Icarus:runner.py:468 Running command iverilog -o /code/rundir/sim_build/sim.vvp -s event_scheduler -g2012 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/event_scheduler.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+INFO     Icarus:runner.py:468 Running command vvp -M /usr/local/lib/python3.9/dist-packages/cocotb/libs -m libcocotbvpi_icarus /code/rundir/sim_build/sim.vvp -fst in directory /code/rundir/sim_build
+=============================== warnings summary ===============================
+../../src/test_runner.py:40
+  /src/test_runner.py:40: PytestUnknownMarkWarning: Unknown pytest.mark.simulation - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.simulation
+
+../../usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:477
+  /usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:477: PytestCacheWarning: could not create cache path /rundir/harness/.cache/v/cache/nodeids: [Errno 13] Permission denied: '/rundir'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+../../usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:429
+  /usr/local/lib/python3.9/dist-packages/_pytest/cacheprovider.py:429: PytestCacheWarning: could not create cache path /rundir/harness/.cache/v/cache/lastfailed: [Errno 13] Permission denied: '/rundir'
+    config.cache.set("cache/lastfailed", self.lastfailed)
+
+../../usr/local/lib/python3.9/dist-packages/_pytest/stepwise.py:51
+  /usr/local/lib/python3.9/dist-packages/_pytest/stepwise.py:51: PytestCacheWarning: could not create cache path /rundir/harness/.cache/v/cache/stepwise: [Errno 13] Permission denied: '/rundir'
+    session.config.cache.set(STEPWISE_CACHE_DIR, [])
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../src/test_runner.py::test_event_scheduler - SystemExit: ERROR: Fa...
+======================== 1 failed, 4 warnings in 0.34s =========================
+Cleaning up Docker resources...

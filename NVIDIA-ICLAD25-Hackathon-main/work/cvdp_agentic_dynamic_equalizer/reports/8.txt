@@ -1,0 +1,190 @@
+Running harness with project name: cvdp_agentic_dynamic_equalizer_8_1776234425
+#1 [internal] load local bake definitions
+#1 reading from stdin 762B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 212B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for ghcr.io/hdl/sim/osvb:latest
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [1/2] FROM ghcr.io/hdl/sim/osvb:latest@sha256:6fc999d943f1b8f8c49e7221459ae01e57afd33f7e73c3734b9a65be25e7f434
+#5 resolve ghcr.io/hdl/sim/osvb:latest@sha256:6fc999d943f1b8f8c49e7221459ae01e57afd33f7e73c3734b9a65be25e7f434 0.0s done
+#5 DONE 0.0s
+
+#6 [2/2] RUN pip3 install cocotb-bus==0.2.1
+#6 CACHED
+
+#7 exporting to image
+#7 exporting layers
+#7 exporting layers done
+#7 exporting manifest sha256:e51651bbb8ddb80950b527db8a03e10a34aac5f34f1d1eb0660c958f4dfabb45 done
+#7 exporting config sha256:38464287e5511f57ba16cf801402353f0d73bfd6b3237f52ed81e0cfdd1971f6 done
+#7 exporting attestation manifest sha256:dbc6fe0c90cafbd2af79d14a85c41e236f8caacd03b6551234bb96417a39db35 0.0s done
+#7 exporting manifest list sha256:277228e5eddd1b9dd56ea36fa4b678fe501775244a25f0d1ca5836ee2c53200d 0.0s done
+#7 naming to docker.io/library/cvdp_agentic_dynamic_equalizer_8_1776234425-direct:latest
+#7 naming to docker.io/library/cvdp_agentic_dynamic_equalizer_8_1776234425-direct:latest done
+#7 unpacking to docker.io/library/cvdp_agentic_dynamic_equalizer_8_1776234425-direct:latest
+#7 unpacking to docker.io/library/cvdp_agentic_dynamic_equalizer_8_1776234425-direct:latest 0.2s done
+#7 DONE 0.3s
+
+#8 resolving provenance for metadata file
+#8 DONE 0.0s
+============================= test session starts ==============================
+platform linux -- Python 3.9.2, pytest-8.3.2, pluggy-1.5.0 -- /usr/bin/python3
+cachedir: /code/rundir/.cache
+rootdir: /src
+collecting ... collected 1 item
+
+../../src/test_runner.py::test_cvdp_agentic_dynamic_equalizer[7-16-16-15-16] FAILED [100%]
+
+=================================== FAILURES ===================================
+______________ test_cvdp_agentic_dynamic_equalizer[7-16-16-15-16] ______________
+
+TAP_NUM = 7, DATA_WIDTH = 16, COEFF_WIDTH = 16, MU = 15, LUT_SIZE = 16
+
+    @pytest.mark.parametrize("TAP_NUM, DATA_WIDTH, COEFF_WIDTH, MU, LUT_SIZE", [(7, 16, 16, 15, 16)])
+    def test_cvdp_agentic_dynamic_equalizer(TAP_NUM, DATA_WIDTH, COEFF_WIDTH, MU, LUT_SIZE):
+        try:
+>           runner(TAP_NUM, DATA_WIDTH, COEFF_WIDTH, MU, LUT_SIZE)
+
+/src/test_runner.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/src/test_runner.py:24: in runner
+    runner.build(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <cocotb.runner.Icarus object at 0x7f3a3b36ce20>, hdl_library = 'top'
+verilog_sources = [], vhdl_sources = []
+sources = ['/code/rtl/equalizer_top.sv', '/code/rtl/awgn.sv', '/code/rtl/dynamic_equalizer.sv', '/code/rtl/error_calc.sv', '/code/rtl/coeff_update.sv']
+includes = [], defines = {}
+parameters = {'COEFF_WIDTH': 16, 'DATA_WIDTH': 16, 'LUT_SIZE': 16, 'MU': 15, ...}
+build_args = [], hdl_toplevel = 'equalizer_top', always = True
+build_dir = 'sim_build', clean = True, verbose = True
+timescale = ('1ns', '1ps'), waves = True, log_file = 'sim_equalizer_top.log'
+
+    def build(
+        self,
+        hdl_library: str = "top",
+        verilog_sources: Sequence[PathLike] = [],
+        vhdl_sources: Sequence[PathLike] = [],
+        sources: Sequence[Union[PathLike, VHDL, Verilog]] = [],
+        includes: Sequence[PathLike] = [],
+        defines: Mapping[str, object] = {},
+        parameters: Mapping[str, object] = {},
+        build_args: Sequence[Union[str, VHDL, Verilog]] = [],
+        hdl_toplevel: Optional[str] = None,
+        always: bool = False,
+        build_dir: PathLike = "sim_build",
+        clean: bool = False,
+        verbose: bool = False,
+        timescale: Optional[Timescale] = None,
+        waves: Optional[bool] = None,
+        log_file: Optional[PathLike] = None,
+    ) -> None:
+        """Build the HDL sources.
+    
+        With mixed language simulators, *sources* will be built,
+        followed by *vhdl_sources*, then *verilog_sources*.
+        With simulators that only support either VHDL or Verilog, *sources* will be built,
+        followed by *vhdl_sources* and *verilog_sources*, respectively.
+    
+        If your source files use an atypical file extension,
+        use :class:`VHDL` and :class:`Verilog` to tag the path as a VHDL or Verilog source file, respectively.
+        If the filepaths aren't tagged, the extension is used to determine if they are VHDL or Verilog files.
+    
+        +----------+------------------------------------+
+        | Language | File Extensions                    |
+        +==========+====================================+
+        | VHDL     | ``.vhd``, ``.vhdl``                |
+        +----------+------------------------------------+
+        | Verilog  | ``.v``, ``.sv``, ``.vh``, ``.svh`` |
+        +----------+------------------------------------+
+    
+    
+        .. code-block:: python3
+    
+            runner.build(
+                sources=[
+                    VHDL("/my/file.is_actually_vhdl"),
+                    Verilog("/other/file.verilog"),
+                ],
+            )
+    
+        The same tagging works for *build_args*.
+        Tagged *build_args* only supply that option to the compiler when building the source file for the tagged language.
+        Non-tagged *build_args* are supplied when compiling any language.
+    
+        Args:
+            hdl_library: The library name to compile into.
+            verilog_sources: Verilog source files to build.
+            vhdl_sources: VHDL source files to build.
+            sources: Language-agnostic list of source files to build.
+            includes: Verilog include directories.
+            defines: Defines to set.
+            parameters: Verilog parameters or VHDL generics.
+            build_args: Extra build arguments for the simulator.
+            hdl_toplevel: The name of the HDL toplevel module.
+            always: Always run the build step.
+            build_dir: Directory to run the build step in.
+            clean: Delete build_dir before building
+            verbose: Enable verbose messages.
+            timescale: Tuple containing time unit and time precision for simulation.
+            waves: Record signal traces.
+            log_file: File to write the build log to.
+        """
+    
+        self.clean: bool = clean
+        self.build_dir = get_abs_path(build_dir)
+        if self.clean:
+            self.rm_build_folder(self.build_dir)
+        os.makedirs(self.build_dir, exist_ok=True)
+    
+        # note: to avoid mutating argument defaults, we ensure that no value
+        # is written without a copy. This is much more concise and leads to
+        # a better docstring than using `None` as a default in the parameters
+        # list.
+        self.hdl_library: str = hdl_library
+        self.verilog_sources: List[Path] = get_abs_paths(verilog_sources)
+        self.vhdl_sources: List[Path] = get_abs_paths(vhdl_sources)
+        self.sources: List[Path] = get_abs_paths(sources)
+        self.includes: List[Path] = get_abs_paths(includes)
+        self.defines = dict(defines)
+        self.parameters = dict(parameters)
+        self.build_args = list(build_args)
+        self.always: bool = always
+        self.hdl_toplevel: Optional[str] = hdl_toplevel
+        self.verbose: bool = verbose
+        self.timescale: Optional[Timescale] = timescale
+        self.log_file: Optional[PathLike] = log_file
+    
+        self.waves = bool(waves)
+    
+        for e in os.environ:
+            self.env[e] = os.environ[e]
+    
+        cmds: Sequence[Command] = self._build_command()
+>       self._execute(cmds, cwd=self.build_dir)
+E       SystemExit: Process 'iverilog' terminated with error 2
+
+/usr/local/lib/python3.9/dist-packages/cocotb/runner.py:264: SystemExit
+----------------------------- Captured stdout call -----------------------------
+INFO: Running command iverilog -o /code/rundir/sim_build/sim.vvp -D COCOTB_SIM=1 -s equalizer_top -g2012 -Pequalizer_top.TAP_NUM=7 -Pequalizer_top.DATA_WIDTH=16 -Pequalizer_top.COEFF_WIDTH=16 -Pequalizer_top.MU=15 -Pequalizer_top.LUT_SIZE=16 -s cocotb_iverilog_dump -f /code/rundir/sim_build/cmds.f /code/rtl/equalizer_top.sv /code/rtl/awgn.sv /code/rtl/dynamic_equalizer.sv /code/rtl/error_calc.sv /code/rtl/coeff_update.sv /code/rundir/sim_build/cocotb_iverilog_dump.v in directory /code/rundir/sim_build
+=============================== warnings summary ===============================
+../../src/test_runner.py:4
+  /src/test_runner.py:4: UserWarning: Python runners and associated APIs are an experimental feature and subject to change.
+    from cocotb.runner import get_runner
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../src/test_runner.py::test_cvdp_agentic_dynamic_equalizer[7-16-16-15-16]
+========================= 1 failed, 1 warning in 0.13s =========================
+Cleaning up Docker resources...
+Untagged: cvdp_agentic_dynamic_equalizer_8_1776234425-direct:latest
+Deleted: sha256:277228e5eddd1b9dd56ea36fa4b678fe501775244a25f0d1ca5836ee2c53200d
