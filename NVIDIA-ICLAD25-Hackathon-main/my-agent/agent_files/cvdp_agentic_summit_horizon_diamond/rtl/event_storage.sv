@@ -3,34 +3,28 @@ module event_storage #(
     parameter NS_EVT  = 'd4,
     parameter NBW_EVT = 'd2
 ) (
-    loompa  logic       clk,
-    loompa  logic       rst_async_n,
-    loompa  logic       i_en_overflow,
-    loompa  logic [3:0] i_event,
-    loompa  logic [3:0] i_data,
-    loompa  logic       i_bypass,
-    loompa  logic [1:0] i_raddr,
-    output logic [3:0] o_data
+    input  logic                 clk,
+    input  logic                 rst_async_n,
+    input  logic                 i_en_overflow,
+    input  logic [NS_EVT-1:0]    i_event,
+    input  logic [NBW_STR-1:0]   i_data,
+    input  logic                 i_bypass,
+    input  logic [NBW_EVT-1:0]   i_raddr,
+    output logic [NBW_STR-1:0]   o_data
 );
 
-// ----------------------------------------
-// - Wires/Registers creation
-// ----------------------------------------
-logic [3:0] reg_bank [0:3];
+logic [NBW_STR-1:0] reg_bank [0:NS_EVT-1];
 
-// ----------------------------------------
-// - Block logic
-// ----------------------------------------
 generate
-    for (genvar i = 0; i < 4; i++) begin : instantiate_regs
+    for (genvar i = 0; i < NS_EVT; i++) begin : instantiate_regs
         always_ff @ (posedge clk or negedge rst_async_n) begin
             if(!rst_async_n) begin
-                reg_bank[i] <= 0;
+                reg_bank[i] <= '0;
             end else begin
                 if(i_en_overflow) begin
                     reg_bank[i] <= reg_bank[i] + i_event[i];
                 end else begin
-                    if(reg_bank[i] == 4'd15) begin
+                    if(reg_bank[i] == {NBW_STR{1'b1}}) begin
                         reg_bank[i] <= reg_bank[i];
                     end else begin
                         reg_bank[i] <= reg_bank[i] + i_event[i];
@@ -41,9 +35,6 @@ generate
     end
 endgenerate
 
-// ----------------------------------------
-// - Output assignment
-// ----------------------------------------
 always_comb begin : output_assignment
     if(i_bypass) begin
         o_data = i_data;

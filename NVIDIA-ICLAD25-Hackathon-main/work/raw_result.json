@@ -1,13 +1,13 @@
 {
-  "cvdp_agentic_starlight_phoenix_comet_6246": {
-    "category": "cid016",
-    "difficulty": "medium",
+  "cvdp_agentic_summit_horizon_diamond_3314": {
+    "category": "cid005",
+    "difficulty": "hard",
     "tests": [
       {
         "result": 0,
-        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_starlight_phoenix_comet/harness/6246/rundir/sim.log",
+        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_summit_horizon_diamond/harness/3314/rundir/sim.log",
         "error_msg": null,
-        "execution": 590.0,
+        "execution": 359.0,
         "pid": 0
       }
     ],

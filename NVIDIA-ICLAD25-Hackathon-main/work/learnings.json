@@ -1,6 +1,6 @@
 {
   "Modify or Extend Existing RTL": "For AES width upgrades, verify interface/key-size and round-count expectations first, then keep module/port compatibility while confirming the existing implementation already satisfies the new spec before editing.",
-  "Integrate multiple modules into a top module": "For top-level wrapper tasks, first satisfy required source filenames/modules, then implement minimal glue logic that computes checker-visible outputs directly from post-processed submodule outputs while propagating critical submodule error flags.",
+  "Integrate multiple modules into a top module": "Start integration triage by fixing missing top/module filenames so simulation can elaborate.\nFor grid-style wrappers, lock bit-slice mapping rules first (MSB/LSB order for packed buses), then wire minimal pipeline/glue logic around existing submodules.\nKeep row/column indexing consistent between control bits and instantiated cells to match model-visible selection behavior.",
   "Create new RTL from spec": "For APB CSR modules built from spec, lock the register map and transaction-state sequencing first, then enforce register-specific protections and side effects (like ISR clear-on-write semantics) to satisfy protocol and behavioral checks together.",
   "Debug/fix buggy RTL": "For AES-128 debug tasks, replacing fragile round/key-schedule wiring with a deterministic, spec-aligned implementation that handles simultaneous start+key-update reliably restores model-matching ciphertext behavior."
 }

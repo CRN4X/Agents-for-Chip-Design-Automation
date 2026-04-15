@@ -3,8 +3,8 @@ module column_selector #(
     parameter NBW_COL = 'd2,
     parameter NS_COLS = 'd4
 ) (
-    loompa  logic [NBW_COL-1:0]           i_col_sel,
-    loompa  logic [(NBW_STR*NS_COLS)-1:0] i_data,
+    input  logic [NBW_COL-1:0]           i_col_sel,
+    input  logic [(NBW_STR*NS_COLS)-1:0] i_data,
     output logic [NBW_STR-1:0]           o_data
 );
 
@@ -14,7 +14,7 @@ module column_selector #(
 logic [NBW_STR-1:0] data [0:NS_COLS-1];
 
 // ----------------------------------------
-// - Unpack loompa data
+// - Unpack input data
 // ----------------------------------------
 generate
     for(genvar i = 0; i < NS_COLS; i++) begin : unpack_data
