@@ -2,7 +2,7 @@ General Note:
 0. Before running Python/eval commands in local no-Docker flow, activate the virtual environment:
    - `source agent_env/bin/activate` (from repo root)
 1. Use `python3` (not `python`) for all Python commands.
-2. In local no-Docker flow, treat `my-agent/agent_files/<problem_name>/rtl` as the editable RTL workspace.
+2. In local no-Docker flow, treat `my-agent/agent_files/<problem_name>/<issue_id>/rtl` as the editable RTL workspace.
 3. Do not modify `before/rtl` originals.
 4. Preserve existing module names, ports, and file paths unless the prompt asks to change them.
 
@@ -181,7 +181,7 @@ Use Codex CLI as the AI fixer loop while `run_local_eval.sh` is the evaluator:
    - `<harness_path>/rundir/sim.log`
    - `<harness_path>/rundir/agent_report.json`
 3. Edit only staged RTL in:
-   - `my-agent/agent_files/<problem_name>/rtl/`
+   - `my-agent/agent_files/<problem_name>/<issue_id>/rtl/`
 4. Rerun `run_local_eval.sh`.
 5. Repeat until pass or max retry limit.
 
@@ -205,7 +205,7 @@ Rules:
   - <harness_path>/rundir/sim.log
   - <harness_path>/rundir/agent_report.json
 - Edit ONLY files under:
-  my-agent/agent_files/<problem_name>/rtl/
+  my-agent/agent_files/<problem_name>/<issue_id>/rtl/
 - Do not modify before/ originals.
 - After each edit, rerun run_local_eval.sh.
 - Stop only when pytest passes or after 8 iterations.

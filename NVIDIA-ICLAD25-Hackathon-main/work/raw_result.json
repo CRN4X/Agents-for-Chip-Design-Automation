@@ -1,13 +1,13 @@
 {
-  "cvdp_agentic_universal_shift_reg_3": {
-    "category": "cid004",
+  "cvdp_agentic_glacier_amber_cosmic_3144": {
+    "category": "cid016",
     "difficulty": "medium",
     "tests": [
       {
         "result": 0,
-        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_universal_shift_reg/harness/3/rundir/sim.log",
+        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_glacier_amber_cosmic/harness/3144/rundir/sim.log",
         "error_msg": null,
-        "execution": 133.0,
+        "execution": 570.0,
         "pid": 0
       }
     ],

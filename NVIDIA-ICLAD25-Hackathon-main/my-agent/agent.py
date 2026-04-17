@@ -318,7 +318,7 @@ def resolve_harness_path(repo_root: Path, problem: str, issue: str) -> Path:
     raise FileNotFoundError(f"Cannot resolve harness path for {problem}_{issue}")
 
 
-def reset_staged_rtl_from_original(repo_root: Path, harness_path: Path, problem: str) -> Path:
+def reset_staged_rtl_from_original(repo_root: Path, harness_path: Path, problem: str) -> Tuple[Path, Path]:
     source_candidates = [
         harness_path / "before" / "rtl",
         harness_path / "rtl.orig",
@@ -341,7 +341,8 @@ def reset_staged_rtl_from_original(repo_root: Path, harness_path: Path, problem:
             f"and non-symlink {harness_path / 'rtl'}"
         )
 
-    staged_rtl = repo_root / "my-agent" / "agent_files" / problem / "rtl"
+    issue = harness_path.name
+    staged_rtl = repo_root / "my-agent" / "agent_files" / problem / issue / "rtl"
     staged_parent = staged_rtl.parent
     staged_parent.mkdir(parents=True, exist_ok=True)
     if staged_rtl.exists() or staged_rtl.is_symlink():
@@ -350,7 +351,7 @@ def reset_staged_rtl_from_original(repo_root: Path, harness_path: Path, problem:
         else:
             shutil.rmtree(staged_rtl)
     shutil.copytree(source_rtl, staged_rtl)
-    return source_rtl
+    return source_rtl, staged_rtl
 
 
 def extract_first_error_from_sim_log(sim_log: Path) -> str:
@@ -510,6 +511,8 @@ Important:
 
 """
 
+    staged_problem = harness_path.parts[-3]
+    staged_issue = harness_path.name
     base = f"""Work on this harness iteratively:
 {harness_path}
 
@@ -523,7 +526,7 @@ Rules:
   - {harness_path}/rundir/sim.log
   - {harness_path}/rundir/agent_report.json
 - Edit ONLY files under:
-  my-agent/agent_files/{harness_path.parts[-3]}/rtl/
+  my-agent/agent_files/{staged_problem}/{staged_issue}/rtl/
 - Do not modify before/ originals.
 - Keep edits minimal, compile-safe first.
 - Use sim.log first-error lines as primary guidance.
@@ -643,7 +646,7 @@ def solve_problem(repo_root: Path, harness_path: Path, max_retries: int = 8) -> 
     else:
         log("learnings.json not found or empty; continuing without learning context.")
     for attempt in range(1, max_retries + 1):
-        log(f"Step 1/3: Codex solve attempt {attempt}/{max_retries}")
+        log(f"Step 1/2: Codex solve attempt {attempt}/{max_retries}")
         prompt = build_codex_prompt(
             harness_path,
             attempt,
@@ -699,7 +702,7 @@ def solve_problem(repo_root: Path, harness_path: Path, max_retries: int = 8) -> 
                 )
                 sys.exit(2)
 
-        log("Step 2/3: Running local eval")
+        log("Step 2/2: Running local eval")
         ev = run_local_eval(repo_root, harness_path)
         log(f"Eval exit code: {ev.returncode}")
         if ev.stdout.strip():
@@ -707,7 +710,6 @@ def solve_problem(repo_root: Path, harness_path: Path, max_retries: int = 8) -> 
             print("\n".join(ev.stdout.splitlines()[-25:]), flush=True)
 
         if ev.returncode == 0:
-            log(f"PASS reached on attempt {attempt}.")
             return True
 
         sim_log = harness_path / "rundir" / "sim.log"
@@ -815,13 +817,13 @@ def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
     log(f"Selected dataset index {idx}: {entry_id}")
     log(f"Resolved harness path: {harness_path}")
     try:
-        source_rtl = reset_staged_rtl_from_original(repo_root, harness_path, problem)
+        source_rtl, staged_rtl = reset_staged_rtl_from_original(repo_root, harness_path, problem)
     except (OSError, FileNotFoundError) as exc:
         print(f"[RTL Reset Error] Could not reset staged RTL from original source. {exc}", file=sys.stderr)
         sys.exit(1)
     log(
         "Reset staged RTL from original source: "
-        f"{source_rtl} -> {repo_root / 'my-agent' / 'agent_files' / problem / 'rtl'}"
+        f"{source_rtl} -> {staged_rtl}"
     )
 
     solved = False

@@ -114,7 +114,7 @@ Behavior summary:
 ## Output Description
 
 - Location of Updated Verilog Files: 
-  - `/NVIDIA-ICLAD25-Hackathon-main/my-agent/agent_files/<problem_name>/rtl/`: location of the verilog file(s) modified by the AI agent.
+  - `/NVIDIA-ICLAD25-Hackathon-main/my-agent/agent_files/<problem_name>/<issue_id>/rtl/`: location of the verilog file(s) modified by the AI agent.
 - Benchmark/report artifacts in `work/`:
   - `work/result.json`: summarized pass/fail results for evaluated targets in a compact machine-readable format.
   - `work/raw_result.json`: detailed per-run raw benchmark output (more granular execution data).
@@ -154,7 +154,7 @@ Note: warnings (for example deprecation warnings) may appear during successful r
 
 1. Run setup once, then run `python3 my-agent/agent.py -i <index>` (and optional flags).
 2. The agent reads the selected row from the dataset JSONL and resolves the matching harness folder.
-3. Codex receives prompt/context and updates only staged RTL under `my-agent/agent_files/<problem_name>/rtl/`.
+3. Codex receives prompt/context and updates only staged RTL under `my-agent/agent_files/<problem_name>/<issue_id>/rtl/`.
 4. Local evaluation runs with Pytest + Cocotb using Icarus Verilog (`iverilog`/`vvp`).
 5. If evaluation fails, failure context (`prompt.json`, `rundir/sim.log`, `rundir/agent_report.json`) is fed into the next attempt.
 6. Retries continue until pass or retry/cycle limits are reached.
@@ -253,7 +253,7 @@ python3 my-agent/agent.py -i <new_index>
 
       subgraph EXEC["Executor: Codex + Staged RTL"]
           I["Run codex exec<br/>from agent.py"]
-          J["Edit Only Staged RTL<br/>my-agent/agent_files/problem_name/rtl/"]
+          J["Edit Only Staged RTL<br/>my-agent/agent_files/problem_name/issue_id/rtl/"]
           K["Keep before/rtl Unmodified<br/>Harness rtl linked/copied to staged RTL"]
           I --> J --> K
       end

@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-# Point harness rtl/ to staged agent_files/<problem>/rtl copy.
+# Point harness rtl/ to staged agent_files/<problem>/<issue>/rtl copy.
 # Usage:
 #   ./link_harness_rtl_to_staged.sh /abs/path/to/work/<problem>/harness/<id>
 #   ./link_harness_rtl_to_staged.sh --restore /abs/path/to/work/<problem>/harness/<id>
@@ -51,10 +51,22 @@ if [ -z "$PROBLEM_NAME" ]; then
 fi
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-STAGED_RTL_PATH="$SCRIPT_DIR/agent_files/$PROBLEM_NAME/rtl"
+ISSUE_ID=$(basename "$HARNESS_PATH")
+STAGED_RTL_PATH_ISSUE="$SCRIPT_DIR/agent_files/$PROBLEM_NAME/$ISSUE_ID/rtl"
+STAGED_RTL_PATH_LEGACY="$SCRIPT_DIR/agent_files/$PROBLEM_NAME/rtl"
+STAGED_RTL_PATH=""
 
-if [ ! -d "$STAGED_RTL_PATH" ]; then
-  echo "Staged RTL path not found: $STAGED_RTL_PATH"
+if [ -d "$STAGED_RTL_PATH_ISSUE" ]; then
+  STAGED_RTL_PATH="$STAGED_RTL_PATH_ISSUE"
+elif [ -d "$STAGED_RTL_PATH_LEGACY" ]; then
+  STAGED_RTL_PATH="$STAGED_RTL_PATH_LEGACY"
+fi
+
+if [ -z "$STAGED_RTL_PATH" ]; then
+  echo "Staged RTL path not found."
+  echo "Tried:"
+  echo "  $STAGED_RTL_PATH_ISSUE"
+  echo "  $STAGED_RTL_PATH_LEGACY"
   echo "Run the agent once first to generate staged files."
   exit 1
 fi
