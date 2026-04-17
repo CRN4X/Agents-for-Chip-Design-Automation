@@ -1,0 +1,14 @@
+networks:
+  licnetwork:
+    external: true
+    name: licnetwork
+services:
+  xrun:
+    build: .
+    command: pytest /src/test_runner.py -v -s
+    env_file: ./src/.env
+    networks:
+    - licnetwork
+    volumes:
+    - ./src/:/src/:ro
+    working_dir: /code/rundir

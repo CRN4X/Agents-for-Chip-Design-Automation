@@ -1,0 +1,59 @@
+Creating Docker network cvdp-bridge-dataset-f655bdfe...
+5ba8d103a55c40f45e3e7722612ce91259a46743953295a9cdeffbbe49b111a7
+Running harness with project name: cvdp_agentic_8b10b_codec_1_1776334869
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.0.2, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /src
+plugins: timeout-2.4.0
+collecting ... collected 3 items
+
+../../src/process.py::test_simulate PASSED
+../../src/process.py::test_coverage [ERROR] 2026-04-16 10:21:40 [com.cadence.system] [main] - [FATAL] - Failed - (LMF-03513): License call failed for feature Xcelium_Single_Core, version 24.0 and quantity 1. The license server search path is defined as 5280@enlicense4.eas.asu.edu&5280@enlicense4.eas.asu.edu. The FLEXnet error message is as follows,
+FLEXnet ERROR(-513, 7006, 0): Error List Returned (-513,7006) ; Can't Connect to License Server (-15,3002) (enlicense4.eas.asu.edu); Can't Connect to License Server (-15,3002) (enlicense4.eas.asu.edu)
+
+Run 'lic_error LMF-03513' for more information.
+PASSED
+../../src/process.py::test_report FAILED
+
+=================================== FAILURES ===================================
+_________________________________ test_report __________________________________
+
+    @pytest.mark.usefixtures(scope='test_coverage')
+    def test_report():
+    
+        metrics = {}
+    
+>       with open("/code/rundir/coverage.log") as f:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/code/rundir/coverage.log'
+
+/src/process.py:35: FileNotFoundError
+=============================== warnings summary ===============================
+process.py:10
+  process.py:10: PytestWarning: usefixtures() in process.py::test_simulate without arguments has no effect
+    @pytest.mark.usefixtures(scope='session')
+
+process.py:20
+  process.py:20: PytestWarning: usefixtures() in process.py::test_coverage without arguments has no effect
+    @pytest.mark.usefixtures(scope='test_simulate')
+
+process.py:30
+  process.py:30: PytestWarning: usefixtures() in process.py::test_report without arguments has no effect
+    @pytest.mark.usefixtures(scope='test_coverage')
+
+../../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475
+  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /src/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/src/pytest-cache-files-j9tozph7'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+../../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:429
+  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:429: PytestCacheWarning: could not create cache path /src/.pytest_cache/v/cache/lastfailed: [Errno 30] Read-only file system: '/src/pytest-cache-files-jx7a64g9'
+    config.cache.set("cache/lastfailed", self.lastfailed)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../src/process.py::test_report - FileNotFoundError: [Errno 2] No su...
+=================== 1 failed, 2 passed, 5 warnings in 28.52s ===================
+Cleaning up Docker resources...
+Removing Docker network cvdp-bridge-dataset-f655bdfe...
+cvdp-bridge-dataset-f655bdfe

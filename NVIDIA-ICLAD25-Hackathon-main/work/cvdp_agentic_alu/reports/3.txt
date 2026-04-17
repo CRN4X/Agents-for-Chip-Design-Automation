@@ -1,0 +1,119 @@
+Running harness with project name: cvdp_agentic_alu_3_1776334952
+#1 [internal] load local bake definitions
+#1 reading from stdin 698B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 99B 0.0s done
+#2 DONE 0.1s
+
+#3 [internal] load metadata for docker.io/library/cvdp-cadence-verif:latest
+#3 DONE 0.1s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.1s
+
+#5 [1/2] FROM docker.io/library/cvdp-cadence-verif:latest@sha256:f6ff6fa26b3311c71b3ec95c263062e3012f46ad9d1ceca5ad9d26b30e7e8fe5
+#5 resolve docker.io/library/cvdp-cadence-verif:latest@sha256:f6ff6fa26b3311c71b3ec95c263062e3012f46ad9d1ceca5ad9d26b30e7e8fe5 0.1s done
+#5 DONE 0.1s
+
+#6 [2/2] RUN pip3 install cocotb==1.9.2
+#6 CACHED
+
+#7 exporting to image
+#7 exporting layers 0.0s done
+#7 exporting manifest sha256:f6a38fd774c9f68bf9c70a3c36e828e4b23de1fb51704a3c310d6ddeb44cc2d3 0.0s done
+#7 exporting config sha256:184e71f56d5062859863620dac90fd6ada0b7df6fe8fef6ecf39e5aecce5afdc 0.0s done
+#7 exporting attestation manifest sha256:9faf68c6f3766cac1fe6fb377c08c19a3faf6cf492d32c3fdecb5e8a1479ad53 0.1s done
+#7 exporting manifest list sha256:9fea633f0e3ab369d03e091d372d9202aab576e13abb58f1264ac4dd1915c6c2
+#7 exporting manifest list sha256:9fea633f0e3ab369d03e091d372d9202aab576e13abb58f1264ac4dd1915c6c2 0.0s done
+#7 naming to docker.io/library/cvdp_agentic_alu_3_1776334952-xrun:latest done
+#7 unpacking to docker.io/library/cvdp_agentic_alu_3_1776334952-xrun:latest
+#7 unpacking to docker.io/library/cvdp_agentic_alu_3_1776334952-xrun:latest 0.5s done
+#7 DONE 0.8s
+
+#8 resolving provenance for metadata file
+#8 DONE 0.1s
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.0.2, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /src
+plugins: timeout-2.4.0
+collecting ... collected 3 items
+
+../../src/test_runner.py::test_simulate FAILED
+../../src/test_runner.py::test_coverage [ERROR] 2026-04-16 10:23:04 [com.cadence.system] [main] - [FATAL] - Failed - (LMF-03513): License call failed for feature Xcelium_Single_Core, version 24.0 and quantity 1. The license server search path is defined as 5280@enlicense4.eas.asu.edu&5280@enlicense4.eas.asu.edu. The FLEXnet error message is as follows,
+FLEXnet ERROR(-513, 7006, 0): Error List Returned (-513,7006) ; Can't Connect to License Server (-15,3002) (enlicense4.eas.asu.edu); Can't Connect to License Server (-15,3002) (enlicense4.eas.asu.edu)
+
+Run 'lic_error LMF-03513' for more information.
+PASSED
+../../src/test_runner.py::test_report FAILED
+
+=================================== FAILURES ===================================
+________________________________ test_simulate _________________________________
+
+    @pytest.mark.usefixtures(scope='session')
+    def test_simulate():
+>       runner = get_runner(sim)
+                 ^^^^^^^^^^^^^^^
+
+/src/test_runner.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib64/python3.12/site-packages/cocotb/runner.py:1396: in get_runner
+    return supported_sims[simulator_name]()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib64/python3.12/site-packages/cocotb/runner.py:77: in __init__
+    self._simulator_in_path()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @staticmethod
+    def _simulator_in_path() -> None:
+        if shutil.which("xrun") is None:
+>           raise SystemExit("ERROR: xrun executable not found!")
+E           SystemExit: ERROR: xrun executable not found!
+
+/usr/local/lib64/python3.12/site-packages/cocotb/runner.py:1238: SystemExit
+_________________________________ test_report __________________________________
+
+    @pytest.mark.usefixtures(scope='test_coverage')
+    def test_report():
+        metrics = {}
+>       with open("/code/rundir/coverage.log") as f:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/code/rundir/coverage.log'
+
+/src/test_runner.py:53: FileNotFoundError
+=============================== warnings summary ===============================
+../../src/test_runner.py:3
+  /src/test_runner.py:3: UserWarning: Python runners and associated APIs are an experimental feature and subject to change.
+    from cocotb.runner import get_runner
+
+test_runner.py:16
+  test_runner.py:16: PytestWarning: usefixtures() in test_runner.py::test_simulate without arguments has no effect
+    @pytest.mark.usefixtures(scope='session')
+
+test_runner.py:45
+  test_runner.py:45: PytestWarning: usefixtures() in test_runner.py::test_coverage without arguments has no effect
+    @pytest.mark.usefixtures(scope='test_simulate')
+
+test_runner.py:50
+  test_runner.py:50: PytestWarning: usefixtures() in test_runner.py::test_report without arguments has no effect
+    @pytest.mark.usefixtures(scope='test_coverage')
+
+../../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475
+  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:475: PytestCacheWarning: could not create cache path /src/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/src/pytest-cache-files-qbgg333b'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+../../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:429
+  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:429: PytestCacheWarning: could not create cache path /src/.pytest_cache/v/cache/lastfailed: [Errno 30] Read-only file system: '/src/pytest-cache-files-g51t_hf6'
+    config.cache.set("cache/lastfailed", self.lastfailed)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../src/test_runner.py::test_simulate - SystemExit: ERROR: xrun exec...
+FAILED ../../src/test_runner.py::test_report - FileNotFoundError: [Errno 2] N...
+=================== 2 failed, 1 passed, 6 warnings in 23.83s ===================
+Cleaning up Docker resources...
+Untagged: cvdp_agentic_alu_3_1776334952-xrun:latest
+Deleted: sha256:9fea633f0e3ab369d03e091d372d9202aab576e13abb58f1264ac4dd1915c6c2

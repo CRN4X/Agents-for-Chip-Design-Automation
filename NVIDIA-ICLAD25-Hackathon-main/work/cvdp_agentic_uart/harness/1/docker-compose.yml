@@ -1,0 +1,26 @@
+networks:
+  licnetwork:
+    external: true
+    name: licnetwork
+services:
+  direct:
+    command: pytest -s --log-cli-level=INFO -o cache_dir=/rundir/harness/.cache /src/test_runner.py
+      -v
+    env_file: ./src/.env
+    image: ghcr.io/hdl/sim/osvb
+    volumes:
+    - ./src/:/src/:ro
+    working_dir: /code/rundir
+  sanity:
+    command: "sh -c \"echo 'Compiling...'\n      iverilog -g2012 /code/rtl/*.sv /code/verif/*.sv\n\
+      \      echo 'Executing...'\n      vvp a.out\"\n"
+    image: ghcr.io/hdl/sim/osvb
+    working_dir: /code/rundir/
+  xrun:
+    command: pytest /src/process.py -v -s
+    env_file: ./src/.env
+    image: cvdp-cadence-verif:latest
+    networks:
+    - licnetwork
+    volumes:
+    - ./src/:/src/:ro

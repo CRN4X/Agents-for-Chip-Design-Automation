@@ -1,0 +1,13 @@
+networks:
+  licnetwork:
+    external: true
+    name: licnetwork
+services:
+  xrun:
+    command: pytest /src/process.py -v -s
+    env_file: ./src/.env
+    image: cvdp-cadence-verif:latest
+    networks:
+    - licnetwork
+    volumes:
+    - ./src/:/src/:ro
