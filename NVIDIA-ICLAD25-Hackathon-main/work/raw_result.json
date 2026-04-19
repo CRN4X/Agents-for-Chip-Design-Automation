@@ -1,16 +1,16 @@
 {
-  "cvdp_agentic_ember_meadow_sunrise_1765": {
+  "cvdp_agentic_universal_shift_reg_3": {
     "category": "cid004",
     "difficulty": "medium",
     "tests": [
       {
-        "result": 1,
-        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_ember_meadow_sunrise/harness/1765/rundir/sim.log",
-        "error_msg": "FAILED",
-        "execution": 1364.0,
+        "result": 0,
+        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_universal_shift_reg/harness/3/rundir/sim.log",
+        "error_msg": null,
+        "execution": 138.0,
         "pid": 0
       }
     ],
-    "errors": 1
+    "errors": 0
   }
 }
