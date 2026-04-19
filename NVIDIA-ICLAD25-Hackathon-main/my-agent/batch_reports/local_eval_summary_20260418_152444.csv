@@ -1,0 +1,2 @@
+problem,issue_id,harness_path,exit_code,status,duration_sec,first_error
+cvdp_agentic_lagoon_dragon_diamond,4339,NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_lagoon_dragon_diamond/harness/4339,0,PASS,569,""

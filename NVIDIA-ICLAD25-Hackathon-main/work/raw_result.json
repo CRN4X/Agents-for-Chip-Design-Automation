@@ -1,16 +1,16 @@
 {
-  "cvdp_agentic_glacier_amber_cosmic_3144": {
-    "category": "cid016",
+  "cvdp_agentic_ember_meadow_sunrise_1765": {
+    "category": "cid004",
     "difficulty": "medium",
     "tests": [
       {
-        "result": 0,
-        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_glacier_amber_cosmic/harness/3144/rundir/sim.log",
-        "error_msg": null,
-        "execution": 570.0,
+        "result": 1,
+        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_ember_meadow_sunrise/harness/1765/rundir/sim.log",
+        "error_msg": "FAILED",
+        "execution": 1364.0,
         "pid": 0
       }
     ],
-    "errors": 0
+    "errors": 1
   }
 }

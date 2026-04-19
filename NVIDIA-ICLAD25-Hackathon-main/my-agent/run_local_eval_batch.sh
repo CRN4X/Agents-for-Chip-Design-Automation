@@ -74,7 +74,8 @@ HARNESS_LIST=$(mktemp)
 find "$WORK_DIR" -type f -name prompt.json > "$HARNESS_LIST"
 while IFS= read -r prompt_file; do
   harness_path=$(cd "$(dirname "$prompt_file")" && pwd)
-  if [ ! -f "$harness_path/src/test_runner.py" ]; then
+  runner_count=$(find "$harness_path/src" -maxdepth 1 -type f -name 'test_runner*.py' | wc -l | tr -d '[:space:]')
+  if [ "${runner_count:-0}" -eq 0 ]; then
     continue
   fi
   if [ -n "$TARGET_HARNESS" ] && [ "$harness_path" != "$TARGET_HARNESS" ]; then

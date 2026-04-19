@@ -1,0 +1,2 @@
+problem,issue_id,harness_path,exit_code,status,duration_sec,first_error
+cvdp_agentic_garden_sapphire_amber,307,NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_garden_sapphire_amber/harness/307,0,PASS,101,"                                                            TC4: Add event ID=4 twice; expect error on duplicate addition."
