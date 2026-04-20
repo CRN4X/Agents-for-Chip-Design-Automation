@@ -15,6 +15,8 @@ CATEGORIES = [
     "Debug/fix buggy RTL",
 ]
 
+DIFFICULTIES = ("easy", "medium", "hard")
+
 
 def infer_repo_root() -> Path:
     return Path(__file__).resolve().parent.parent
@@ -58,7 +60,10 @@ def init_learnings_json(out_path: Path) -> int:
                 print(f"[init_learnings] {out_path} already exists; no changes made.")
                 return 0
 
-            payload = {k: "" for k in CATEGORIES}
+            payload = {
+                category: {difficulty: "" for difficulty in DIFFICULTIES}
+                for category in CATEGORIES
+            }
             fh.seek(0)
             fh.write(json.dumps(payload, indent=2) + "\n")
             fh.truncate()
@@ -79,7 +84,10 @@ def main() -> None:
     default_out = repo_root / "work" / "learnings.json"
 
     parser = argparse.ArgumentParser(
-        description="Initialize work/learnings.json with 4 category keys and blank values."
+        description=(
+            "Initialize work/learnings.json with 4 category keys, each containing "
+            "easy/medium/hard blank learning buckets."
+        )
     )
     parser.add_argument(
         "--output",
@@ -95,4 +103,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

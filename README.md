@@ -121,7 +121,13 @@ Behavior summary:
   - `work/report.json`: structured final report data intended for downstream reporting/analysis tools.
   - `work/report.txt`: human-readable text report with the benchmark summary.
 - Learning memory output:
-  - `work/learnings.json` (updated from InfoAgent category + one-line learning)
+  - `work/learnings.json` (updated from InfoAgent category + difficulty bucket learning)
+  - Structure: `<problem_category> -> easy|medium|hard`
+  - Line caps per difficulty bucket:
+    - easy: up to 4 lines
+    - medium: up to 8 lines
+    - hard: up to 17 lines
+  - Update policy: append important new points while under cap; once full, only compress when genuinely new insight appears.
 - Run logs:
   - `work/run.log` (full terminal/session log, overwritten each run)
   - `work/logs/run_<unix_timestamp>__<index>.log` (only when `--save_log/-s` is used)
@@ -235,7 +241,7 @@ python3 my-agent/agent.py -i <new_index>
       subgraph PLAN["Planner and Role Routing"]
           E["Load Planning Policy<br/>my-agent/AGENTS.md"]
           F["HeadAgent<br/>Classify and Route"]
-          G["InfoAgent<br/>Category + one-line learning JSON"]
+          G["InfoAgent<br/>Category + difficulty-bucket learning JSON"]
           H1["FixRTL"]
           H2["SpecRTL"]
           H3["CompleteRTL"]

@@ -34,15 +34,29 @@ INFO_CATEGORIES = [
     "Debug/fix buggy RTL",
 ]
 
-MAX_LEARNING_LINES = 5
+LEARNING_DIFFICULTIES = ("easy", "medium", "hard")
+DEFAULT_LEARNING_DIFFICULTY = "medium"
+LEARNING_LINE_CAPS = {
+    "easy": 4,
+    "medium": 8,
+    "hard": 17,
+}
 CODEX_TIMEOUT_SEC = 1200  # 20 minutes per Codex attempt
 CODEX_TIMEOUT_MINUTES = CODEX_TIMEOUT_SEC // 60
 CODEX_TIMEOUT_BACKOFF_SEC = 10
 MAX_SOLVE_RUN_CYCLES = 2  # If max retries are exhausted, start one fresh run cycle
 
 
+def _log_timestamp() -> str:
+    return time.strftime("%d_%b_%Y_%H_%M_%S").lower()
+
+
 def log(msg: str) -> None:
-    print(f"\n[agent.py] {msg}", flush=True)
+    print(f"\n[{_log_timestamp()}] [agent.py] {msg}", flush=True)
+
+
+def log_codex(msg: str) -> None:
+    print(f"\n[{_log_timestamp()}] [codex] {msg}", flush=True)
 
 
 class TeeStream:
@@ -109,7 +123,7 @@ def start_run_log(repo_root: Path) -> Tuple[TextIO, TextIO, TextIO]:
     orig_stderr = sys.stderr
     sys.stdout = TeeStream(orig_stdout, log_file)
     sys.stderr = TeeStream(orig_stderr, log_file)
-    print(f"\n[agent.py] Logging terminal output to: {log_path}", flush=True)
+    log(f"Logging terminal output to: {log_path}")
     return log_file, orig_stdout, orig_stderr
 
 
@@ -301,6 +315,23 @@ def split_problem_and_issue(dataset_id: str) -> Tuple[str, str]:
     return problem, issue
 
 
+def normalize_difficulty(value: object) -> str:
+    text = str(value).strip().lower()
+    if text in LEARNING_DIFFICULTIES:
+        return text
+    return DEFAULT_LEARNING_DIFFICULTY
+
+
+def infer_entry_difficulty(entry: Dict) -> str:
+    categories = entry.get("categories")
+    if isinstance(categories, list):
+        for token in categories:
+            norm = normalize_difficulty(token)
+            if norm in LEARNING_DIFFICULTIES and str(token).strip().lower() == norm:
+                return norm
+    return DEFAULT_LEARNING_DIFFICULTY
+
+
 def resolve_harness_path(repo_root: Path, problem: str, issue: str) -> Path:
     exact = repo_root / "work" / problem / "harness" / issue
     if exact.exists():
@@ -333,12 +364,21 @@ def reset_staged_rtl_from_original(repo_root: Path, harness_path: Path, problem:
         rtl_path = harness_path / "rtl"
         if rtl_path.exists() and rtl_path.is_dir() and not rtl_path.is_symlink():
             source_rtl = rtl_path
+        elif rtl_path.is_symlink():
+            # Fallback: if the harness rtl is a symlink, use its target as
+            # read-only baseline when before/rtl and rtl.orig are unavailable.
+            try:
+                rtl_target = rtl_path.resolve(strict=True)
+            except FileNotFoundError:
+                rtl_target = None
+            if rtl_target is not None and rtl_target.exists() and rtl_target.is_dir():
+                source_rtl = rtl_target
 
     if source_rtl is None:
         raise FileNotFoundError(
             "Could not find original RTL source. Tried: "
             f"{harness_path / 'before' / 'rtl'}, {harness_path / 'rtl.orig'}, "
-            f"and non-symlink {harness_path / 'rtl'}"
+            f"non-symlink {harness_path / 'rtl'}, and symlink target of {harness_path / 'rtl'}"
         )
 
     issue = harness_path.name
@@ -414,10 +454,21 @@ def extract_info_payload(text: str) -> Optional[Dict[str, str]]:
     return {"problem_category": category, "learning": learning}
 
 
-def update_learnings_json(repo_root: Path, problem_category: str, learning: str) -> None:
+def _empty_learning_doc() -> Dict[str, Dict[str, str]]:
+    return {
+        category: {difficulty: "" for difficulty in LEARNING_DIFFICULTIES}
+        for category in INFO_CATEGORIES
+    }
+
+
+def update_learnings_json(repo_root: Path, problem_category: str, problem_difficulty: str, learning: str) -> None:
     if problem_category not in INFO_CATEGORIES:
         raise RuntimeError(
             f"Invalid InfoAgent category: {problem_category}. Must be one of: {', '.join(INFO_CATEGORIES)}"
+        )
+    if problem_difficulty not in LEARNING_DIFFICULTIES:
+        raise RuntimeError(
+            f"Invalid learning difficulty: {problem_difficulty}. Must be one of: {', '.join(LEARNING_DIFFICULTIES)}"
         )
 
     learnings_path = repo_root / "work" / "learnings.json"
@@ -437,12 +488,29 @@ def update_learnings_json(repo_root: Path, problem_category: str, learning: str)
             if not isinstance(doc, dict):
                 raise RuntimeError(f"{learnings_path} JSON root must be an object.")
         else:
-            doc = {k: "" for k in INFO_CATEGORIES}
+            doc = _empty_learning_doc()
 
         for cat in INFO_CATEGORIES:
-            doc.setdefault(cat, "")
+            raw_bucket = doc.get(cat, {})
+            if isinstance(raw_bucket, str):
+                # Backward compatibility: migrate old flat schema into medium bucket.
+                migrated_bucket = {
+                    "easy": "",
+                    "medium": raw_bucket.strip(),
+                    "hard": "",
+                }
+                doc[cat] = migrated_bucket
+                continue
+            if not isinstance(raw_bucket, dict):
+                raw_bucket = {}
 
-        existing_learning = str(doc.get(problem_category, "")).strip()
+            normalized_bucket: Dict[str, str] = {}
+            for difficulty in LEARNING_DIFFICULTIES:
+                value = raw_bucket.get(difficulty, "")
+                normalized_bucket[difficulty] = str(value).strip() if value else ""
+            doc[cat] = normalized_bucket
+
+        existing_learning = str(doc[problem_category].get(problem_difficulty, "")).strip()
 
         def normalize_lines(text: str) -> List[str]:
             lines = [ln.strip() for ln in text.replace("\r\n", "\n").replace("\r", "\n").split("\n")]
@@ -452,29 +520,42 @@ def update_learnings_json(repo_root: Path, problem_category: str, learning: str)
             collapsed = " ".join(text.split()).strip()
             return [collapsed] if collapsed else []
 
-        if not existing_learning:
-            # First learning entry for a category must be exactly one line.
-            first_line = normalize_lines(learning)
-            doc[problem_category] = first_line[0] if first_line else ""
+        line_cap = LEARNING_LINE_CAPS[problem_difficulty]
+        existing_lines = normalize_lines(existing_learning)
+        new_lines = normalize_lines(learning)
+
+        def dedupe_keep_order(lines: List[str]) -> List[str]:
+            deduped_lines: List[str] = []
+            for ln in lines:
+                if ln not in deduped_lines:
+                    deduped_lines.append(ln)
+            return deduped_lines
+
+        existing_deduped = dedupe_keep_order(existing_lines)
+        incoming_deduped = dedupe_keep_order(new_lines)
+
+        # Preferred policy:
+        # 1) Keep appending crucial new points while bucket is below cap.
+        # 2) Only compress once bucket is full and a new unique learning arrives.
+        if len(existing_deduped) < line_cap:
+            merged = dedupe_keep_order(existing_deduped + incoming_deduped)
+            if len(merged) > line_cap:
+                merged = merged[:line_cap]
         else:
-            # For subsequent entries, allow compact multi-line cumulative summary.
-            existing_lines = normalize_lines(existing_learning)
-            new_lines = normalize_lines(learning)
-
-            # If InfoAgent already returned a multi-line merged summary, prefer it.
-            if len(new_lines) > 1:
-                merged = new_lines
+            unique_new = [ln for ln in incoming_deduped if ln not in existing_deduped]
+            if not unique_new:
+                merged = existing_deduped
+            elif len(incoming_deduped) > 1:
+                # Treat multi-line incoming learning as an explicit compressed summary.
+                merged = dedupe_keep_order(incoming_deduped)[:line_cap]
             else:
-                merged = existing_lines + new_lines
+                # Fallback if only one new line is provided while full:
+                # keep most recent points by rotating window.
+                merged = dedupe_keep_order(existing_deduped + unique_new)
+                if len(merged) > line_cap:
+                    merged = merged[-line_cap:]
 
-            deduped: List[str] = []
-            for ln in merged:
-                if ln not in deduped:
-                    deduped.append(ln)
-            if len(deduped) > MAX_LEARNING_LINES:
-                deduped = deduped[-MAX_LEARNING_LINES:]
-
-            doc[problem_category] = "\n".join(deduped)
+        doc[problem_category][problem_difficulty] = "\n".join(merged)
 
         fh.seek(0)
         fh.write(json.dumps(doc, indent=2) + "\n")
@@ -485,6 +566,7 @@ def build_codex_prompt(
     harness_path: Path,
     attempt: int,
     max_retries: int,
+    problem_difficulty: str,
     fail_context: str,
     agents_md_text: str,
     include_agents_md: bool,
@@ -513,6 +595,7 @@ Important:
 
     staged_problem = harness_path.parts[-3]
     staged_issue = harness_path.name
+    line_cap = LEARNING_LINE_CAPS[problem_difficulty]
     base = f"""Work on this harness iteratively:
 {harness_path}
 
@@ -530,9 +613,13 @@ Rules:
 - Do not modify before/ originals.
 - Keep edits minimal, compile-safe first.
 - Use sim.log first-error lines as primary guidance.
+- Target dataset difficulty: {problem_difficulty}.
 - InfoAgent learning format:
-  - If selected category has no prior learning: return exactly 1 line in `learning`.
-  - If selected category already has prior learning: merge old+new and return up to 5 lines in `learning`.
+  - Use the selected `problem_category` and target difficulty `{problem_difficulty}` bucket in `work/learnings.json`.
+  - Store only crucial, reusable points that materially helped solve the problem.
+  - If bucket has room (< {line_cap} lines): append only important new points.
+  - If bucket is full ({line_cap} lines) and you have new insight: return a compressed merged summary within {line_cap} lines.
+  - Do not fill the line budget unless needed.
 
 Attempt: {attempt}/{max_retries}
 """
@@ -542,6 +629,7 @@ Attempt: {attempt}/{max_retries}
 
 
 def run_codex_once(repo_root: Path, prompt: str) -> subprocess.CompletedProcess:
+    log_codex("Invoking codex exec")
     cmd = ["codex", "exec", "-", "--skip-git-repo-check", "-C", str(repo_root)]
     proc = subprocess.Popen(
         cmd,
@@ -629,7 +717,12 @@ def ensure_local_eval_env(repo_root: Path) -> bool:
     return cp.returncode == 0
 
 
-def solve_problem(repo_root: Path, harness_path: Path, max_retries: int = 8) -> bool:
+def solve_problem(
+    repo_root: Path,
+    harness_path: Path,
+    problem_difficulty: str,
+    max_retries: int = 8,
+) -> bool:
     if not ensure_local_eval_env(repo_root):
         log("Environment precheck failed: agent_env is missing pytest/cocotb deps.")
         return False
@@ -651,6 +744,7 @@ def solve_problem(repo_root: Path, harness_path: Path, max_retries: int = 8) -> 
             harness_path,
             attempt,
             max_retries,
+            problem_difficulty,
             fail_context,
             agents_md_text,
             include_agents_md=(attempt == 1),
@@ -688,11 +782,12 @@ def solve_problem(repo_root: Path, harness_path: Path, max_retries: int = 8) -> 
                 update_learnings_json(
                     repo_root,
                     info_payload["problem_category"],
+                    problem_difficulty,
                     info_payload["learning"],
                 )
                 log(
                     "Updated work/learnings.json from InfoAgent output: "
-                    f"{info_payload['problem_category']}"
+                    f"{info_payload['problem_category']} ({problem_difficulty})"
                 )
             except RuntimeError as exc:
                 print(
@@ -768,7 +863,7 @@ def main() -> None:
         if save_log and idx is not None:
             try:
                 archived = archive_run_log(repo_root, idx)
-                print(f"\n[agent.py] Archived run.log to: {archived}", flush=True)
+                log(f"Archived run.log to: {archived}")
             except RuntimeError as exc:
                 print(f"[Write Permission Error] Could not archive run.log to work/logs/. {exc}", file=sys.stderr)
             except OSError as exc:
@@ -804,6 +899,7 @@ def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
 
     entry = entries[idx - 1]
     entry_id = entry.get("id", "")
+    problem_difficulty = infer_entry_difficulty(entry)
     if "_" not in entry_id:
         print(f"[Input Format Error] Invalid dataset id format: {entry_id}. Expected <problem_name>_<harness_id>.", file=sys.stderr)
         sys.exit(1)
@@ -815,6 +911,7 @@ def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
         print(f"[Harness Error] Could not find the harness folder for this dataset id. {exc}", file=sys.stderr)
         sys.exit(1)
     log(f"Selected dataset index {idx}: {entry_id}")
+    log(f"Selected dataset difficulty: {problem_difficulty}")
     log(f"Resolved harness path: {harness_path}")
     try:
         source_rtl, staged_rtl = reset_staged_rtl_from_original(repo_root, harness_path, problem)
@@ -832,7 +929,12 @@ def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
             f"Run cycle {run_cycle}/{MAX_SOLVE_RUN_CYCLES}: "
             f"using max retries {max_retries}"
         )
-        solved = solve_problem(repo_root, harness_path, max_retries=max_retries)
+        solved = solve_problem(
+            repo_root,
+            harness_path,
+            problem_difficulty=problem_difficulty,
+            max_retries=max_retries,
+        )
         if solved:
             break
         if run_cycle < MAX_SOLVE_RUN_CYCLES:

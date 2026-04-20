@@ -51,15 +51,23 @@ Steps:
 1. Print `**** InfoAgent Start ****`.
 2. Prefer passed-in prompt context; fallback to `prompt.json` for verification, then identify the dominant task intent.
 3. Select exactly one category from the 4-category list above.
-4. Check current value for the selected category from `work/learnings.json` (if available).
+4. Check current value for the selected category and target difficulty bucket from `work/learnings.json` (if available).
 5. Write learning using this format rule:
-   - if selected category has no existing learning: write exactly one line
-   - if selected category already has learning: merge existing + new and summarize into at most 5 lines
-   - include only concrete, actionable pointers that directly helped solve the problem
+   - learnings are stored under `work/learnings.json` as:
+     - `<problem_category> -> easy|medium|hard`
+   - write learning for the active difficulty bucket only
+   - include only crucial, reusable points that directly helped solve the problem
+   - if bucket is below cap, append only important new points
+   - if bucket is at cap and there is new insight, return a compressed merged summary
+   - line caps per difficulty bucket:
+     - easy: at most 4 lines
+     - medium: at most 8 lines
+     - hard: at most 17 lines
+   - do not fill the line budget unless needed
    - keep content reusable and high-level
    - exclude unrelated context, generic advice, and low-signal details
    - no low-level code dump
-6. If a value already exists for that category, combine existing value + new finding and summarize according to the line-limit rule above.
+6. If a value already exists for that category+difficulty, combine existing value + new finding and summarize according to the line-limit rule above.
 7. Output format:
    - JSON object:
      - `{"problem_category":"<one of 4 categories>", "learning":"<learning summary text>"}`
@@ -70,13 +78,18 @@ Steps:
      - `Debug/fix buggy RTL`
    - Do not return placeholders such as `<one of 4 categories>`.
 8. Print `**** InfoAgent Complete ****`.
+9. Never overwrite `work/learnings.json` with full-file redirection (for example `cat > work/learnings.json`).
+   - Always preserve existing buckets and update only the target category+difficulty entry through the normal `agent.py` learning-update flow.
 
 Done Criteria:
 - Exactly one category selected from the 4 categories.
 - Learning summary is present and practically reusable.
 - Output is concise and traceable for future tasks.
 - Output is valid JSON with keys `problem_category` and `learning`.
-- `learning` is one line for first-time category entries; otherwise up to 5 lines for merged summaries.
+- `learning` follows difficulty-specific caps:
+  - easy: at most 4 lines
+  - medium: at most 8 lines
+  - hard: at most 17 lines
 
 Agent: `FixRTL`
 
