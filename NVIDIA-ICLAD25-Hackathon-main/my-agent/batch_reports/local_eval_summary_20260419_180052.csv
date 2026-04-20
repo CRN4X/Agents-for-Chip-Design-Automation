@@ -1,0 +1,2 @@
+problem,issue_id,harness_path,exit_code,status,duration_sec,first_error
+cvdp_agentic_direct_map_cache,1,NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_direct_map_cache/harness/1,0,PASS,130,"   155.00ns INFO     cocotb.direct_map_cache            [OFFSET_ERROR_TEST] offset=001, error=1"

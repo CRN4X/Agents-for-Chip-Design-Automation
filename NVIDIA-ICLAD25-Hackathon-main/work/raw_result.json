@@ -1,13 +1,13 @@
 {
-  "cvdp_agentic_cic_decimator_1": {
+  "cvdp_agentic_dynamic_equalizer_1": {
     "category": "cid003",
-    "difficulty": "easy",
+    "difficulty": "hard",
     "tests": [
       {
         "result": 0,
-        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_cic_decimator/harness/1/rundir/sim.log",
+        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_dynamic_equalizer/harness/1/rundir/sim.log",
         "error_msg": null,
-        "execution": 103.0,
+        "execution": 229.0,
         "pid": 0
       }
     ],
