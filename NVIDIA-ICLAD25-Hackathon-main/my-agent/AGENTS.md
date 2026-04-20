@@ -3,8 +3,8 @@ General Notes:
    - `source agent_env/bin/activate` (from repo root)
 1. Use `python3` (or `python`) whichever works for all Python commands.
 2. In local no-Docker flow, treat `my-agent/agent_files/<problem_name>/<issue_id>/rtl` as the editable RTL workspace.
-3. Do not modify `before/rtl` originals.
-4. Preserve existing files in harness folder, module names, ports, and file paths unless the prompt asks to change them.
+3. Do not modify `before/rtl` originals, files present in harness folder.
+4. Preserve existing module names, ports, and file paths unless the prompt asks to change them.
 
 Agent: `HeadAgent`
 

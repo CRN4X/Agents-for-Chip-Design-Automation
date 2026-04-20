@@ -1,13 +1,13 @@
 {
-  "cvdp_agentic_universal_shift_reg_3": {
-    "category": "cid004",
-    "difficulty": "medium",
+  "cvdp_agentic_cic_decimator_1": {
+    "category": "cid003",
+    "difficulty": "easy",
     "tests": [
       {
         "result": 0,
-        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_universal_shift_reg/harness/3/rundir/sim.log",
+        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_cic_decimator/harness/1/rundir/sim.log",
         "error_msg": null,
-        "execution": 138.0,
+        "execution": 103.0,
         "pid": 0
       }
     ],

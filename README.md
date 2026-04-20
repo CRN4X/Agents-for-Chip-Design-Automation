@@ -4,7 +4,7 @@ This repository evaluates agentic RTL debugging/generation workflows on harnesse
 
 ## Prerequisites
 
-- `python3`
+- `python 3.12`
 - Icarus Verilog tools:
   - `iverilog`
   - `vvp`
