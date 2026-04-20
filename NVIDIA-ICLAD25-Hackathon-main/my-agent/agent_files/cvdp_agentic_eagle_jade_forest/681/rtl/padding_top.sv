@@ -91,19 +91,19 @@ aes_enc_top #(
     .NBW_MODE(NBW_MODE),
     .NBW_CNTR(NBW_CNTR)
 ) u_aes_enc_top (
-    .clk            (clk                       ),
-    .rst_async_n    (rst_async_n               ),
+    .clk            (clk                        ),
+    .rst_async_n    (rst_async_n                ),
     .i_reset_counter(i_reset_counter & i_encrypt),
-    .i_update_iv    (i_update_iv & i_encrypt   ),
-    .i_iv           (i_iv                      ),
-    .i_update_mode  (i_update_mode & i_encrypt ),
-    .i_mode         (i_mode                    ),
-    .i_update_key   (i_update_key & i_encrypt  ),
-    .i_key          (i_key                     ),
-    .i_start        (i_start & i_encrypt       ),
-    .i_plaintext    (padded_data               ),
-    .o_done         (enc_done                  ),
-    .o_ciphertext   (enc_data                  )
+    .i_update_iv    (i_update_iv & i_encrypt    ),
+    .i_iv           (i_iv                       ),
+    .i_update_mode  (i_update_mode & i_encrypt  ),
+    .i_mode         (i_mode                     ),
+    .i_update_key   (i_update_key & i_encrypt   ),
+    .i_key          (i_key                      ),
+    .i_start        (i_start & i_encrypt        ),
+    .i_plaintext    (padded_data                ),
+    .o_done         (enc_done                   ),
+    .o_ciphertext   (enc_data                   )
 );
 
 aes_dec_top #(
@@ -112,19 +112,19 @@ aes_dec_top #(
     .NBW_MODE(NBW_MODE),
     .NBW_CNTR(NBW_CNTR)
 ) u_aes_dec_top (
-    .clk            (clk                        ),
-    .rst_async_n    (rst_async_n                ),
+    .clk            (clk                           ),
+    .rst_async_n    (rst_async_n                   ),
     .i_reset_counter(i_reset_counter & (~i_encrypt)),
-    .i_update_iv    (i_update_iv & (~i_encrypt) ),
-    .i_iv           (i_iv                       ),
-    .i_update_mode  (i_update_mode & (~i_encrypt)),
-    .i_mode         (i_mode                     ),
-    .i_update_key   (i_update_key & (~i_encrypt)),
-    .i_key          (i_key                      ),
-    .i_start        (i_start & (~i_encrypt)     ),
-    .i_ciphertext   (padded_data                ),
-    .o_done         (dec_done                   ),
-    .o_plaintext    (dec_data                   )
+    .i_update_iv    (i_update_iv & (~i_encrypt)    ),
+    .i_iv           (i_iv                          ),
+    .i_update_mode  (i_update_mode & (~i_encrypt)  ),
+    .i_mode         (i_mode                        ),
+    .i_update_key   (i_update_key & (~i_encrypt)   ),
+    .i_key          (i_key                         ),
+    .i_start        (i_start & (~i_encrypt)        ),
+    .i_ciphertext   (padded_data                   ),
+    .o_done         (dec_done                      ),
+    .o_plaintext    (dec_data                      )
 );
 
 always_comb begin

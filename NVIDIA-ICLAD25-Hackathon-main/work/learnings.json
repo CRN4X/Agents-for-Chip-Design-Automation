@@ -1,13 +1,13 @@
 {
   "Modify or Extend Existing RTL": {
     "easy": "",
-    "medium": "",
-    "hard": ""
+    "medium": "For AES-128 to AES-256 upgrades, first align key interface and schedule dimensions together (256-bit i_key, 14 rounds, 60-word expansion); an immediate cocotb out-of-range assignment on i_key is a strong sign the design still has 128-bit assumptions.",
+    "hard": "If cocotb fails with out-of-range assignment on i_key, treat it as a hard signal that AES-128 key-width assumptions still exist in the staged RTL.\nFor AES-256 upgrades, change key/input and schedule dimensions together (NBW_KEY=256, expanded key=1920, key-expansion depth=14, decrypt flow through final round index 15).\nWhen decrypt uses 128-bit round keys from a 256-bit schedule, index expanded key with a 128-bit stride (NBW_STEP=NBW_KEY/2) and reverse round order from the last round key."
   },
   "Integrate multiple modules into a top module": {
     "easy": "",
     "medium": "If first failure says root/top module missing, check staged RTL for empty or misnamed top file before deeper debugging.\nFor polyphase decimator integration, map branch samples as shift_window[phase + tap*M] so each branch sees stride-M history.\nWhen submodules register inputs on clk edges, assert branch start one cycle after the M-th sample load to avoid capturing pre-shift data.\nPreserve expected hierarchy names in generate blocks/instances (e.g., poly_branches[*].u_poly_filter) when tests use hierarchical coefficient preload. Use timescale at top of rtl code to prevent the cocotb clock period issues\nFor Icarus/SystemVerilog integration, avoid passing unpacked array slices directly to submodule ports; use per-instance local unpacked arrays in the generate block and wire elements explicitly.\nIf local eval fails before simulation, verify harness `.env` exists and includes `VERILOG_SOURCES`, `TOPLEVEL`, and `MODULE` for the actual staged RTL files.\nFor polyphase decimator integration, map branch samples with stride-M indexing (`shift_window[phase + tap*M]`) so each branch sees the correct history.\nWhen upstream storage and branch filters are both edge-triggered, start branch filtering one cycle after the M-th sample load to avoid capturing pre-shift data.",
-    "hard": ""
+    "hard": "When harness compile fails with missing top module/file, implement the expected top-level RTL first before deeper debugging.\nFor wrapper integration around existing crypto blocks, gate all control strobes (`i_start`, key/mode/IV updates, counter reset) to only the selected submodule to keep inactive-path state unchanged.\nFor byte-replacement padding on fixed 128-bit input blocks, apply padding over LSB bytes only and keep `i_padding_bytes==0` as passthrough behavior."
   },
   "Create new RTL from spec": {
     "easy": "",
@@ -16,7 +16,7 @@
   },
   "Debug/fix buggy RTL": {
     "easy": "",
-    "medium": "For crypto/datapath RTL mismatches, first scan for accidental use of arithmetic '+' where GF(2) XOR '^' is required in round/key-schedule math.\nIn AES MixColumns, implement xtime conditional reduction on MSB; unconditional '+ 8'h1B' corrupts every byte and breaks vectors.\nWhen baseline RTL has many systemic algebraic errors, swapping in a known-good module with identical interface is lower-risk than piecemeal patching.\nFor AES datapath mismatches, verify GF(2) XOR usage and correct xtime conditional reduction before deeper refactors. If many algebraic errors are systemic, replacing with a known-good, interface-compatible RTL can be safer than piecemeal edits.\nFor AES-128 decrypt pipelines, ensure round sequencing is explicit: initial AddRoundKey with the last round key, then 9 full inverse rounds, then final round without InvMixColumns.\nWhen key expansion can run on-demand, gate start/done so decryption begins only after expanded keys are valid, while latching input ciphertext during key-update latency.\nFor AES encrypt RTL failures, first verify all GF(2^8) datapath math uses XOR and conditional xtime reduction; '+' in MixColumns logic is a common root cause.\nIf mismatch persists after local arithmetic fixes, suspect key-expansion/indexing path next.",
+    "medium": "For AES-128 decrypt bugs, validate round ordering first: initial AddRoundKey with the last round key, then 9 inverse rounds, then final round without InvMixColumns.\nIf key expansion is generated recursively in one combinational pass, derive each next word block from the immediately previous generated key (not from stale packed-expanded storage indices).\nWhen key update and decrypt share one start pulse, latch ciphertext and gate decryption until expanded keys are ready so `o_done` only asserts for completed decrypt output.",
     "hard": ""
   }
 }

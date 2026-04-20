@@ -653,12 +653,24 @@ def run_codex_once(repo_root: Path, prompt: str) -> subprocess.CompletedProcess:
     import select
 
     timed_out = False
+    emitted_stream_banner = False
+
+    def _handle_stream_line(raw_line: str) -> None:
+        nonlocal emitted_stream_banner
+        if raw_line.strip() == "codex":
+            if not emitted_stream_banner:
+                log_codex("Stream output started")
+                emitted_stream_banner = True
+            return
+        print(raw_line, end="", flush=True)
+
     while True:
         if proc.poll() is not None:
             # Drain any buffered remaining output.
             rest = proc.stdout.read()
             if rest:
-                print(rest, end="", flush=True)
+                for part in rest.splitlines(True):
+                    _handle_stream_line(part)
                 out_lines.append(rest)
             break
 
@@ -671,7 +683,7 @@ def run_codex_once(repo_root: Path, prompt: str) -> subprocess.CompletedProcess:
         if ready:
             line = proc.stdout.readline()
             if line:
-                print(line, end="", flush=True)
+                _handle_stream_line(line)
                 out_lines.append(line)
 
     if timed_out:

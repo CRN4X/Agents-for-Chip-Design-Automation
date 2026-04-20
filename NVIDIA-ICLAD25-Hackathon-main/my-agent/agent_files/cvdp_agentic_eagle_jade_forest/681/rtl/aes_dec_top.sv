@@ -46,7 +46,6 @@ localparam PCBC = 3'd2;
 localparam CFB  = 3'd3;
 localparam OFB  = 3'd4;
 localparam CTR  = 3'd5;
-localparam NBW_CNTR_HALF = (NBW_CNTR/2);
 
 // Operation modes logic
 always_comb begin
@@ -82,11 +81,7 @@ always_comb begin
             dec_sel   = 1'b0;
         end
         CTR: begin
-            dec_in    = {
-                counter_ff[NBW_CNTR-1:NBW_CNTR_HALF],
-                iv_ff[NBW_DATA-NBW_CNTR_HALF-1:NBW_CNTR_HALF],
-                counter_ff[NBW_CNTR_HALF-1:0]
-            };
+            dec_in    = {counter_ff[NBW_CNTR-1:NBW_CNTR-16], iv_ff[111:16], counter_ff[15:0]};
             iv_nx     = iv_ff;
             plaintext = ciphertext_ff ^ enc_out;
             dec_sel   = 1'b0;
