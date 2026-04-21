@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module direct_map_cache #(
     parameter CACHE_SIZE = 256,
     parameter DATA_WIDTH = 16,
@@ -24,104 +26,155 @@ module direct_map_cache #(
 );
 
     localparam N = 2;
-    localparam WORDS_PER_LINE = (1 << (OFFSET_WIDTH-1));
+    localparam WORD_INDEX_WIDTH = (OFFSET_WIDTH > 1) ? (OFFSET_WIDTH - 1) : 1;
+    localparam WORDS_PER_LINE = (1 << WORD_INDEX_WIDTH);
 
-    reg [TAG_WIDTH-1:0] tags [N-1:0][CACHE_SIZE-1:0];
-    reg [DATA_WIDTH-1:0] data_mem [N-1:0][CACHE_SIZE-1:0][WORDS_PER_LINE-1:0];
-    reg valid_bits [N-1:0][CACHE_SIZE-1:0];
-    reg dirty_bits [N-1:0][CACHE_SIZE-1:0];
+    reg [TAG_WIDTH-1:0] tags [0:N-1][0:CACHE_SIZE-1];
+    reg [DATA_WIDTH-1:0] data_mem [0:N-1][0:CACHE_SIZE-1][0:WORDS_PER_LINE-1];
+    reg valid_bits [0:N-1][0:CACHE_SIZE-1];
+    reg dirty_bits [0:N-1][0:CACHE_SIZE-1];
 
-    // Required internal replacement selector for 2-way miss handling.
     reg victimway;
 
-    wire [OFFSET_WIDTH-2:0] word_index;
-    reg hit0, hit1;
-    reg sel_way;
+    wire hit0;
+    wire hit1;
+    reg selected_way;
+    reg replace_way;
+    wire [WORD_INDEX_WIDTH-1:0] word_index;
 
     integer i;
+    integer j;
+    integer k;
 
-    assign word_index = offset[OFFSET_WIDTH-1:1];
+    generate
+        if (OFFSET_WIDTH > 1) begin : gen_word_index
+            assign word_index = offset[OFFSET_WIDTH-1:1];
+        end else begin : gen_word_index_default
+            assign word_index = {WORD_INDEX_WIDTH{1'b0}};
+        end
+    endgenerate
+
+    assign hit0 = valid_bits[0][index] && (tags[0][index] == tag_in);
+    assign hit1 = valid_bits[1][index] && (tags[1][index] == tag_in);
+
+    always @(*) begin
+        selected_way = 1'b0;
+        if (!valid_bits[0][index] && valid_bits[1][index]) begin
+            selected_way = 1'b1;
+        end
+        if (hit1 && !hit0) begin
+            selected_way = 1'b1;
+        end
+
+        replace_way = 1'b0;
+        if (!valid_bits[0][index]) begin
+            replace_way = 1'b0;
+        end else if (!valid_bits[1][index]) begin
+            replace_way = 1'b1;
+        end else begin
+            replace_way = victimway;
+        end
+    end
 
     always @(posedge clk) begin
         if (rst) begin
-            for (i = 0; i < CACHE_SIZE; i = i + 1) begin
-                valid_bits[0][i] <= 1'b0;
-                valid_bits[1][i] <= 1'b0;
-                dirty_bits[0][i] <= 1'b0;
-                dirty_bits[1][i] <= 1'b0;
-            end
-            victimway <= 1'b0;
-            hit <= 1'b0;
-            dirty <= 1'b0;
-            tag_out <= {TAG_WIDTH{1'b0}};
-            data_out <= {DATA_WIDTH{1'b0}};
-            valid <= 1'b0;
-            error <= 1'b0;
-        end else if (enable) begin
-            if (offset[0]) begin
-                error <= 1'b1;
-                hit <= 1'b0;
-                dirty <= 1'b0;
-                tag_out <= {TAG_WIDTH{1'b0}};
-                data_out <= {DATA_WIDTH{1'b0}};
-                valid <= 1'b0;
-            end else begin
-                error <= 1'b0;
-
-                hit0 = valid_bits[0][index] && (tags[0][index] == tag_in);
-                hit1 = valid_bits[1][index] && (tags[1][index] == tag_in);
-
-                // For misses with both ways valid, use round-robin victim.
-                if (hit0) begin
-                    sel_way = 1'b0;
-                end else if (hit1) begin
-                    sel_way = 1'b1;
-                end else if (!valid_bits[0][index]) begin
-                    sel_way = 1'b0;
-                end else if (!valid_bits[1][index]) begin
-                    sel_way = 1'b1;
-                end else begin
-                    sel_way = victimway;
+            for (j = 0; j < N; j = j + 1) begin
+                for (i = 0; i < CACHE_SIZE; i = i + 1) begin
+                    tags[j][i] <= {TAG_WIDTH{1'b0}};
+                    valid_bits[j][i] <= 1'b0;
+                    dirty_bits[j][i] <= 1'b0;
+                    for (k = 0; k < WORDS_PER_LINE; k = k + 1) begin
+                        data_mem[j][i][k] <= {DATA_WIDTH{1'b0}};
+                    end
                 end
+            end
+
+            victimway <= 1'b0;
+            hit = 1'b0;
+            dirty = 1'b0;
+            tag_out = {TAG_WIDTH{1'b0}};
+            data_out = {DATA_WIDTH{1'b0}};
+            valid = 1'b0;
+            error = 1'b0;
+        end else if (enable) begin
+            if (offset[0] == 1'b1) begin
+                error = 1'b1;
+                hit = 1'b0;
+                dirty = 1'b0;
+                tag_out = {TAG_WIDTH{1'b0}};
+                data_out = {DATA_WIDTH{1'b0}};
+                valid = 1'b0;
+            end else begin
+                error = 1'b0;
 
                 if (comp) begin
                     if (write) begin
                         if (hit0 || hit1) begin
-                            hit <= 1'b1;
-                            data_mem[sel_way][index][word_index] <= data_in;
-                            valid_bits[sel_way][index] <= valid_in;
-                            dirty_bits[sel_way][index] <= 1'b1;
-                            tag_out <= tags[sel_way][index];
-                            data_out <= data_in;
-                            valid <= 1'b0;
-                            dirty <= 1'b0;
+                            if (hit1 && !hit0) begin
+                                data_mem[1][index][word_index] <= data_in;
+                                dirty_bits[1][index] <= 1'b1;
+                                valid_bits[1][index] <= valid_in;
+                                tag_out = tags[1][index];
+                            end else begin
+                                data_mem[0][index][word_index] <= data_in;
+                                dirty_bits[0][index] <= 1'b1;
+                                valid_bits[0][index] <= valid_in;
+                                tag_out = tags[0][index];
+                            end
+                            hit = 1'b1;
+                            dirty = 1'b1;
+                            data_out = data_in;
+                            valid = valid_in;
                         end else begin
-                            hit <= 1'b0;
-                            tags[sel_way][index] <= tag_in;
-                            data_mem[sel_way][index][word_index] <= data_in;
-                            valid_bits[sel_way][index] <= valid_in;
-                            dirty_bits[sel_way][index] <= 1'b0;
-                            tag_out <= tag_in;
-                            data_out <= data_in;
-                            valid <= 1'b0;
-                            dirty <= 1'b0;
+                            if (replace_way) begin
+                                tags[1][index] <= tag_in;
+                                data_mem[1][index][word_index] <= data_in;
+                                valid_bits[1][index] <= valid_in;
+                                dirty_bits[1][index] <= 1'b0;
+                            end else begin
+                                tags[0][index] <= tag_in;
+                                data_mem[0][index][word_index] <= data_in;
+                                valid_bits[0][index] <= valid_in;
+                                dirty_bits[0][index] <= 1'b0;
+                            end
+
                             if (valid_bits[0][index] && valid_bits[1][index]) begin
                                 victimway <= ~victimway;
                             end
+
+                            hit = 1'b0;
+                            dirty = 1'b0;
+                            tag_out = tag_in;
+                            data_out = data_in;
+                            valid = valid_in;
                         end
                     end else begin
                         if (hit0 || hit1) begin
-                            hit <= 1'b1;
-                            tag_out <= tags[sel_way][index];
-                            data_out <= data_mem[sel_way][index][word_index];
-                            valid <= valid_bits[sel_way][index];
-                            dirty <= dirty_bits[sel_way][index];
+                            if (hit1 && !hit0) begin
+                                tag_out = tags[1][index];
+                                data_out = data_mem[1][index][word_index];
+                                valid = valid_bits[1][index];
+                                dirty = dirty_bits[1][index];
+                            end else begin
+                                tag_out = tags[0][index];
+                                data_out = data_mem[0][index][word_index];
+                                valid = valid_bits[0][index];
+                                dirty = dirty_bits[0][index];
+                            end
+                            hit = 1'b1;
                         end else begin
-                            hit <= 1'b0;
-                            tag_out <= tags[sel_way][index];
-                            data_out <= data_mem[sel_way][index][word_index];
-                            valid <= valid_bits[sel_way][index];
-                            dirty <= dirty_bits[sel_way][index];
+                            if (selected_way) begin
+                                tag_out = tags[1][index];
+                                data_out = data_mem[1][index][word_index];
+                                valid = valid_bits[1][index];
+                                dirty = dirty_bits[1][index];
+                            end else begin
+                                tag_out = tags[0][index];
+                                data_out = data_mem[0][index][word_index];
+                                valid = valid_bits[0][index];
+                                dirty = dirty_bits[0][index];
+                            end
+                            hit = 1'b0;
                         end
                     end
                 end else begin
@@ -134,34 +187,35 @@ module direct_map_cache #(
                         valid_bits[1][index] <= valid_in;
                         dirty_bits[0][index] <= 1'b0;
                         dirty_bits[1][index] <= 1'b0;
-                        hit <= 1'b0;
-                        dirty <= 1'b0;
-                        tag_out <= tag_in;
-                        data_out <= data_in;
-                        valid <= 1'b0;
+
+                        hit = 1'b0;
+                        dirty = 1'b0;
+                        tag_out = tag_in;
+                        data_out = data_in;
+                        valid = 1'b0;
                     end else begin
-                        // Access-read returns selected way data and reports hit on valid entry.
-                        tag_out <= tags[sel_way][index];
-                        data_out <= data_mem[sel_way][index][word_index];
-                        valid <= valid_bits[sel_way][index];
-                        dirty <= dirty_bits[sel_way][index];
-                        hit <= valid_bits[sel_way][index];
+                        if (selected_way) begin
+                            tag_out = tags[1][index];
+                            data_out = data_mem[1][index][word_index];
+                            valid = valid_bits[1][index];
+                            dirty = dirty_bits[1][index];
+                        end else begin
+                            tag_out = tags[0][index];
+                            data_out = data_mem[0][index][word_index];
+                            valid = valid_bits[0][index];
+                            dirty = dirty_bits[0][index];
+                        end
+                        hit = valid_bits[0][index] || valid_bits[1][index];
                     end
                 end
             end
         end else begin
-            for (i = 0; i < CACHE_SIZE; i = i + 1) begin
-                valid_bits[0][i] <= 1'b0;
-                valid_bits[1][i] <= 1'b0;
-                dirty_bits[0][i] <= 1'b0;
-                dirty_bits[1][i] <= 1'b0;
-            end
-            hit <= 1'b0;
-            dirty <= 1'b0;
-            tag_out <= {TAG_WIDTH{1'b0}};
-            data_out <= {DATA_WIDTH{1'b0}};
-            valid <= 1'b0;
-            error <= 1'b0;
+            hit = 1'b0;
+            dirty = 1'b0;
+            tag_out = {TAG_WIDTH{1'b0}};
+            data_out = {DATA_WIDTH{1'b0}};
+            valid = 1'b0;
+            error = 1'b0;
         end
     end
 

@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module S2(
     input  logic [5:0] i_data,
     output logic [3:0] o_data

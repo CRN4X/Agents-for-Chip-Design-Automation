@@ -1,105 +1,104 @@
 `timescale 1ns/1ps
 
 module poly_decimator #(
-  parameter int M           = 4,
-  parameter int TAPS        = 8,
-  parameter int COEFF_WIDTH = 16,
-  parameter int DATA_WIDTH  = 16,
-  localparam int ACC_WIDTH  = DATA_WIDTH + COEFF_WIDTH + $clog2(TAPS),
-  localparam int TOTAL_TAPS = M * TAPS
+  parameter M           = 4,
+  parameter TAPS        = 8,
+  parameter COEFF_WIDTH = 16,
+  parameter DATA_WIDTH  = 16,
+  localparam ACC_WIDTH  = DATA_WIDTH + COEFF_WIDTH + $clog2(TAPS),
+  localparam TOTAL_TAPS = M * TAPS,
+  localparam OUT_WIDTH  = ACC_WIDTH + $clog2(M),
+  localparam CNT_WIDTH  = (M <= 1) ? 1 : $clog2(M)
 ) (
-  input  logic                                clk,
-  input  logic                                arst_n,
-  input  logic [DATA_WIDTH-1:0]               in_sample,
-  input  logic                                in_valid,
-  output logic                                in_ready,
-  output logic [ACC_WIDTH+$clog2(M)-1:0]      out_sample,
-  output logic                                out_valid
+  input  logic                 clk,
+  input  logic                 arst_n,
+  input  logic [DATA_WIDTH-1:0] in_sample,
+  input  logic                 in_valid,
+  output logic                 in_ready,
+  output logic [OUT_WIDTH-1:0] out_sample,
+  output logic                 out_valid
 );
 
-  localparam int SAMPLE_CNT_W = (M > 1) ? $clog2(M) : 1;
+  logic [DATA_WIDTH-1:0] shift_data [0:TOTAL_TAPS-1];
+  logic shift_data_val;
 
-  logic [DATA_WIDTH-1:0] shift_window [0:TOTAL_TAPS-1];
-  logic                  shift_data_val;
+  logic [CNT_WIDTH-1:0] sample_count;
+  logic launch_pending;
+  logic launch_filters;
+  logic accept_sample;
 
-  logic [SAMPLE_CNT_W-1:0] sample_cnt;
-  logic                    decim_pending;
-  logic                    branch_start;
-  logic                    in_accept;
-
-  logic [ACC_WIDTH-1:0] branch_out   [0:M-1];
-  logic                 branch_valid [0:M-1];
-  logic                 branches_all_valid;
-
-  logic [ACC_WIDTH+$clog2(M)-1:0] tree_sum;
-  logic                           tree_valid;
-
-  assign in_ready  = arst_n;
-  assign in_accept = in_valid && in_ready;
+  assign in_ready = 1'b1;
+  assign accept_sample = in_valid & in_ready;
 
   shift_register #(
     .TAPS(TOTAL_TAPS),
     .DATA_WIDTH(DATA_WIDTH)
   ) u_shift_reg_decim (
-    .clk         (clk),
-    .arst_n      (arst_n),
-    .load        (in_accept),
-    .new_sample  (in_sample),
-    .data_out    (shift_window),
+    .clk(clk),
+    .arst_n(arst_n),
+    .load(accept_sample),
+    .new_sample(in_sample),
+    .data_out(shift_data),
     .data_out_val(shift_data_val)
   );
 
   always_ff @(posedge clk or negedge arst_n) begin
     if (!arst_n) begin
-      sample_cnt     <= '0;
-      decim_pending  <= 1'b0;
-      branch_start   <= 1'b0;
+      sample_count   <= '0;
+      launch_pending <= 1'b0;
+      launch_filters <= 1'b0;
     end else begin
-      branch_start <= decim_pending;
+      launch_filters <= launch_pending;
+      launch_pending <= 1'b0;
 
-      if (in_accept) begin
-        if (sample_cnt == M-1) begin
-          sample_cnt    <= '0;
-          decim_pending <= 1'b1;
+      if (accept_sample) begin
+        if (sample_count == M-1) begin
+          sample_count   <= '0;
+          launch_pending <= 1'b1;
         end else begin
-          sample_cnt    <= sample_cnt + 1'b1;
-          decim_pending <= 1'b0;
+          sample_count <= sample_count + 1'b1;
         end
-      end else begin
-        decim_pending <= 1'b0;
       end
     end
   end
 
+  logic [ACC_WIDTH-1:0] branch_out   [0:M-1];
+  logic                 branch_valid [0:M-1];
+
   generate
-    for (genvar p = 0; p < M; p = p + 1) begin : poly_branches
+    genvar p, t;
+    for (p = 0; p < M; p = p + 1) begin : poly_branches
       logic [DATA_WIDTH-1:0] branch_samples [0:TAPS-1];
 
-      for (genvar t = 0; t < TAPS; t = t + 1) begin : map_samples
-        assign branch_samples[t] = shift_window[p + (t * M)];
+      for (t = 0; t < TAPS; t = t + 1) begin : sample_map
+        assign branch_samples[t] = shift_data[p + t*M];
       end
 
       poly_filter #(
-        .M          (M),
-        .TAPS       (TAPS),
+        .M(M),
+        .TAPS(TAPS),
         .COEFF_WIDTH(COEFF_WIDTH),
-        .DATA_WIDTH (DATA_WIDTH)
+        .DATA_WIDTH(DATA_WIDTH)
       ) u_poly_filter (
-        .clk         (clk),
-        .arst_n      (arst_n),
+        .clk(clk),
+        .arst_n(arst_n),
         .sample_buffer(branch_samples),
-        .valid_in    (branch_start),
-        .phase       (p[$clog2(M)-1:0]),
-        .filter_out  (branch_out[p]),
-        .valid       (branch_valid[p])
+        .valid_in(launch_filters),
+        .phase(p[$clog2(M)-1:0]),
+        .filter_out(branch_out[p]),
+        .valid(branch_valid[p])
       );
     end
   endgenerate
 
+  logic all_branches_valid;
+  logic [OUT_WIDTH-1:0] adder_sum;
+  logic adder_valid;
+
   always_comb begin
-    branches_all_valid = 1'b1;
-    for (int i = 0; i < M; i = i + 1) begin
-      branches_all_valid &= branch_valid[i];
+    all_branches_valid = 1'b1;
+    for (int k = 0; k < M; k = k + 1) begin
+      all_branches_valid = all_branches_valid & branch_valid[k];
     end
   end
 
@@ -107,12 +106,12 @@ module poly_decimator #(
     .NUM_INPUTS(M),
     .DATA_WIDTH(ACC_WIDTH)
   ) u_adder_tree_decim (
-    .clk      (clk),
-    .arst_n   (arst_n),
-    .valid_in (branches_all_valid),
-    .data_in  (branch_out),
-    .sum_out  (tree_sum),
-    .valid_out(tree_valid)
+    .clk(clk),
+    .arst_n(arst_n),
+    .valid_in(all_branches_valid),
+    .data_in(branch_out),
+    .sum_out(adder_sum),
+    .valid_out(adder_valid)
   );
 
   always_ff @(posedge clk or negedge arst_n) begin
@@ -120,8 +119,8 @@ module poly_decimator #(
       out_sample <= '0;
       out_valid  <= 1'b0;
     end else begin
-      out_sample <= tree_sum;
-      out_valid  <= tree_valid;
+      out_sample <= adder_sum;
+      out_valid  <= adder_valid;
     end
   end
 

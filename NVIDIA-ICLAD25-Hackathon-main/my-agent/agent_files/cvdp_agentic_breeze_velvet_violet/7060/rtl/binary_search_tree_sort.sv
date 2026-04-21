@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module binary_search_tree_sort #(
     parameter DATA_WIDTH = 16,
     parameter ARRAY_SIZE = 5

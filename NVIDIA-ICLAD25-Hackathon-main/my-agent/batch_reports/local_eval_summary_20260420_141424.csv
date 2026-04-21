@@ -1,0 +1,2 @@
+problem,issue_id,harness_path,exit_code,status,duration_sec,first_error
+cvdp_agentic_amber_eagle_lambda,1,NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_amber_eagle_lambda/harness/1,0,PASS,99,"   310.00ns INFO     cocotb.csr_apb_interface           Write to ISR_REG correctly caused error (Write-Protected Register)"

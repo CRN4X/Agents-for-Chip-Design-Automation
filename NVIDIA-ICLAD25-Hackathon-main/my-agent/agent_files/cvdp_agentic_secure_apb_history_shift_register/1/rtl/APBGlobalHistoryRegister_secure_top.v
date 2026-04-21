@@ -1,4 +1,6 @@
-module APBGlobalHistoryRegister_secure_top #(
+`timescale 1ns/1ns
+
+module APBGlobalHistoryRegister_secure_top  #(
     parameter p_unlock_code_0 = 8'hAB,
     parameter p_unlock_code_1 = 8'hCD
 ) (
@@ -22,18 +24,19 @@ module APBGlobalHistoryRegister_secure_top #(
     output reg          interrupt_error
 );
 
-    wire secure_enable_async;
-    reg  secure_sync_ff1;
-    reg  secure_sync_ff2;
+    wire sec_unlocked_capture;
+    reg  sec_sync_ff1;
+    reg  sec_sync_ff2;
+    wire sec_unlocked_pclk;
 
-    wire         core_pready;
-    wire [7:0]   core_prdata;
-    wire         core_pslverr;
-    wire         core_history_full;
-    wire         core_history_empty;
-    wire         core_error_flag;
-    wire         core_interrupt_full;
-    wire         core_interrupt_error;
+    wire apb_pready;
+    wire [7:0] apb_prdata;
+    wire apb_pslverr;
+    wire apb_history_full;
+    wire apb_history_empty;
+    wire apb_error_flag;
+    wire apb_interrupt_full;
+    wire apb_interrupt_error;
 
     security_module #(
         .p_unlock_code_0(p_unlock_code_0),
@@ -44,20 +47,22 @@ module APBGlobalHistoryRegister_secure_top #(
         .paddr(paddr),
         .pwrite(pwrite),
         .pwdata(pwdata),
-        .secure_enable(secure_enable_async)
+        .o_secure_enable(sec_unlocked_capture)
     );
 
     always @(posedge pclk or negedge presetn) begin
         if (!presetn) begin
-            secure_sync_ff1 <= 1'b0;
-            secure_sync_ff2 <= 1'b0;
+            sec_sync_ff1 <= 1'b0;
+            sec_sync_ff2 <= 1'b0;
         end else begin
-            secure_sync_ff1 <= secure_enable_async;
-            secure_sync_ff2 <= secure_sync_ff1;
+            sec_sync_ff1 <= sec_unlocked_capture;
+            sec_sync_ff2 <= sec_sync_ff1;
         end
     end
 
-    APBGlobalHistoryRegister u_global_history (
+    assign sec_unlocked_pclk = sec_sync_ff2;
+
+    APBGlobalHistoryRegister u_apb_ghsr (
         .pclk(pclk),
         .presetn(presetn),
         .paddr(paddr),
@@ -67,26 +72,26 @@ module APBGlobalHistoryRegister_secure_top #(
         .pwdata(pwdata),
         .history_shift_valid(history_shift_valid),
         .clk_gate_en(clk_gate_en),
-        .secure_enable(secure_sync_ff2),
-        .pready(core_pready),
-        .prdata(core_prdata),
-        .pslverr(core_pslverr),
-        .history_full(core_history_full),
-        .history_empty(core_history_empty),
-        .error_flag(core_error_flag),
-        .interrupt_full(core_interrupt_full),
-        .interrupt_error(core_interrupt_error)
+        .i_secure_enable(sec_unlocked_pclk),
+        .pready(apb_pready),
+        .prdata(apb_prdata),
+        .pslverr(apb_pslverr),
+        .history_full(apb_history_full),
+        .history_empty(apb_history_empty),
+        .error_flag(apb_error_flag),
+        .interrupt_full(apb_interrupt_full),
+        .interrupt_error(apb_interrupt_error)
     );
 
     always @(*) begin
-        pready = core_pready;
-        prdata = core_prdata;
-        pslverr = core_pslverr;
-        history_full = core_history_full;
-        history_empty = core_history_empty;
-        error_flag = core_error_flag;
-        interrupt_full = core_interrupt_full;
-        interrupt_error = core_interrupt_error;
+        pready          = apb_pready;
+        prdata          = apb_prdata;
+        pslverr         = apb_pslverr;
+        history_full    = apb_history_full;
+        history_empty   = apb_history_empty;
+        error_flag      = apb_error_flag;
+        interrupt_full  = apb_interrupt_full;
+        interrupt_error = apb_interrupt_error;
     end
 
 endmodule

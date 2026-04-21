@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module des_dec #(
     parameter NBW_DATA = 'd64,
     parameter NBW_KEY  = 'd64

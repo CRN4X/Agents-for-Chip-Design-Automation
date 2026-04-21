@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module aes128_key_expansion #(
     parameter NBW_KEY = 'd128,
     parameter NBW_OUT = 'd1408

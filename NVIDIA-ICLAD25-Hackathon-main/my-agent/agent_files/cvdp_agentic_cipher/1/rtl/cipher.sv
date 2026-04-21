@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module cipher (
     input  logic        clk,
     input  logic        rst_n,
@@ -15,33 +17,35 @@ module cipher (
     } state_t;
 
     state_t       state;
-    logic [15:0]  left_reg;
-    logic [15:0]  right_reg;
+    logic [15:0]  left;
+    logic [15:0]  right;
     logic [15:0]  round_key;
-    logic [3:0]   round_ctr;
+    logic [3:0]   round_cnt;
+    logic [15:0]  f_val;
+    logic [15:0]  key_rot;
 
-    function automatic logic [15:0] f_function(
-        input logic [15:0] right_half,
-        input logic [15:0] subkey
+    function automatic logic [15:0] f_function (
+        input logic [15:0] r_in,
+        input logic [15:0] k_in
     );
-        logic [15:0] mixed;
-        logic [15:0] rotl3;
-        logic [15:0] rotr2;
+        logic [15:0] x;
+        logic [15:0] rot_l;
+        logic [15:0] rot_r;
         begin
-            mixed = right_half ^ subkey;
-            rotl3 = {mixed[12:0], mixed[15:13]};
-            rotr2 = {mixed[1:0], mixed[15:2]};
-            f_function = (rotl3 + rotr2) ^ subkey;
+            x = r_in ^ k_in;
+            rot_l = {x[12:0], x[15:13]};
+            rot_r = {x[4:0], x[15:5]};
+            f_function = (rot_l + rot_r + k_in) & 16'hFFFF;
         end
     endfunction
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             state      <= IDLE;
-            left_reg   <= 16'h0000;
-            right_reg  <= 16'h0000;
+            left       <= 16'h0000;
+            right      <= 16'h0000;
             round_key  <= 16'h0000;
-            round_ctr  <= 4'h0;
+            round_cnt  <= 4'd0;
             data_out   <= 32'h00000000;
             done       <= 1'b0;
         end else begin
@@ -49,29 +53,32 @@ module cipher (
 
             case (state)
                 IDLE: begin
+                    round_cnt <= 4'd0;
                     if (start) begin
-                        left_reg  <= data_in[31:16];
-                        right_reg <= data_in[15:0];
+                        left      <= data_in[31:16];
+                        right     <= data_in[15:0];
                         round_key <= key;
-                        round_ctr <= 4'd0;
                         state     <= ROUND;
                     end
                 end
 
                 ROUND: begin
-                    left_reg  <= right_reg;
-                    right_reg <= left_reg ^ f_function(right_reg, round_key);
+                    f_val <= f_function(right, round_key);
+                    left  <= right;
+                    right <= left ^ f_function(right, round_key);
 
-                    if (round_ctr == 4'd7) begin
+                    key_rot   <= {round_key[14:0], round_key[15]};
+                    round_key <= {round_key[14:0], round_key[15]} ^ {12'h000, round_cnt};
+
+                    if (round_cnt == 4'd7) begin
                         state <= FINISH;
                     end else begin
-                        round_ctr <= round_ctr + 4'd1;
-                        round_key <= {round_key[14:0], round_key[15]} ^ {12'h000, (round_ctr + 4'd1)};
+                        round_cnt <= round_cnt + 4'd1;
                     end
                 end
 
                 FINISH: begin
-                    data_out <= {right_reg, left_reg};
+                    data_out <= {right, left};
                     done     <= 1'b1;
                     state    <= IDLE;
                 end

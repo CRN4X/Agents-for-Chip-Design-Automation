@@ -1,0 +1,2 @@
+problem,issue_id,harness_path,exit_code,status,duration_sec,first_error
+cvdp_agentic_bcd_adder,4,NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_bcd_adder/harness/4,0,PASS,119,"   185.00ns INFO     cocotb.bcd_top                     TESTS FAILED : 0"

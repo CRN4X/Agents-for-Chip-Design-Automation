@@ -22,12 +22,12 @@ module axi4lite_to_pcie_cfg_bridge #(
     input  logic        arvalid,
     output logic        arready,
     output logic [DATA_WIDTH-1:0] rdata,
+    output logic [1:0]  rresp,
     output logic        rvalid,
     input  logic        rready,
-    output logic [1:0]  rresp,
 
     // PCIe Configuration Space Interface
-    output logic [ADDR_WIDTH-1:0]    pcie_cfg_addr,  
+    output logic [ADDR_WIDTH-1:0]  pcie_cfg_addr,  
     output logic [DATA_WIDTH-1:0] pcie_cfg_wdata, 
     output logic        pcie_cfg_wr_en, 
     input  logic [DATA_WIDTH-1:0] pcie_cfg_rdata, 
@@ -37,17 +37,15 @@ module axi4lite_to_pcie_cfg_bridge #(
     // FSM States
     typedef enum logic [1:0] {
         IDLE,
-        WRITE_RESPONSE,
-        READ_RESPONSE
+        WRITE_RESP,
+        READ_RESP
     } state_t;
 
     state_t current_state, next_state;
 
     // Internal registers
-    logic [ADDR_WIDTH-1:0] awaddr_reg;
-    logic [ADDR_WIDTH-1:0] araddr_reg;
-    logic [DATA_WIDTH-1:0] wdata_reg;
-    logic [DATA_WIDTH/8-1:0] wstrb_reg;
+    logic [DATA_WIDTH-1:0] write_data_masked;
+    integer i;
 
     // FSM State Transition
     always_ff @(posedge aclk or negedge aresetn) begin
@@ -64,19 +62,19 @@ module axi4lite_to_pcie_cfg_bridge #(
         case (current_state)
             IDLE: begin
                 if (awvalid && wvalid) begin
-                    next_state = WRITE_RESPONSE;
+                    next_state = WRITE_RESP;
                 end else if (arvalid) begin
-                    next_state = READ_RESPONSE;
+                    next_state = READ_RESP;
                 end
             end
 
-            WRITE_RESPONSE: begin
+            WRITE_RESP: begin
                 if (bready) begin
                     next_state = IDLE;
                 end
             end
 
-            READ_RESPONSE: begin
+            READ_RESP: begin
                 if (rready) begin
                     next_state = IDLE;
                 end
@@ -88,26 +86,22 @@ module axi4lite_to_pcie_cfg_bridge #(
         endcase
     end
 
-    // FSM Output Logic
+    // FSM output and datapath logic
     always_ff @(posedge aclk or negedge aresetn) begin
         if (!aresetn) begin
             awready <= 1'b0;
             wready <= 1'b0;
-            arready <= 1'b0;
             bvalid <= 1'b0;
+            bresp <= 2'b00;
+            arready <= 1'b0;
             rvalid <= 1'b0;
-            bresp <= 2'b00; // OKAY response
-            rresp <= 2'b00; // OKAY response
+            rresp <= 2'b00;
+            rdata <= {DATA_WIDTH{1'b0}};
             pcie_cfg_wr_en <= 1'b0;
-            pcie_cfg_wdata <= '0;
-            pcie_cfg_addr <= '0;
-            rdata <= '0;
-            awaddr_reg <= '0;
-            araddr_reg <= '0;
-            wdata_reg <= '0;
-            wstrb_reg <= '0;
+            pcie_cfg_wdata <= {DATA_WIDTH{1'b0}};
+            pcie_cfg_addr <= {ADDR_WIDTH{1'b0}};
         end else begin
-            // Defaults for one-cycle actions and handshake outputs.
+            // Default deassertions for one-cycle handshake pulses
             awready <= 1'b0;
             wready <= 1'b0;
             arready <= 1'b0;
@@ -115,46 +109,35 @@ module axi4lite_to_pcie_cfg_bridge #(
 
             case (current_state)
                 IDLE: begin
-                    awready <= 1'b1;
-                    wready <= 1'b1;
-                    arready <= 1'b1;
                     bvalid <= 1'b0;
                     rvalid <= 1'b0;
 
                     if (awvalid && wvalid) begin
-                        awaddr_reg <= awaddr;
-                        wdata_reg <= wdata;
-                        wstrb_reg <= wstrb;
-                        pcie_cfg_addr <= awaddr;
-                        bresp <= 2'b00;
-
-                        // Apply strobe mask on written bytes.
-                        for (int i = 0; i < (DATA_WIDTH/8); i++) begin
-                            pcie_cfg_wdata[(i*8)+:8] <=
-                                (wstrb[i]) ? wdata[(i*8)+:8] : pcie_cfg_rdata[(i*8)+:8];
-                        end
+                        awready <= 1'b1;
+                        wready <= 1'b1;
                         pcie_cfg_wr_en <= 1'b1;
+                        pcie_cfg_addr <= awaddr;
+
+                        write_data_masked = pcie_cfg_rdata;
+                        for (i = 0; i < (DATA_WIDTH/8); i = i + 1) begin
+                            if (wstrb[i]) begin
+                                write_data_masked[(i*8)+:8] = wdata[(i*8)+:8];
+                            end
+                        end
+                        pcie_cfg_wdata <= write_data_masked;
                     end else if (arvalid) begin
-                        araddr_reg <= araddr;
+                        arready <= 1'b1;
                         pcie_cfg_addr <= araddr;
-                        rdata <= pcie_cfg_rdata;
-                        rresp <= 2'b00;
                     end
                 end
 
-                WRITE_RESPONSE: begin
+                WRITE_RESP: begin
                     bvalid <= 1'b1;
-                    rvalid <= 1'b0;
-                    // Keep address/data registers stable for observability.
-                    awaddr_reg <= awaddr_reg;
-                    wdata_reg <= wdata_reg;
-                    wstrb_reg <= wstrb_reg;
                 end
 
-                READ_RESPONSE: begin
-                    bvalid <= 1'b0;
+                READ_RESP: begin
                     rvalid <= 1'b1;
-                    pcie_cfg_addr <= araddr_reg;
+                    rresp <= 2'b00;
                     rdata <= pcie_cfg_rdata;
                 end
 

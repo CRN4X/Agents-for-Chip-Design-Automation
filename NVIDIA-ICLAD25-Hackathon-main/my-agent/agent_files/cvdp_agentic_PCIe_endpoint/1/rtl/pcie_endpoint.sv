@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module pcie_endpoint #(
     parameter int ADDR_WIDTH = 64,
     parameter int DATA_WIDTH = 128
@@ -16,72 +18,69 @@ module pcie_endpoint #(
 );
 
     typedef enum logic [1:0] {
-        ST_IDLE,
-        ST_PROCESS,
-        ST_TX
-    } pcie_state_t;
+        RX_IDLE,
+        RX_PROCESS,
+        RX_SEND
+    } rx_state_t;
 
-    pcie_state_t state_q, state_d;
+    rx_state_t rx_state;
 
-    logic [DATA_WIDTH-1:0] tlp_data_q, tlp_data_d;
-    logic                  dma_complete_d;
-    logic                  msix_interrupt_d;
-
-    always_comb begin
-        state_d         = state_q;
-        tlp_data_d      = tlp_data_q;
-        dma_complete_d  = 1'b0;
-        msix_interrupt_d = 1'b0;
-
-        pcie_rx_ready   = 1'b0;
-        pcie_tx_valid   = 1'b0;
-        pcie_tx_tlp     = tlp_data_q;
-
-        case (state_q)
-            ST_IDLE: begin
-                pcie_rx_ready = 1'b1;
-                if (pcie_rx_valid) begin
-                    tlp_data_d = pcie_rx_tlp;
-                    state_d    = ST_PROCESS;
-                end
-            end
-
-            ST_PROCESS: begin
-                // Model a one-cycle processing stage before response transmit.
-                state_d = ST_TX;
-            end
-
-            ST_TX: begin
-                pcie_tx_valid = 1'b1;
-                pcie_tx_tlp   = tlp_data_q;
-                if (pcie_tx_ready) begin
-                    state_d = ST_IDLE;
-                end
-            end
-
-            default: begin
-                state_d = ST_IDLE;
-            end
-        endcase
-
-        // Simple DMA/MSI-X behavior matching the requested interface semantics.
-        if (dma_request) begin
-            dma_complete_d   = 1'b1;
-            msix_interrupt_d = 1'b1;
-        end
-    end
+    logic [DATA_WIDTH-1:0] tlp_buffer;
+    logic                  dma_pending;
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            state_q         <= ST_IDLE;
-            tlp_data_q      <= '0;
+            rx_state        <= RX_IDLE;
+            pcie_rx_ready   <= 1'b1;
+            pcie_tx_tlp     <= '0;
+            pcie_tx_valid   <= 1'b0;
+            tlp_buffer      <= '0;
+            dma_pending     <= 1'b0;
             dma_complete    <= 1'b0;
             msix_interrupt  <= 1'b0;
         end else begin
-            state_q         <= state_d;
-            tlp_data_q      <= tlp_data_d;
-            dma_complete    <= dma_complete_d;
-            msix_interrupt  <= msix_interrupt_d;
+            dma_complete   <= 1'b0;
+            msix_interrupt <= 1'b0;
+
+            case (rx_state)
+                RX_IDLE: begin
+                    pcie_rx_ready <= 1'b1;
+                    pcie_tx_valid <= 1'b0;
+                    if (pcie_rx_valid) begin
+                        tlp_buffer    <= pcie_rx_tlp;
+                        pcie_rx_ready <= 1'b0;
+                        rx_state      <= RX_PROCESS;
+                    end
+                end
+
+                RX_PROCESS: begin
+                    pcie_tx_tlp   <= tlp_buffer;
+                    pcie_tx_valid <= 1'b1;
+                    rx_state      <= RX_SEND;
+                end
+
+                RX_SEND: begin
+                    if (pcie_tx_valid && pcie_tx_ready) begin
+                        pcie_tx_valid <= 1'b0;
+                        pcie_rx_ready <= 1'b1;
+                        rx_state      <= RX_IDLE;
+                    end
+                end
+
+                default: begin
+                    rx_state <= RX_IDLE;
+                end
+            endcase
+
+            if (dma_request) begin
+                dma_pending <= 1'b1;
+            end
+
+            if (dma_pending) begin
+                dma_complete   <= 1'b1;
+                msix_interrupt <= 1'b1;
+                dma_pending    <= 1'b0;
+            end
         end
     end
 

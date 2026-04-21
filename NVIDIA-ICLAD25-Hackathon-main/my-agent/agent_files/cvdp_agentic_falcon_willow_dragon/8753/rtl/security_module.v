@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module security_module #(
     parameter p_unlock_code_0 = 8'hAB,
     parameter p_unlock_code_1 = 8'hCD
@@ -7,59 +9,46 @@ module security_module #(
     input  wire [9:0] paddr,
     input  wire       pwrite,
     input  wire [7:0] pwdata,
-    output reg        secure_enable
+    output reg        o_secure_enable
 );
 
-    localparam [1:0] ST_LOCKED   = 2'b00;
-    localparam [1:0] ST_STAGE1   = 2'b01;
-    localparam [1:0] ST_UNLOCKED = 2'b10;
+    localparam [1:0] ST_LOCKED = 2'd0;
+    localparam [1:0] ST_STEP1  = 2'd1;
+    localparam [1:0] ST_UNLOCK = 2'd2;
 
-    reg [1:0] state_d;
-    reg [1:0] state_q;
-
-    always @(*) begin
-        state_d = state_q;
-        case (state_q)
-            ST_LOCKED: begin
-                if (pwrite) begin
-                    if ((paddr == 10'd0) && (pwdata == p_unlock_code_0)) begin
-                        state_d = ST_STAGE1;
-                    end else begin
-                        state_d = ST_LOCKED;
-                    end
-                end
-            end
-
-            ST_STAGE1: begin
-                if (pwrite) begin
-                    if ((paddr == 10'd1) && (pwdata == p_unlock_code_1)) begin
-                        state_d = ST_UNLOCKED;
-                    end else begin
-                        state_d = ST_LOCKED;
-                    end
-                end
-            end
-
-            ST_UNLOCKED: begin
-                state_d = ST_UNLOCKED;
-            end
-
-            default: begin
-                state_d = ST_LOCKED;
-            end
-        endcase
-    end
+    reg [1:0] state;
 
     always @(posedge i_capture_pulse or negedge presetn) begin
         if (!presetn) begin
-            state_q <= ST_LOCKED;
+            state            <= ST_LOCKED;
+            o_secure_enable  <= 1'b0;
         end else begin
-            state_q <= state_d;
-        end
-    end
+            case (state)
+                ST_LOCKED: begin
+                    o_secure_enable <= 1'b0;
+                    if (pwrite && (paddr == 10'd0) && (pwdata == p_unlock_code_0)) begin
+                        state <= ST_STEP1;
+                    end else begin
+                        state <= ST_LOCKED;
+                    end
+                end
 
-    always @(*) begin
-        secure_enable = (state_q == ST_UNLOCKED);
+                ST_STEP1: begin
+                    o_secure_enable <= 1'b0;
+                    if (pwrite && (paddr == 10'd1) && (pwdata == p_unlock_code_1)) begin
+                        state           <= ST_UNLOCK;
+                        o_secure_enable <= 1'b1;
+                    end else begin
+                        state <= ST_LOCKED;
+                    end
+                end
+
+                default: begin
+                    state           <= ST_UNLOCK;
+                    o_secure_enable <= 1'b1;
+                end
+            endcase
+        end
     end
 
 endmodule

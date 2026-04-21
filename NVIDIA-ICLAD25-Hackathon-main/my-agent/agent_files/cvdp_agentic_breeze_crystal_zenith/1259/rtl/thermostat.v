@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module thermostat (
     input wire [5:0] i_temp_feedback, // Temperature feedback bits
     input wire i_fan_on,             // Manual fan control
@@ -14,7 +16,7 @@ module thermostat (
     output reg o_aircon_medium,
     output reg o_aircon_low,
     output reg o_fan,
-    output reg [2:0] o_state         // FSM state output
+    output wire [2:0] o_state         // FSM state output
 );
 
 // State encoding
@@ -33,6 +35,7 @@ reg aircon_full, aircon_medium, aircon_low;
 reg fan;
 
 assign o_state = current_state;
+
 // Sequential logic for state transitions and registered outputs
 always @(posedge i_clk or negedge i_rst) begin
     if (!i_rst) begin

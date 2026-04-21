@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module security_module #(
     parameter p_unlock_code_0 = 8'hAB,
     parameter p_unlock_code_1 = 8'hCD
@@ -7,51 +9,43 @@ module security_module #(
     input  wire [9:0] paddr,
     input  wire       pwrite,
     input  wire [7:0] pwdata,
-    output reg        secure_enable
+    output reg        o_secure_enable
 );
 
-    localparam [1:0] S_LOCKED  = 2'b00;
-    localparam [1:0] S_STEP1   = 2'b01;
-    localparam [1:0] S_UNLOCK  = 2'b10;
+    localparam ST_LOCKED   = 2'd0;
+    localparam ST_STAGE1   = 2'd1;
+    localparam ST_UNLOCKED = 2'd2;
 
-    reg [1:0] state;
+    reg [1:0] r_state;
 
     always @(posedge i_capture_pulse or negedge presetn) begin
         if (!presetn) begin
-            state <= S_LOCKED;
-            secure_enable <= 1'b0;
+            r_state          <= ST_LOCKED;
+            o_secure_enable  <= 1'b0;
         end else begin
-            case (state)
-                S_LOCKED: begin
+            case (r_state)
+                ST_LOCKED: begin
                     if (pwrite && (paddr == 10'd0) && (pwdata == p_unlock_code_0)) begin
-                        state <= S_STEP1;
+                        r_state <= ST_STAGE1;
                     end else begin
-                        state <= S_LOCKED;
+                        r_state <= ST_LOCKED;
                     end
-                    secure_enable <= 1'b0;
+                    o_secure_enable <= 1'b0;
                 end
 
-                S_STEP1: begin
+                ST_STAGE1: begin
                     if (pwrite && (paddr == 10'd1) && (pwdata == p_unlock_code_1)) begin
-                        state <= S_UNLOCK;
-                        secure_enable <= 1'b1;
-                    end else if (pwrite) begin
-                        state <= S_LOCKED;
-                        secure_enable <= 1'b0;
+                        r_state <= ST_UNLOCKED;
+                        o_secure_enable <= 1'b1;
                     end else begin
-                        state <= S_STEP1;
-                        secure_enable <= 1'b0;
+                        r_state <= ST_LOCKED;
+                        o_secure_enable <= 1'b0;
                     end
-                end
-
-                S_UNLOCK: begin
-                    state <= S_UNLOCK;
-                    secure_enable <= 1'b1;
                 end
 
                 default: begin
-                    state <= S_LOCKED;
-                    secure_enable <= 1'b0;
+                    r_state <= ST_UNLOCKED;
+                    o_secure_enable <= 1'b1;
                 end
             endcase
         end

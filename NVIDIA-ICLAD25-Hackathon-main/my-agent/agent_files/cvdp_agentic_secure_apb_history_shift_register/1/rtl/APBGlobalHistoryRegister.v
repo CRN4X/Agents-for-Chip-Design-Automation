@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module APBGlobalHistoryRegister (
     // APB clock & reset
     input  wire         pclk,  //APB clock input used for all synchronous operations.
@@ -11,7 +13,7 @@ module APBGlobalHistoryRegister (
     input  wire [7:0]   pwdata, // Write data bus for sending data to CSR registers or memory.
     input  wire         history_shift_valid,  
     input  wire         clk_gate_en,  
-    input  wire         secure_enable,
+    input  wire         i_secure_enable,
     output reg          pready, // Ready signal, driven high to indicate the end of a transaction.
     output reg  [7:0]   prdata, // Read data bus for retrieving data from the module.
     output reg          pslverr,  //Error signal, asserted on invalid addresses.
@@ -49,7 +51,8 @@ module APBGlobalHistoryRegister (
     // APB Read/Write Logic
     //---------------------------------------------
     wire apb_valid;
-    assign apb_valid = pselx & penable;    // Indicates active APB transaction
+    wire pclk_gated;
+    assign apb_valid = pselx & penable & i_secure_enable;    // Indicates active APB transaction only after unlock
     assign pclk_gated = !clk_gate_en&pclk;
     // By spec, no wait states => PREADY always high after reset
     always @(posedge pclk_gated or negedge presetn) begin
@@ -130,22 +133,20 @@ module APBGlobalHistoryRegister (
         predict_history <= 0;
       end
       else begin
-        if (secure_enable) begin
-          // 2) Misprediction Handling (highest priority)
-          //    If a misprediction is flagged, restore the old history from train_history
-          //    and incorporate the correct outcome (train_taken) as the newest bit.
-          if (train_mispredicted) begin
-            predict_history <= {train_history[WIDTH-2:0], train_taken};
-          end
-          // 3) Normal Prediction Update
-          //    If the prediction is valid and there is no misprediction,
-          //    shift in predict_taken at the LSB (bit[0] is the youngest branch).
-          else if (predict_valid) begin
-            // "Shifting in from the LSB" while keeping the newest branch in predict_history[0]
-            // is typically done by moving predict_history[31:1] up one bit
-            // and placing predict_taken in bit[0].
-            predict_history <= {predict_history[WIDTH-2:0], predict_taken};
-          end
+        // 2) Misprediction Handling (highest priority)
+        //    If a misprediction is flagged, restore the old history from train_history
+        //    and incorporate the correct outcome (train_taken) as the newest bit.
+        if (i_secure_enable && train_mispredicted) begin
+          predict_history <= {train_history[WIDTH-2:0], train_taken};
+        end
+        // 3) Normal Prediction Update
+        //    If the prediction is valid and there is no misprediction,
+        //    shift in predict_taken at the LSB (bit[0] is the youngest branch).
+        else if (i_secure_enable && predict_valid) begin
+          // "Shifting in from the LSB" while keeping the newest branch in predict_history[0]
+          // is typically done by moving predict_history[31:1] up one bit
+          // and placing predict_taken in bit[0].
+          predict_history <= {predict_history[WIDTH-2:0], predict_taken};
         end
       end
     end

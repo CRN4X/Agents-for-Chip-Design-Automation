@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module aes_encrypt #(
     parameter NBW_KEY  = 'd256,
     parameter NBW_DATA = 'd128

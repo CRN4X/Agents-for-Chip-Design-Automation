@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module aes_enc_top #(
     parameter NBW_KEY  = 'd256,
     parameter NBW_DATA = 'd128,
@@ -72,7 +74,7 @@ always_comb begin
             ciphertext = plaintext_ff ^ enc_out;
         end
         CTR: begin
-            enc_in     = {counter_ff[NBW_CNTR-1:NBW_CNTR/2], iv_ff[NBW_DATA-17:16], counter_ff[(NBW_CNTR/2)-1:0]};
+            enc_in     = {counter_ff[31:16], iv_ff[111:16], counter_ff[15:0]};
             iv_nx      = iv_ff;
             ciphertext = plaintext_ff ^ enc_out;
         end

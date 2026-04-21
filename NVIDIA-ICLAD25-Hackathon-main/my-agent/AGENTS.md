@@ -5,6 +5,7 @@ General Notes:
 2. In local no-Docker flow, treat `my-agent/agent_files/<problem_name>/<issue_id>/rtl` as the editable RTL workspace.
 3. Do not modify `before/rtl` originals, files present in harness folder.
 4. Preserve existing module names, ports, and file paths unless the prompt asks to change them.
+5. Use timescale at top of rtl code to prevent the cocotb clock period issues
 
 Agent: `HeadAgent`
 

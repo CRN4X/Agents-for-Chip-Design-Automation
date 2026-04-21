@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module bst_operations #(
     parameter DATA_WIDTH = 16,
     parameter ARRAY_SIZE = 5

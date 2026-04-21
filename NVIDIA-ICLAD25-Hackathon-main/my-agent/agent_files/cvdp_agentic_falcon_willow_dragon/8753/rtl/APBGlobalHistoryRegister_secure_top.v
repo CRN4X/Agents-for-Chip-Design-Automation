@@ -1,49 +1,41 @@
+`timescale 1ns/1ns
+
 module APBGlobalHistoryRegister_secure_top #(
     parameter p_unlock_code_0 = 8'hAB,
     parameter p_unlock_code_1 = 8'hCD
 ) (
-    input  wire       pclk,
-    input  wire       presetn,
-    input  wire [9:0] paddr,
-    input  wire       pselx,
-    input  wire       penable,
-    input  wire       pwrite,
-    input  wire [7:0] pwdata,
-    input  wire       history_shift_valid,
-    input  wire       clk_gate_en,
-    input  wire       i_capture_pulse,
-    output reg        pready,
-    output reg [7:0]  prdata,
-    output reg        pslverr,
-    output reg        history_full,
-    output reg        history_empty,
-    output reg        error_flag,
-    output reg        interrupt_full,
-    output reg        interrupt_error
+    input  wire         pclk,
+    input  wire         presetn,
+    input  wire [9:0]   paddr,
+    input  wire         pselx,
+    input  wire         penable,
+    input  wire         pwrite,
+    input  wire [7:0]   pwdata,
+    input  wire         history_shift_valid,
+    input  wire         clk_gate_en,
+    input  wire         i_capture_pulse,
+    output reg          pready,
+    output reg  [7:0]   prdata,
+    output reg          pslverr,
+    output reg          history_full,
+    output reg          history_empty,
+    output reg          error_flag,
+    output reg          interrupt_full,
+    output reg          interrupt_error
 );
 
-    wire secure_enable_capture;
-    reg  secure_sync_ff1;
-    reg  secure_sync_ff2;
-    wire secure_enable_pclk;
+    wire security_unlocked_capture;
+    reg  security_sync_ff1;
+    reg  security_sync_ff2;
 
-    wire apb_pready;
-    wire [7:0] apb_prdata;
-    wire apb_pslverr;
-    wire apb_history_full;
-    wire apb_history_empty;
-    wire apb_error_flag;
-    wire apb_interrupt_full;
-    wire apb_interrupt_error;
-
-    wire pselx_secure;
-    wire penable_secure;
-    wire history_shift_valid_secure;
-
-    assign secure_enable_pclk       = secure_sync_ff2;
-    assign pselx_secure             = pselx & secure_enable_pclk;
-    assign penable_secure           = penable & secure_enable_pclk;
-    assign history_shift_valid_secure = history_shift_valid & secure_enable_pclk;
+    wire        pready_w;
+    wire [7:0]  prdata_w;
+    wire        pslverr_w;
+    wire        history_full_w;
+    wire        history_empty_w;
+    wire        error_flag_w;
+    wire        interrupt_full_w;
+    wire        interrupt_error_w;
 
     security_module #(
         .p_unlock_code_0(p_unlock_code_0),
@@ -54,48 +46,49 @@ module APBGlobalHistoryRegister_secure_top #(
         .paddr(paddr),
         .pwrite(pwrite),
         .pwdata(pwdata),
-        .secure_enable(secure_enable_capture)
+        .o_secure_enable(security_unlocked_capture)
     );
 
     always @(posedge pclk or negedge presetn) begin
         if (!presetn) begin
-            secure_sync_ff1 <= 1'b0;
-            secure_sync_ff2 <= 1'b0;
+            security_sync_ff1 <= 1'b0;
+            security_sync_ff2 <= 1'b0;
         end else begin
-            secure_sync_ff1 <= secure_enable_capture;
-            secure_sync_ff2 <= secure_sync_ff1;
+            security_sync_ff1 <= security_unlocked_capture;
+            security_sync_ff2 <= security_sync_ff1;
         end
     end
 
-    APBGlobalHistoryRegister u_apb_global_history_register (
+    APBGlobalHistoryRegister u_history_reg (
         .pclk(pclk),
         .presetn(presetn),
         .paddr(paddr),
-        .pselx(pselx_secure),
-        .penable(penable_secure),
+        .pselx(pselx),
+        .penable(penable),
         .pwrite(pwrite),
         .pwdata(pwdata),
-        .history_shift_valid(history_shift_valid_secure),
+        .history_shift_valid(history_shift_valid),
         .clk_gate_en(clk_gate_en),
-        .pready(apb_pready),
-        .prdata(apb_prdata),
-        .pslverr(apb_pslverr),
-        .history_full(apb_history_full),
-        .history_empty(apb_history_empty),
-        .error_flag(apb_error_flag),
-        .interrupt_full(apb_interrupt_full),
-        .interrupt_error(apb_interrupt_error)
+        .secure_enable(security_sync_ff2),
+        .pready(pready_w),
+        .prdata(prdata_w),
+        .pslverr(pslverr_w),
+        .history_full(history_full_w),
+        .history_empty(history_empty_w),
+        .error_flag(error_flag_w),
+        .interrupt_full(interrupt_full_w),
+        .interrupt_error(interrupt_error_w)
     );
 
     always @(*) begin
-        pready          = apb_pready;
-        prdata          = apb_prdata;
-        pslverr         = apb_pslverr;
-        history_full    = apb_history_full;
-        history_empty   = apb_history_empty;
-        error_flag      = apb_error_flag;
-        interrupt_full  = apb_interrupt_full;
-        interrupt_error = apb_interrupt_error;
+        pready          = pready_w;
+        prdata          = prdata_w;
+        pslverr         = pslverr_w;
+        history_full    = history_full_w;
+        history_empty   = history_empty_w;
+        error_flag      = error_flag_w;
+        interrupt_full  = interrupt_full_w;
+        interrupt_error = interrupt_error_w;
     end
 
 endmodule

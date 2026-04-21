@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module barrel_shifter (
     input  [7:0] data_in,
     input  [2:0] shift_bits,

@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module aes128_decrypt #(
     parameter NBW_KEY  = 'd128,
     parameter NBW_DATA = 'd128

@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module scrambler_descrambler #(
     parameter POLY_LENGTH = 31,
     parameter POLY_TAP    = 3,
@@ -14,50 +16,56 @@ module scrambler_descrambler #(
     output logic [31:0]      bit_count
 );
 
-logic [WIDTH-1:0] prbs_data;
+logic [WIDTH-1:0] prbs_data_out;
 logic [WIDTH-1:0] data_in_d1;
-logic [WIDTH-1:0] prbs_data_in;
-logic             valid_d1;
+logic             valid_in_d1;
+logic             valid_in_d2;
+logic [WIDTH-1:0] prbs_data_d1;
+logic [WIDTH-1:0] prbs_input_data;
 
-assign prbs_data_in = (CHECK_MODE == 0) ? data_in_d1 : data_in;
+assign prbs_input_data = (CHECK_MODE == 0) ? {WIDTH{1'b0}} : data_in;
 
 prbs_gen_check #(
-    .CHECK_MODE(CHECK_MODE),
+    .CHECK_MODE (CHECK_MODE ),
     .POLY_LENGTH(POLY_LENGTH),
-    .POLY_TAP(POLY_TAP),
-    .WIDTH(WIDTH)
+    .POLY_TAP   (POLY_TAP   ),
+    .WIDTH      (WIDTH      )
 ) u_prbs_gen_check (
-    .clk(clk),
-    .rst(rst),
-    .data_in(prbs_data_in),
-    .data_out(prbs_data)
+    .clk     (clk            ),
+    .rst     (rst            ),
+    .data_in (prbs_input_data),
+    .data_out(prbs_data_out  )
 );
 
 always_ff @(posedge clk) begin
     if (rst) begin
-        data_in_d1 <= '0;
-        valid_d1   <= 1'b0;
-        data_out   <= '0;
-        valid_out  <= 2'b00;
-        bit_count  <= 32'd0;
+        data_in_d1     <= {WIDTH{1'b0}};
+        valid_in_d1    <= 1'b0;
+        valid_in_d2    <= 1'b0;
+        prbs_data_d1   <= {WIDTH{1'b0}};
+        data_out       <= {WIDTH{1'b0}};
+        valid_out      <= 2'b00;
+        bit_count      <= 32'd0;
     end else begin
-        data_in_d1 <= data_in;
-        valid_d1   <= valid_in;
+        data_in_d1    <= data_in;
+        valid_in_d1   <= valid_in;
+        valid_in_d2   <= valid_in_d1;
+        prbs_data_d1  <= prbs_data_out;
 
         if (bypass_scrambling) begin
-            valid_out <= valid_in ? 2'b01 : 2'b00;
-            if (valid_in) begin
-                data_out <= data_in;
+            valid_out <= valid_in_d1 ? 2'b01 : 2'b00;
+            if (valid_in_d1) begin
+                data_out  <= data_in_d1;
             end
         end else if (CHECK_MODE == 0) begin
             valid_out <= valid_in ? 2'b01 : 2'b00;
             if (valid_in) begin
-                data_out <= data_in;
+                data_out  <= data_in;
             end
         end else begin
-            valid_out <= valid_d1 ? 2'b01 : 2'b00;
-            if (valid_d1) begin
-                data_out <= prbs_data;
+            valid_out <= valid_in_d1 ? 2'b01 : 2'b00;
+            if (valid_in_d1) begin
+                data_out  <= prbs_data_out;
             end
         end
 
@@ -67,4 +75,4 @@ always_ff @(posedge clk) begin
     end
 end
 
-endmodule
+endmodule : scrambler_descrambler

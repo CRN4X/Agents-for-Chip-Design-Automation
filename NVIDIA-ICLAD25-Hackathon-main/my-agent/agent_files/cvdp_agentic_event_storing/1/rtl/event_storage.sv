@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module event_storage #(
     parameter NBW_STR = 'd4,
     parameter NS_EVT  = 'd4,
@@ -17,7 +19,6 @@ module event_storage #(
 // - Wires/Registers creation
 // ----------------------------------------
 logic [NBW_STR-1:0] reg_bank [0:NS_EVT-1];
-localparam logic [NBW_STR-1:0] MAX_VAL = {NBW_STR{1'b1}};
 
 // ----------------------------------------
 // - Block logic
@@ -31,7 +32,7 @@ generate
                 if(i_en_overflow) begin
                     reg_bank[i] <= reg_bank[i] + i_event[i];
                 end else begin
-                    if(reg_bank[i] == MAX_VAL) begin
+                    if(reg_bank[i] == {NBW_STR{1'b1}}) begin
                         reg_bank[i] <= reg_bank[i];
                     end else begin
                         reg_bank[i] <= reg_bank[i] + i_event[i];

@@ -1,52 +1,47 @@
+`timescale 1ns/1ns
+
 module order_matching_engine #(
     parameter PRICE_WIDTH = 16
 )(
-    input                          clk,
-    input                          rst,
-    input                          start,
-    input      [8*PRICE_WIDTH-1:0] bid_orders,
-    input      [8*PRICE_WIDTH-1:0] ask_orders,
-    output reg                     match_valid,
-    output reg [PRICE_WIDTH-1:0]   matched_price,
-    output reg                     done,
-    output reg                     latency_error
+    input                           clk,
+    input                           rst,
+    input                           start,
+    input      [8*PRICE_WIDTH-1:0]  bid_orders,
+    input      [8*PRICE_WIDTH-1:0]  ask_orders,
+    output reg                      match_valid,
+    output reg [PRICE_WIDTH-1:0]    matched_price,
+    output reg                      done,
+    output reg                      latency_error
 );
 
-  reg                        bid_start;
-  reg                        ask_start;
-  wire                       bid_done;
-  wire                       ask_done;
-  wire [8*PRICE_WIDTH-1:0]   bid_sorted;
-  wire [8*PRICE_WIDTH-1:0]   ask_sorted;
+  localparam integer TARGET_LATENCY = 20;
 
-  reg                        active;
-  reg [5:0]                  latency_cnt;
-  reg [8*PRICE_WIDTH-1:0]    bid_latched;
-  reg [8*PRICE_WIDTH-1:0]    ask_latched;
+  reg        busy;
+  reg [5:0]  cycle_count;
 
-  reg [PRICE_WIDTH-1:0] best_bid;
-  reg [PRICE_WIDTH-1:0] best_ask;
-  integer idx;
+  wire [8*PRICE_WIDTH-1:0] bid_sorted;
+  wire [8*PRICE_WIDTH-1:0] ask_sorted;
+  wire                     bid_sort_done;
+  wire                     ask_sort_done;
+  wire                     sort_start;
 
-  always @(*) begin
-    best_bid = bid_latched[0 +: PRICE_WIDTH];
-    best_ask = ask_latched[0 +: PRICE_WIDTH];
-    for (idx = 1; idx < 8; idx = idx + 1) begin
-      if (bid_latched[idx*PRICE_WIDTH +: PRICE_WIDTH] > best_bid)
-        best_bid = bid_latched[idx*PRICE_WIDTH +: PRICE_WIDTH];
-      if (ask_latched[idx*PRICE_WIDTH +: PRICE_WIDTH] < best_ask)
-        best_ask = ask_latched[idx*PRICE_WIDTH +: PRICE_WIDTH];
-    end
-  end
+  wire [PRICE_WIDTH-1:0] best_bid;
+  wire [PRICE_WIDTH-1:0] best_ask;
+  wire                   has_match;
+
+  assign sort_start = start && !busy;
+  assign best_bid   = bid_sorted[(8*PRICE_WIDTH)-1 -: PRICE_WIDTH];
+  assign best_ask   = ask_sorted[PRICE_WIDTH-1:0];
+  assign has_match  = (best_bid >= best_ask);
 
   sorting_engine #(
       .WIDTH(PRICE_WIDTH)
   ) u_bid_sort (
       .clk(clk),
       .rst(rst),
-      .start(bid_start),
+      .start(sort_start),
       .in_data(bid_orders),
-      .done(bid_done),
+      .done(bid_sort_done),
       .out_data(bid_sorted)
   );
 
@@ -55,53 +50,37 @@ module order_matching_engine #(
   ) u_ask_sort (
       .clk(clk),
       .rst(rst),
-      .start(ask_start),
+      .start(sort_start),
       .in_data(ask_orders),
-      .done(ask_done),
+      .done(ask_sort_done),
       .out_data(ask_sorted)
   );
 
   always @(posedge clk or posedge rst) begin
     if (rst) begin
-      bid_start      <= 1'b0;
-      ask_start      <= 1'b0;
-      active         <= 1'b0;
-      latency_cnt    <= 6'd0;
-      bid_latched    <= {8*PRICE_WIDTH{1'b0}};
-      ask_latched    <= {8*PRICE_WIDTH{1'b0}};
-      match_valid    <= 1'b0;
-      matched_price  <= {PRICE_WIDTH{1'b0}};
-      done           <= 1'b0;
-      latency_error  <= 1'b0;
+      busy          <= 1'b0;
+      cycle_count   <= 6'd0;
+      match_valid   <= 1'b0;
+      matched_price <= {PRICE_WIDTH{1'b0}};
+      done          <= 1'b0;
+      latency_error <= 1'b0;
     end else begin
-      bid_start <= 1'b0;
-      ask_start <= 1'b0;
-      done      <= 1'b0;
+      done <= 1'b0;
 
-      if (!active) begin
-        if (start) begin
-          active      <= 1'b1;
-          latency_cnt <= 6'd0;
-          bid_latched <= bid_orders;
-          ask_latched <= ask_orders;
-          bid_start   <= 1'b1;
-          ask_start   <= 1'b1;
+      if (!busy) begin
+        if (sort_start) begin
+          busy        <= 1'b1;
+          cycle_count <= 6'd0;
         end
       end else begin
-        latency_cnt <= latency_cnt + 6'd1;
-
-        if (latency_cnt == 6'd19) begin
+        if (cycle_count == TARGET_LATENCY-1) begin
+          busy          <= 1'b0;
           done          <= 1'b1;
-          active        <= 1'b0;
-          latency_error <= (latency_cnt != 6'd19);
-
-          if (best_bid >= best_ask) begin
-            match_valid   <= 1'b1;
-            matched_price <= best_ask;
-          end else begin
-            match_valid   <= 1'b0;
-            matched_price <= {PRICE_WIDTH{1'b0}};
-          end
+          match_valid   <= has_match;
+          matched_price <= has_match ? best_ask : {PRICE_WIDTH{1'b0}};
+          latency_error <= !(bid_sort_done && ask_sort_done);
+        end else begin
+          cycle_count <= cycle_count + 6'd1;
         end
       end
     end

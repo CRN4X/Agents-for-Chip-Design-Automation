@@ -1,16 +1,16 @@
 {
-  "cvdp_agentic_eagle_jade_forest_681": {
-    "category": "cid005",
-    "difficulty": "hard",
+  "cvdp_agentic_queue_1": {
+    "category": "cid003",
+    "difficulty": "medium",
     "tests": [
       {
-        "result": 0,
-        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_eagle_jade_forest/harness/681/rundir/sim.log",
-        "error_msg": null,
-        "execution": 525.0,
+        "result": 1,
+        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_queue/harness/1/rundir/sim.log",
+        "error_msg": "error: Unable to find the root module \"queue\" in the Verilog source.",
+        "execution": 41.0,
         "pid": 0
       }
     ],
-    "errors": 0
+    "errors": 1
   }
 }

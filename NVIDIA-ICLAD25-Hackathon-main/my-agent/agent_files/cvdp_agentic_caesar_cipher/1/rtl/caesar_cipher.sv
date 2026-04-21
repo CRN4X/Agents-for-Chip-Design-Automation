@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module caesar_cipher(
   input  wire [7:0] input_char,
   input  wire [3:0] key,

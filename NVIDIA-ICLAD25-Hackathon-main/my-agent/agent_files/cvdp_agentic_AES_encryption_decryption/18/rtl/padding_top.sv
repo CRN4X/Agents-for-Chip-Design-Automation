@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module padding_top #(
     parameter NBW_KEY  = 'd256,
     parameter NBW_DATA = 'd128,
@@ -30,16 +32,15 @@ localparam PKCS         = 2'b00;
 localparam ONEANDZEROES = 2'b01;
 localparam ANSIX923     = 2'b10;
 localparam W3C          = 2'b11;
+localparam NBW_BYTE     = 8;
 
 logic [NBW_PMOD-1:0] padding_mode_ff;
 logic [NBW_DATA-1:0] padded_data;
-logic [7:0]          pad_cnt;
-integer              i;
-
-logic enc_done;
-logic dec_done;
+logic                enc_done;
+logic                dec_done;
 logic [NBW_DATA-1:0] enc_data;
 logic [NBW_DATA-1:0] dec_data;
+integer              idx;
 
 always_ff @(posedge clk or negedge rst_async_n) begin
     if (!rst_async_n) begin
@@ -51,51 +52,38 @@ end
 
 always_comb begin
     padded_data = i_data;
-    pad_cnt = i_padding_bytes;
 
     if (i_padding_bytes != '0) begin
-        case (padding_mode_ff)
-            PKCS: begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i < i_padding_bytes) begin
-                        padded_data[(8*i) +: 8] = pad_cnt;
+        for (idx = 0; idx < 16; idx = idx + 1) begin
+            if (idx < i_padding_bytes) begin
+                case (padding_mode_ff)
+                    PKCS: begin
+                        padded_data[idx*NBW_BYTE +: NBW_BYTE] = {{(NBW_BYTE-NBW_PADD){1'b0}}, i_padding_bytes};
                     end
-                end
-            end
-            ONEANDZEROES: begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i < i_padding_bytes) begin
-                        if (i == (i_padding_bytes - 1'b1)) begin
-                            padded_data[(8*i) +: 8] = 8'h80;
+                    ONEANDZEROES: begin
+                        if (idx == (i_padding_bytes - 1'b1)) begin
+                            padded_data[idx*NBW_BYTE +: NBW_BYTE] = 8'h80;
                         end else begin
-                            padded_data[(8*i) +: 8] = 8'h00;
+                            padded_data[idx*NBW_BYTE +: NBW_BYTE] = 8'h00;
                         end
                     end
-                end
-            end
-            ANSIX923: begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i < i_padding_bytes) begin
-                        if (i == 0) begin
-                            padded_data[(8*i) +: 8] = pad_cnt;
+                    ANSIX923: begin
+                        if (idx == 0) begin
+                            padded_data[idx*NBW_BYTE +: NBW_BYTE] = {{(NBW_BYTE-NBW_PADD){1'b0}}, i_padding_bytes};
                         end else begin
-                            padded_data[(8*i) +: 8] = 8'h00;
+                            padded_data[idx*NBW_BYTE +: NBW_BYTE] = 8'h00;
                         end
                     end
-                end
-            end
-            default: begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i < i_padding_bytes) begin
-                        if (i == 0) begin
-                            padded_data[(8*i) +: 8] = pad_cnt;
+                    default: begin
+                        if (idx == 0) begin
+                            padded_data[idx*NBW_BYTE +: NBW_BYTE] = {{(NBW_BYTE-NBW_PADD){1'b0}}, i_padding_bytes};
                         end else begin
-                            padded_data[(8*i) +: 8] = W3C_BYTE;
+                            padded_data[idx*NBW_BYTE +: NBW_BYTE] = W3C_BYTE;
                         end
                     end
-                end
+                endcase
             end
-        endcase
+        end
     end
 end
 
@@ -105,19 +93,19 @@ aes_enc_top #(
     .NBW_MODE(NBW_MODE),
     .NBW_CNTR(NBW_CNTR)
 ) uu_aes_enc_top (
-    .clk            (clk                              ),
-    .rst_async_n    (rst_async_n                      ),
-    .i_reset_counter(i_reset_counter &  i_encrypt     ),
-    .i_update_iv    (i_update_iv     &  i_encrypt     ),
-    .i_iv           (i_iv                             ),
-    .i_update_mode  (i_update_mode   &  i_encrypt     ),
-    .i_mode         (i_mode                           ),
-    .i_update_key   (i_update_key    &  i_encrypt     ),
-    .i_key          (i_key                            ),
-    .i_start        (i_start         &  i_encrypt     ),
-    .i_plaintext    (padded_data                       ),
-    .o_done         (enc_done                          ),
-    .o_ciphertext   (enc_data                          )
+    .clk            (clk                                  ),
+    .rst_async_n    (rst_async_n                          ),
+    .i_reset_counter(i_encrypt ? i_reset_counter : 1'b0   ),
+    .i_update_iv    (i_encrypt ? i_update_iv : 1'b0       ),
+    .i_iv           (i_iv                                 ),
+    .i_update_mode  (i_encrypt ? i_update_mode : 1'b0     ),
+    .i_mode         (i_mode                               ),
+    .i_update_key   (i_encrypt ? i_update_key : 1'b0      ),
+    .i_key          (i_key                                ),
+    .i_start        (i_encrypt ? i_start : 1'b0           ),
+    .i_plaintext    (padded_data                          ),
+    .o_done         (enc_done                             ),
+    .o_ciphertext   (enc_data                             )
 );
 
 aes_dec_top #(
@@ -126,19 +114,19 @@ aes_dec_top #(
     .NBW_MODE(NBW_MODE),
     .NBW_CNTR(NBW_CNTR)
 ) uu_aes_dec_top (
-    .clk            (clk                              ),
-    .rst_async_n    (rst_async_n                      ),
-    .i_reset_counter(i_reset_counter & ~i_encrypt     ),
-    .i_update_iv    (i_update_iv     & ~i_encrypt     ),
-    .i_iv           (i_iv                             ),
-    .i_update_mode  (i_update_mode   & ~i_encrypt     ),
-    .i_mode         (i_mode                           ),
-    .i_update_key   (i_update_key    & ~i_encrypt     ),
-    .i_key          (i_key                            ),
-    .i_start        (i_start         & ~i_encrypt     ),
-    .i_ciphertext   (padded_data                       ),
-    .o_done         (dec_done                          ),
-    .o_plaintext    (dec_data                          )
+    .clk            (clk                                  ),
+    .rst_async_n    (rst_async_n                          ),
+    .i_reset_counter(i_encrypt ? 1'b0 : i_reset_counter   ),
+    .i_update_iv    (i_encrypt ? 1'b0 : i_update_iv       ),
+    .i_iv           (i_iv                                 ),
+    .i_update_mode  (i_encrypt ? 1'b0 : i_update_mode     ),
+    .i_mode         (i_mode                               ),
+    .i_update_key   (i_encrypt ? 1'b0 : i_update_key      ),
+    .i_key          (i_key                                ),
+    .i_start        (i_encrypt ? 1'b0 : i_start           ),
+    .i_ciphertext   (padded_data                          ),
+    .o_done         (dec_done                             ),
+    .o_plaintext    (dec_data                             )
 );
 
 always_comb begin

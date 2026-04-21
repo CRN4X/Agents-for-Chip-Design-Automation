@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module csr_apb_interface(
     input  wire        pclk,
     input  wire        presetn,
@@ -10,10 +12,10 @@ module csr_apb_interface(
     output reg         pslverr,
     output reg  [1:0]  dbg_state
 );
-    localparam IDLE       = 2'd0;
-    localparam SETUP      = 2'd1;
-    localparam READ_STATE = 2'd2;
-    localparam WRITE_STATE= 2'd3;
+    localparam IDLE        = 2'd0;
+    localparam SETUP       = 2'd1;
+    localparam READ_STATE  = 2'd2;
+    localparam WRITE_STATE = 2'd3;
 
     localparam DATA_REG      = 32'h10;
     localparam CONTROL_REG   = 32'h14;
@@ -27,13 +29,13 @@ module csr_apb_interface(
 
     always @(posedge pclk or negedge presetn) begin
         if (!presetn) begin
-            data_reg    <= 32'h0;
-            control_reg <= 32'h0;
+            data_reg      <= 32'h0;
+            control_reg   <= 32'h0;
             interrupt_reg <= 32'h0;
-            isr_reg     <= 32'h0;
-            prdata      <= 32'h0;
-            pslverr     <= 1'b0;
-            dbg_state   <= IDLE;
+            isr_reg       <= 32'h0;
+            prdata        <= 32'h0;
+            pslverr       <= 1'b0;
+            dbg_state     <= IDLE;
         end else begin
             dbg_state <= IDLE;
 
@@ -51,7 +53,7 @@ module csr_apb_interface(
                             interrupt_reg <= pwdata;
                             isr_reg <= isr_reg & ~pwdata;
                         end
-                        ISR_REG: pslverr <= 1'b1;  // write protected
+                        ISR_REG: pslverr <= 1'b1;
                         default: begin
                         end
                     endcase

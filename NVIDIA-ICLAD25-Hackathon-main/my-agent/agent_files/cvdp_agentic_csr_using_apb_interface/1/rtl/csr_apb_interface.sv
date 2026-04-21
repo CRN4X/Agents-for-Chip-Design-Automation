@@ -1,86 +1,88 @@
+`timescale 1ns/1ns
+
 module csr_apb_interface (
-    input  wire        pclk,
-    input  wire        presetn,
-    input  wire        pselx,
-    input  wire        penable,
-    input  wire        pwrite,
-    input  wire [31:0] paddr,
-    input  wire [31:0] pwdata,
-    output reg  [31:0] prdata,
-    output reg         pslverr,
-    output reg  [1:0]  fsm_state_dbg
+    input  logic        pclk,
+    input  logic        presetn,
+    input  logic        pselx,
+    input  logic        penable,
+    input  logic        pwrite,
+    input  logic [31:0] paddr,
+    input  logic [31:0] pwdata,
+    input  logic        overflow_is,
+    input  logic        sign_is,
+    input  logic        parity_is,
+    input  logic        zero_is,
+    output logic [31:0] prdata,
+    output logic        pslverr,
+    output logic [1:0]  fsm_state_dbg
 );
 
-    localparam [31:0] DATA_REG_ADDR      = 32'h10;
-    localparam [31:0] CONTROL_REG_ADDR   = 32'h14;
-    localparam [31:0] INTERRUPT_REG_ADDR = 32'h18;
-    localparam [31:0] ISR_REG_ADDR       = 32'h1C;
+    localparam logic [31:0] DATA_REG_ADDR      = 32'h10;
+    localparam logic [31:0] CONTROL_REG_ADDR   = 32'h14;
+    localparam logic [31:0] INTERRUPT_REG_ADDR = 32'h18;
+    localparam logic [31:0] ISR_REG_ADDR       = 32'h1C;
 
-    localparam [1:0] IDLE       = 2'd0;
-    localparam [1:0] SETUP      = 2'd1;
-    localparam [1:0] READ_STATE = 2'd2;
-    localparam [1:0] WRITE_STATE= 2'd3;
+    typedef enum logic [1:0] {
+        IDLE        = 2'd0,
+        SETUP       = 2'd1,
+        READ_STATE  = 2'd2,
+        WRITE_STATE = 2'd3
+    } state_t;
 
-    reg [1:0] state;
-    reg [1:0] next_state;
+    state_t state;
 
-    reg [31:0] data_reg;
-    reg [31:0] control_reg;
-    reg [31:0] interrupt_reg;
-    reg [31:0] isr_reg;
+    logic [31:0] data_reg;
+    logic [31:0] control_reg;
+    logic [31:0] interrupt_reg;
+    logic [31:0] isr_reg;
 
-    wire apb_setup;
-    wire apb_access;
+    always_ff @(posedge pclk or negedge presetn) begin
+        if (!presetn) begin
+            state         <= IDLE;
+            data_reg      <= 32'd0;
+            control_reg   <= 32'd0;
+            interrupt_reg <= 32'd0;
+            isr_reg       <= 32'd0;
+            prdata        <= 32'd0;
+            pslverr       <= 1'b0;
+        end else begin
+            // Latch incoming status flags, but ignore X/Z inputs.
+            if (overflow_is === 1'b1) isr_reg[0] <= 1'b1;
+            if (sign_is     === 1'b1) isr_reg[1] <= 1'b1;
+            if (parity_is   === 1'b1) isr_reg[2] <= 1'b1;
+            if (zero_is     === 1'b1) isr_reg[3] <= 1'b1;
 
-    assign apb_setup  = pselx & ~penable;
-    assign apb_access = pselx & penable;
-
-    always @(*) begin
-        next_state = state;
-        case (state)
-            IDLE: begin
-                if (pselx) begin
-                    next_state = SETUP;
-                end
-            end
-            SETUP: begin
-                if (apb_access) begin
-                    if (pwrite) begin
-                        next_state = WRITE_STATE;
-                    end else begin
-                        next_state = READ_STATE;
+            // FSM progression for debug/observability.
+            case (state)
+                IDLE: begin
+                    if (pselx && !penable) begin
+                        state <= SETUP;
                     end
                 end
-            end
-            READ_STATE: begin
-                next_state = IDLE;
-            end
-            WRITE_STATE: begin
-                next_state = IDLE;
-            end
-            default: begin
-                next_state = IDLE;
-            end
-        endcase
-    end
+                SETUP: begin
+                    if (pselx && penable) begin
+                        if (pwrite) begin
+                            state <= WRITE_STATE;
+                        end else begin
+                            state <= READ_STATE;
+                        end
+                    end else if (!pselx) begin
+                        state <= IDLE;
+                    end
+                end
+                READ_STATE,
+                WRITE_STATE: begin
+                    state <= IDLE;
+                end
+                default: begin
+                    state <= IDLE;
+                end
+            endcase
 
-    always @(posedge pclk or negedge presetn) begin
-        if (!presetn) begin
-            state          <= IDLE;
-            fsm_state_dbg  <= IDLE;
-            data_reg       <= 32'h0;
-            control_reg    <= 32'h0;
-            interrupt_reg  <= 32'h0;
-            isr_reg        <= 32'h0;
-            prdata         <= 32'h0;
-            pslverr        <= 1'b0;
-        end else begin
-            state         <= next_state;
-            fsm_state_dbg <= next_state;
-
-            if (apb_access) begin
+            // APB ACCESS phase action.
+            if (pselx && penable) begin
                 if (pwrite) begin
-                    case (paddr)
+                    unique case (paddr)
                         DATA_REG_ADDR: begin
                             data_reg <= pwdata;
                         end
@@ -89,38 +91,31 @@ module csr_apb_interface (
                         end
                         INTERRUPT_REG_ADDR: begin
                             interrupt_reg <= pwdata;
-                            // Writing 1 clears corresponding ISR flag bits.
                             isr_reg[3:0] <= isr_reg[3:0] & ~pwdata[3:0];
                         end
                         ISR_REG_ADDR: begin
-                            // Write-protected register.
                             pslverr <= 1'b1;
                         end
                         default: begin
-                            // No action for undefined addresses.
+                            pslverr <= 1'b1;
                         end
                     endcase
                 end else begin
-                    case (paddr)
-                        DATA_REG_ADDR: begin
-                            prdata <= data_reg;
-                        end
-                        CONTROL_REG_ADDR: begin
-                            prdata <= control_reg;
-                        end
-                        INTERRUPT_REG_ADDR: begin
-                            prdata <= interrupt_reg;
-                        end
-                        ISR_REG_ADDR: begin
-                            prdata <= isr_reg;
-                        end
+                    unique case (paddr)
+                        DATA_REG_ADDR:      prdata <= data_reg;
+                        CONTROL_REG_ADDR:   prdata <= control_reg;
+                        INTERRUPT_REG_ADDR: prdata <= interrupt_reg;
+                        ISR_REG_ADDR:       prdata <= isr_reg;
                         default: begin
-                            prdata <= 32'h0;
+                            prdata  <= 32'd0;
+                            pslverr <= 1'b1;
                         end
                     endcase
                 end
             end
         end
     end
+
+    assign fsm_state_dbg = state;
 
 endmodule

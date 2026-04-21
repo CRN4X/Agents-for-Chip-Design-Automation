@@ -1,0 +1,2 @@
+problem,issue_id,harness_path,exit_code,status,duration_sec,first_error
+cvdp_agentic_hdbn_codec,1,NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_hdbn_codec/harness/1,0,PASS,521,"                                                            Full loopback test: PRBS source, encoder, loopback, decoder, error checking."

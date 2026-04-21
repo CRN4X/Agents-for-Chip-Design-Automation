@@ -1,14 +1,14 @@
 {
-  "source_csv": "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/my-agent/batch_reports/local_eval_summary_20260419_223233.csv",
+  "source_csv": "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/my-agent/batch_reports/local_eval_summary_20260420_232905.csv",
   "count": 1,
   "results": [
     {
-      "problem": "cvdp_agentic_eagle_jade_forest",
-      "issue_id": "681",
-      "harness_path": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_eagle_jade_forest/harness/681",
-      "status": "PASS",
-      "exit_code": 0,
-      "first_error": ""
+      "problem": "cvdp_agentic_queue",
+      "issue_id": "1",
+      "harness_path": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_queue/harness/1",
+      "status": "FAIL",
+      "exit_code": 1,
+      "first_error": "error: Unable to find the root module \"queue\" in the Verilog source."
     }
   ]
 }

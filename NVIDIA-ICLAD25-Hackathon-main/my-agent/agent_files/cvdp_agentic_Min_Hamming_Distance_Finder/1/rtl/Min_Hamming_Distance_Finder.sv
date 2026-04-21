@@ -1,13 +1,17 @@
-module Min_Hamming_Distance_Finder #(
+`timescale 1ns/1ns
+
+module Min_Hamming_Distance_Finder
+#(
     parameter BIT_WIDTH = 8,
     parameter REFERENCE_COUNT = 4,
     localparam DIST_WIDTH = $clog2(BIT_WIDTH + 1),
-    localparam INDEX_WIDTH = $clog2(REFERENCE_COUNT)
-) (
-    input  wire [BIT_WIDTH-1:0]                     input_query,
-    input  wire [REFERENCE_COUNT*BIT_WIDTH-1:0]     references,
-    output reg  [INDEX_WIDTH-1:0]                   best_match_index,
-    output reg  [DIST_WIDTH-1:0]                    min_distance
+    localparam INDEX_WIDTH = (REFERENCE_COUNT > 1) ? $clog2(REFERENCE_COUNT) : 1
+)
+(
+    input  wire [BIT_WIDTH-1:0]                  input_query,
+    input  wire [REFERENCE_COUNT*BIT_WIDTH-1:0]  references,
+    output reg  [INDEX_WIDTH-1:0]                best_match_index,
+    output reg  [DIST_WIDTH-1:0]                 min_distance
 );
 
     wire [DIST_WIDTH-1:0] distances [0:REFERENCE_COUNT-1];
@@ -15,11 +19,14 @@ module Min_Hamming_Distance_Finder #(
     genvar ref_idx;
     generate
         for (ref_idx = 0; ref_idx < REFERENCE_COUNT; ref_idx = ref_idx + 1) begin : gen_distance
-            Bit_Difference_Counter #(
+            Bit_Difference_Counter
+            #(
                 .BIT_WIDTH(BIT_WIDTH)
-            ) u_bit_difference_counter (
+            )
+            u_bit_difference_counter
+            (
                 .input_A(input_query),
-                .input_B(references[(ref_idx+1)*BIT_WIDTH-1 -: BIT_WIDTH]),
+                .input_B(references[(ref_idx*BIT_WIDTH) +: BIT_WIDTH]),
                 .bit_difference_count(distances[ref_idx])
             );
         end

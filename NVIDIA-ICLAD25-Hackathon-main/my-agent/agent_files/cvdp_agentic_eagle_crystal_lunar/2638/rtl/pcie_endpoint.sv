@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module pcie_endpoint #(
     parameter int ADDR_WIDTH = 64,
     parameter int DATA_WIDTH = 128

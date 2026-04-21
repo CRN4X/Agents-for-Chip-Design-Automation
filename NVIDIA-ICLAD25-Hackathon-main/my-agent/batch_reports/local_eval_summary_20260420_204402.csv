@@ -1,0 +1,2 @@
+problem,issue_id,harness_path,exit_code,status,duration_sec,first_error
+cvdp_agentic_swizzler,5,NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_swizzler/harness/5,0,PASS,125,"    70.00ns INFO     cocotb.swizzler_supervisor         Basic test passed: final_data_out=0xabababab checksum=0x0 top_error=1"

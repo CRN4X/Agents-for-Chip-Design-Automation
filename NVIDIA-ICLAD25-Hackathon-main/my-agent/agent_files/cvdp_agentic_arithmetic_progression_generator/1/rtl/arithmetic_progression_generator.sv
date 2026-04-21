@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module arithmetic_progression_generator #(
     parameter DATA_WIDTH = 16,  // Width of the input data
     parameter SEQUENCE_LENGTH = 10 // Number of terms in the progression
@@ -14,8 +16,8 @@ module arithmetic_progression_generator #(
   // - Local parameter definition
   // ----------------------------------------
   
-    localparam COUNTER_WIDTH = (SEQUENCE_LENGTH > 1) ? $clog2(SEQUENCE_LENGTH) : 1;
     localparam WIDTH_OUT_VAL = ((SEQUENCE_LENGTH == 0) ? 1 : $clog2(SEQUENCE_LENGTH)) + DATA_WIDTH; // Bit width of out_val to prevent overflow
+    localparam COUNTER_WIDTH = (SEQUENCE_LENGTH <= 1) ? 1 : $clog2(SEQUENCE_LENGTH);
 
   // ----------------------------------------
   // - Interface Definitions
@@ -32,8 +34,8 @@ module arithmetic_progression_generator #(
   // ----------------------------------------
   // - Internal signals
   // ----------------------------------------
-    logic [WIDTH_OUT_VAL-1:0] current_val;       // Register to hold the current value
-    logic [COUNTER_WIDTH-1:0] counter;           // Counter to track sequence length
+    logic [WIDTH_OUT_VAL-1:0] current_val;  // Register to hold the current value
+    logic [COUNTER_WIDTH-1:0] counter;        // Counter to track sequence length
 
   // ----------------------------------------
   // - Procedural block
@@ -45,11 +47,11 @@ module arithmetic_progression_generator #(
             done <= 2'b00;
         end else if (enable) begin
             if (SEQUENCE_LENGTH == 0) begin
+                // No sequence generation requested.
                 current_val <= '0;
                 counter <= '0;
                 done <= 2'b00;
-            end else
-            if (done == 2'b00) begin
+            end else if (!done[0]) begin
                 if (counter == 0) begin
                     current_val <= start_val; // Initialize with start value
                 end else begin

@@ -15,8 +15,8 @@ async def test_convolution_0(dut):
     # Retrieve the parameters from the DUT    
     NBW_IN = int(dut.NBW_IN.value)
 
-    max_data = (2 ** NBW_IN)/2 - 1
-    min_data = -((2 ** NBW_IN)/2 -1)
+    max_data = (2 ** NBW_IN)//2 - 1
+    min_data = -((2 ** NBW_IN)//2 -1)
 
     runs = 100
     

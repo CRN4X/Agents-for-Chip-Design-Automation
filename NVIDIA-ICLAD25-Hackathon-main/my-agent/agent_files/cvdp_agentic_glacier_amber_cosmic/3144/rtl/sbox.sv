@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module sbox (
     input  logic [7:0] i_data,
     output logic [7:0] o_data

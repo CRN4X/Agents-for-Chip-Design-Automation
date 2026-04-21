@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module async_fifo
     #(
         parameter p_data_width = 32,
@@ -19,8 +21,8 @@ module async_fifo
     wire [p_addr_width-1:0] w_rd_bin_addr;
     wire [p_addr_width:0]   w_wr_grey_addr;
     wire [p_addr_width:0]   w_rd_grey_addr;
-    wire [p_addr_width:0]   w_rd_ptr_sync;
     wire [p_addr_width:0]   w_wr_ptr_sync;
+    wire [p_addr_width:0]   w_rd_ptr_sync;
 
     read_to_write_pointer_sync #(
         .p_addr_width(p_addr_width)

@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module fifo_buffer #(
   parameter int unsigned NUM_OF_REQS = 2,
   parameter bit          ResetAll      = 1'b0
@@ -5,7 +7,7 @@ module fifo_buffer #(
   input  logic                clk_i,
   input  logic                rst_i,
 
-  input  logic [1:0]          clear_i,   
+  input  logic [1:0]          clear_i,
   output logic [NUM_OF_REQS-1:0] busy_o,
 
   input  logic [1:0]          in_valid_i,
@@ -14,7 +16,7 @@ module fifo_buffer #(
   input  logic [1:0]          in_err_i,
 
   output logic [1:0]          out_valid_o,
-  input  logic [0:0]          out_ready_i,
+  input  logic [1:0]          out_ready_i,
   output logic [31:0]         out_addr_o,
   output logic [31:0]         out_rdata_o,
   output logic [1:0]          out_err_o,
@@ -87,7 +89,7 @@ module fifo_buffer #(
     end
   end
 
-  assign instr_addr_en   = clear_i_b | (out_ready_i & out_valid_o[0]);
+  assign instr_addr_en   = clear_i_b | (out_ready_i[0] & out_valid_o[0]);
   assign addr_incr_two   = instr_addr_q[1] ? unaligned_is_compressed :
                                                aligned_is_compressed;
 
@@ -116,7 +118,7 @@ module fifo_buffer #(
   assign unused_addr_in = in_addr_i[0];
 
   assign busy_o = valid_q[FIFO_DEPTH-1:FIFO_DEPTH-NUM_OF_REQS];
-  assign pop_fifo = out_ready_i & out_valid_o[0] & (~aligned_is_compressed | out_addr_o[1]);
+  assign pop_fifo = out_ready_i[0] & out_valid_o[0] & (~aligned_is_compressed | out_addr_o[1]);
 
   for (genvar i = 0; i < (FIFO_DEPTH - 1); i++) begin : g_fifo_next
     if (i == 0) begin : g_ent0

@@ -1,143 +1,138 @@
-`timescale 1ns/1ps
+`timescale 1ns/1ns
 
 module axis_to_uart_tx #(
-    parameter integer CLK_FREQ      = 100,
-    parameter integer BIT_RATE      = 115200,
-    parameter integer BIT_PER_WORD  = 8,
-    parameter integer PARITY_BIT    = 1,
-    parameter integer STOP_BITS_NUM = 1
+    parameter int CLK_FREQ      = 100,    // MHz
+    parameter int BIT_RATE      = 115200, // bps
+    parameter int BIT_PER_WORD  = 8,
+    parameter int PARITY_BIT    = 0,      // 0:none, 1:odd, 2:even
+    parameter int STOP_BITS_NUM = 1       // 1 or 2
 ) (
-    input  logic                    aclk,
-    input  logic                    aresetn,
+    input  logic                   aclk,
+    input  logic                   aresetn,
     input  logic [BIT_PER_WORD-1:0] tdata,
-    input  logic                    tvalid,
-    output logic                    tready,
-    output logic                    TX
+    input  logic                   tvalid,
+    output logic                   tready,
+    output logic                   TX
 );
 
-    localparam integer CYCLES_PER_PERIOD = (CLK_FREQ * 1000000) / BIT_RATE;
-    localparam integer BAUD_CNT_W = (CYCLES_PER_PERIOD <= 1) ? 1 : $clog2(CYCLES_PER_PERIOD);
-    localparam integer BIT_CNT_W  = (BIT_PER_WORD <= 1) ? 1 : $clog2(BIT_PER_WORD);
+  localparam int CYCLE_PER_PERIOD = (CLK_FREQ * 1_000_000) / BIT_RATE;
+  localparam int CLKS_PER_BIT     = (CYCLE_PER_PERIOD < 1) ? 1 : CYCLE_PER_PERIOD;
+  localparam int CLKCNT_W         = (CLKS_PER_BIT <= 1) ? 1 : $clog2(CLKS_PER_BIT);
+  localparam int BITCNT_W         = (BIT_PER_WORD <= 1) ? 1 : $clog2(BIT_PER_WORD);
 
-    typedef enum logic [2:0] {
-        IDLE   = 3'd0,
-        START  = 3'd1,
-        DATA   = 3'd2,
-        PARITY = 3'd3,
-        STOP1  = 3'd4,
-        STOP2  = 3'd5
-    } state_t;
+  localparam logic [2:0] ST_IDLE   = 3'd0;
+  localparam logic [2:0] ST_START  = 3'd1;
+  localparam logic [2:0] ST_DATA   = 3'd2;
+  localparam logic [2:0] ST_PARITY = 3'd3;
+  localparam logic [2:0] ST_STOP1  = 3'd4;
+  localparam logic [2:0] ST_STOP2  = 3'd5;
 
-    state_t                       state;
-    logic [BAUD_CNT_W-1:0]       clk_count;
-    logic [BIT_CNT_W-1:0]        bit_count;
-    logic [BIT_PER_WORD-1:0]     data_shift;
-    logic                        parity_val;
-    logic                        clk_count_done;
+  logic [2:0] state, next_state;
+  logic [BIT_PER_WORD-1:0] data_reg;
+  logic [CLKCNT_W-1:0] clk_count;
+  logic [BITCNT_W-1:0] bit_count;
+  logic tx_reg;
+  logic parity_value;
+  logic clk_count_done;
+  logic bit_count_done;
 
-    assign tready = (state == IDLE);
-    assign clk_count_done = (clk_count == CYCLES_PER_PERIOD - 1);
+  assign tready = (state == ST_IDLE);
+  assign TX = tx_reg;
+  assign clk_count_done = (clk_count == (CLKS_PER_BIT - 1));
+  assign bit_count_done = (bit_count == (BIT_PER_WORD - 1));
 
-    function automatic logic calc_parity(input logic [BIT_PER_WORD-1:0] din);
-        logic p;
-        begin
-            p = ^din;
-            if (PARITY_BIT == 1) begin
-                calc_parity = ~p;
-            end else begin
-                calc_parity = p;
-            end
+  always_comb begin
+    unique case (PARITY_BIT)
+      1: parity_value = ~(^data_reg); // odd parity
+      2: parity_value =  (^data_reg); // even parity
+      default: parity_value = 1'b1;
+    endcase
+  end
+
+  always_comb begin
+    next_state = state;
+    unique case (state)
+      ST_IDLE: begin
+        if (tvalid) begin
+          next_state = ST_START;
         end
-    endfunction
-
-    always_ff @(posedge aclk or negedge aresetn) begin
-        if (!aresetn) begin
-            state      <= IDLE;
-            clk_count  <= '0;
-            bit_count  <= '0;
-            data_shift <= '0;
-            parity_val <= 1'b0;
-            TX         <= 1'b1;
-        end else begin
-            if (state == IDLE) begin
-                clk_count <= '0;
-            end else if (clk_count_done) begin
-                clk_count <= '0;
-            end else begin
-                clk_count <= clk_count + 1'b1;
-            end
-
-            case (state)
-                IDLE: begin
-                    TX <= 1'b1;
-                    bit_count <= '0;
-                    if (tvalid) begin
-                        data_shift <= tdata;
-                        parity_val <= calc_parity(tdata);
-                        state <= START;
-                        TX <= 1'b0;
-                    end
-                end
-
-                START: begin
-                    TX <= 1'b0;
-                    if (clk_count_done) begin
-                        state <= DATA;
-                        bit_count <= '0;
-                        TX <= data_shift[0];
-                    end
-                end
-
-                DATA: begin
-                    TX <= data_shift[0];
-                    if (clk_count_done) begin
-                        if (bit_count == BIT_PER_WORD - 1) begin
-                            if (PARITY_BIT == 0) begin
-                                state <= STOP1;
-                                TX <= 1'b1;
-                            end else begin
-                                state <= PARITY;
-                                TX <= parity_val;
-                            end
-                        end else begin
-                            bit_count <= bit_count + 1'b1;
-                            data_shift <= {1'b0, data_shift[BIT_PER_WORD-1:1]};
-                        end
-                    end
-                end
-
-                PARITY: begin
-                    TX <= parity_val;
-                    if (clk_count_done) begin
-                        state <= STOP1;
-                        TX <= 1'b1;
-                    end
-                end
-
-                STOP1: begin
-                    TX <= 1'b1;
-                    if (clk_count_done) begin
-                        if (STOP_BITS_NUM == 2) begin
-                            state <= STOP2;
-                        end else begin
-                            state <= IDLE;
-                        end
-                    end
-                end
-
-                STOP2: begin
-                    TX <= 1'b1;
-                    if (clk_count_done) begin
-                        state <= IDLE;
-                    end
-                end
-
-                default: begin
-                    state <= IDLE;
-                    TX <= 1'b1;
-                end
-            endcase
+      end
+      ST_START: begin
+        if (clk_count_done) begin
+          next_state = ST_DATA;
         end
+      end
+      ST_DATA: begin
+        if (clk_count_done && bit_count_done) begin
+          if (PARITY_BIT == 0) begin
+            next_state = ST_STOP1;
+          end else begin
+            next_state = ST_PARITY;
+          end
+        end
+      end
+      ST_PARITY: begin
+        if (clk_count_done) begin
+          next_state = ST_STOP1;
+        end
+      end
+      ST_STOP1: begin
+        if (clk_count_done) begin
+          if (STOP_BITS_NUM == 2) begin
+            next_state = ST_STOP2;
+          end else begin
+            next_state = ST_IDLE;
+          end
+        end
+      end
+      ST_STOP2: begin
+        if (clk_count_done) begin
+          next_state = ST_IDLE;
+        end
+      end
+      default: next_state = ST_IDLE;
+    endcase
+  end
+
+  always_ff @(posedge aclk or negedge aresetn) begin
+    if (!aresetn) begin
+      state      <= ST_IDLE;
+      data_reg   <= '0;
+      clk_count  <= '0;
+      bit_count  <= '0;
+      tx_reg     <= 1'b1;
+    end else begin
+      state <= next_state;
+
+      if (state == ST_IDLE) begin
+        clk_count <= '0;
+      end else if (clk_count_done) begin
+        clk_count <= '0;
+      end else begin
+        clk_count <= clk_count + 1'b1;
+      end
+
+      if ((state == ST_IDLE) && tvalid) begin
+        data_reg  <= tdata;
+        bit_count <= '0;
+      end else if ((state == ST_DATA) && clk_count_done) begin
+        if (!bit_count_done) begin
+          bit_count <= bit_count + 1'b1;
+        end
+      end else if (state != ST_DATA) begin
+        bit_count <= '0;
+      end
+
+      unique case (state)
+        ST_IDLE:   tx_reg <= 1'b1;
+        ST_START:  tx_reg <= 1'b0;
+        ST_DATA:   tx_reg <= data_reg[bit_count];
+        ST_PARITY: tx_reg <= parity_value;
+        ST_STOP1:  tx_reg <= 1'b1;
+        ST_STOP2:  tx_reg <= 1'b1;
+        default:   tx_reg <= 1'b1;
+      endcase
     end
+  end
 
 endmodule

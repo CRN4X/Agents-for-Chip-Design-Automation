@@ -1,3 +1,4 @@
+`timescale 1ns/1ns
 module aes_ke #(
     parameter NBW_KEY = 'd256,
     parameter NBW_OUT = 'd1920

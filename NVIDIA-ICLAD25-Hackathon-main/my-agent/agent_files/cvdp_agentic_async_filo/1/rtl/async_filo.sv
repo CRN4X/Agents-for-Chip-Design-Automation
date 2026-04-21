@@ -2,7 +2,7 @@
 
 module async_filo #(
     parameter integer DATA_WIDTH = 16,
-    parameter integer DEPTH = 8
+    parameter integer DEPTH      = 8
 ) (
     input  wire                  w_clk,
     input  wire                  w_rst,
@@ -11,91 +11,93 @@ module async_filo #(
     input  wire                  r_rst,
     input  wire                  pop,
     input  wire [DATA_WIDTH-1:0] w_data,
-    output logic [DATA_WIDTH-1:0] r_data,
-    output logic                 r_empty,
-    output logic                 w_full
+    output reg  [DATA_WIDTH-1:0] r_data,
+    output wire                  r_empty,
+    output wire                  w_full
 );
 
-    localparam integer COUNT_W = (DEPTH <= 1) ? 1 : $clog2(DEPTH + 1);
-    localparam integer ADDR_W  = (DEPTH <= 2) ? 1 : $clog2(DEPTH);
+    localparam integer ADDR_W = (DEPTH > 1) ? $clog2(DEPTH) : 1;
+    localparam integer PTR_W  = ADDR_W + 1;
 
-    logic [DATA_WIDTH-1:0] mem [0:DEPTH-1];
+    reg [DATA_WIDTH-1:0] mem [0:DEPTH-1];
 
-    logic [COUNT_W-1:0] w_count_bin;
-    logic [COUNT_W-1:0] r_count_bin;
-    logic [COUNT_W-1:0] w_ptr;
-    logic [COUNT_W-1:0] r_ptr;
+    reg [PTR_W-1:0] w_count_bin;
+    reg [PTR_W-1:0] w_ptr;
+    reg [PTR_W-1:0] r_count_bin;
+    reg [PTR_W-1:0] r_ptr;
 
-    logic [COUNT_W-1:0] wq1_rptr, wq2_rptr;
-    logic [COUNT_W-1:0] rq1_wptr, rq2_wptr;
+    reg [PTR_W-1:0] wq1_rptr, wq2_rptr;
+    reg [PTR_W-1:0] rq1_wptr, rq2_wptr;
 
-    logic [COUNT_W-1:0] w_count_sync;
-    logic [COUNT_W-1:0] r_count_sync;
-    logic [COUNT_W-1:0] r_base_count;
-
-    function automatic [COUNT_W-1:0] bin2gray(input [COUNT_W-1:0] bin);
-        bin2gray = (bin >> 1) ^ bin;
+    function [PTR_W-1:0] bin2gray;
+        input [PTR_W-1:0] bin;
+        begin
+            bin2gray = (bin >> 1) ^ bin;
+        end
     endfunction
 
-    function automatic [COUNT_W-1:0] gray2bin(input [COUNT_W-1:0] gray);
+    function [PTR_W-1:0] gray2bin;
+        input [PTR_W-1:0] gray;
         integer i;
         begin
-            gray2bin[COUNT_W-1] = gray[COUNT_W-1];
-            for (i = COUNT_W - 2; i >= 0; i = i - 1) begin
+            gray2bin[PTR_W-1] = gray[PTR_W-1];
+            for (i = PTR_W-2; i >= 0; i = i - 1) begin
                 gray2bin[i] = gray2bin[i+1] ^ gray[i];
             end
         end
     endfunction
 
-    always_comb begin
-        w_count_sync = gray2bin(wq2_rptr);
-        r_count_sync = gray2bin(rq2_wptr);
+    wire [PTR_W-1:0] r_count_sync_w = gray2bin(wq2_rptr);
+    wire [PTR_W-1:0] w_count_sync_r = gray2bin(rq2_wptr);
 
-        w_full  = ((w_count_bin - w_count_sync) >= DEPTH);
-        r_empty = (r_count_bin == r_count_sync);
+    wire [PTR_W-1:0] w_count_next = w_count_bin + 1'b1;
+    wire [PTR_W-1:0] r_count_next = r_count_bin - 1'b1;
 
-        r_base_count = (r_count_sync > r_count_bin) ? r_count_sync : r_count_bin;
-    end
+    wire do_push = push && !w_full;
+    wire do_pop  = pop && !r_empty;
 
-    always_ff @(posedge w_clk) begin
+    wire [ADDR_W-1:0] w_addr = w_count_bin[ADDR_W-1:0];
+    wire [ADDR_W-1:0] r_addr = r_count_next[ADDR_W-1:0];
+
+    assign w_full  = (w_count_bin - r_count_sync_w) == DEPTH;
+    assign r_empty = (r_count_bin == w_count_sync_r);
+
+    always @(posedge w_clk) begin
         if (w_rst) begin
-            w_count_bin <= '0;
-            w_ptr       <= '0;
-            wq1_rptr    <= '0;
-            wq2_rptr    <= '0;
+            w_count_bin <= {PTR_W{1'b0}};
+            w_ptr       <= {PTR_W{1'b0}};
+            wq1_rptr    <= {PTR_W{1'b0}};
+            wq2_rptr    <= {PTR_W{1'b0}};
         end else begin
             wq1_rptr <= r_ptr;
             wq2_rptr <= wq1_rptr;
 
-            if (push && !w_full) begin
-                mem[w_count_bin[ADDR_W-1:0]] <= w_data;
-                w_count_bin <= w_count_bin + 1'b1;
-                w_ptr       <= bin2gray(w_count_bin + 1'b1);
+            if (do_push) begin
+                mem[w_addr] <= w_data;
+                w_count_bin <= w_count_next;
+                w_ptr       <= bin2gray(w_count_next);
             end
         end
     end
 
-    always_ff @(posedge r_clk) begin
-        logic [COUNT_W-1:0] pop_count;
-
+    always @(posedge r_clk) begin
         if (r_rst) begin
-            r_count_bin <= '0;
-            r_ptr       <= '0;
-            rq1_wptr    <= '0;
-            rq2_wptr    <= '0;
-            r_data      <= '0;
+            r_count_bin <= {PTR_W{1'b0}};
+            r_ptr       <= {PTR_W{1'b0}};
+            rq1_wptr    <= {PTR_W{1'b0}};
+            rq2_wptr    <= {PTR_W{1'b0}};
+            r_data      <= {DATA_WIDTH{1'b0}};
         end else begin
             rq1_wptr <= w_ptr;
             rq2_wptr <= rq1_wptr;
 
-            if (pop && !r_empty) begin
-                pop_count = r_base_count - 1'b1;
-                r_count_bin <= pop_count;
-                r_ptr       <= bin2gray(pop_count);
-                r_data      <= mem[pop_count[ADDR_W-1:0]];
-            end else if (r_count_bin < r_count_sync) begin
-                r_count_bin <= r_count_sync;
-                r_ptr       <= bin2gray(r_count_sync);
+            if (w_count_sync_r > r_count_bin) begin
+                r_count_bin <= w_count_sync_r;
+                r_ptr       <= bin2gray(w_count_sync_r);
+            end else if (do_pop) begin
+                r_data      <= mem[r_addr];
+                r_count_bin <= r_count_next;
+                r_ptr       <= bin2gray(r_count_next);
             end
         end
     end

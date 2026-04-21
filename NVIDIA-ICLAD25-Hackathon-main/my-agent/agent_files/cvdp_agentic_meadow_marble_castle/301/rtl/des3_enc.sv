@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module des3_enc #(
     parameter NBW_DATA = 'd64,
     parameter NBW_KEY  = 'd192
@@ -11,84 +13,75 @@ module des3_enc #(
     output logic [1:NBW_DATA] o_data
 );
 
-localparam integer NBW_SUBKEY = NBW_KEY / 3;
-localparam integer STAGE_LAT  = 16;
+localparam DES_LATENCY = 'd16;
 
-logic [1:NBW_SUBKEY] k1;
-logic [1:NBW_SUBKEY] k2;
-logic [1:NBW_SUBKEY] k3;
+logic [1:NBW_DATA] data_stage1;
+logic [1:NBW_DATA] data_stage2;
+logic              valid_stage1;
+logic              valid_stage2;
+logic [1:64]       key2_ff [0:DES_LATENCY-1];
+logic [1:64]       key3_ff [0:(2*DES_LATENCY)-1];
 
-logic [1:NBW_SUBKEY] k2_pipe [0:STAGE_LAT-1];
-logic [1:NBW_SUBKEY] k3_pipe [0:(2*STAGE_LAT)-1];
-
-logic              s1_valid;
-logic [1:NBW_DATA] s1_data;
-logic              s2_valid;
-logic [1:NBW_DATA] s2_data;
-
-assign k1 = i_key[1 +: NBW_SUBKEY];
-assign k2 = i_key[NBW_SUBKEY + 1 +: NBW_SUBKEY];
-assign k3 = i_key[(2*NBW_SUBKEY) + 1 +: NBW_SUBKEY];
-
+integer idx;
 always_ff @(posedge clk or negedge rst_async_n) begin
-    integer idx;
     if (!rst_async_n) begin
-        for (idx = 0; idx < STAGE_LAT; idx = idx + 1) begin
-            k2_pipe[idx] <= '0;
+        for (idx = 0; idx < DES_LATENCY; idx = idx + 1) begin
+            key2_ff[idx] <= '0;
         end
-        for (idx = 0; idx < (2*STAGE_LAT); idx = idx + 1) begin
-            k3_pipe[idx] <= '0;
+        for (idx = 0; idx < (2*DES_LATENCY); idx = idx + 1) begin
+            key3_ff[idx] <= '0;
         end
     end else begin
-        k2_pipe[0] <= k2;
-        for (idx = 1; idx < STAGE_LAT; idx = idx + 1) begin
-            k2_pipe[idx] <= k2_pipe[idx-1];
+        key2_ff[0] <= i_key[65:128];
+        for (idx = 1; idx < DES_LATENCY; idx = idx + 1) begin
+            key2_ff[idx] <= key2_ff[idx-1];
         end
 
-        k3_pipe[0] <= k3;
-        for (idx = 1; idx < (2*STAGE_LAT); idx = idx + 1) begin
-            k3_pipe[idx] <= k3_pipe[idx-1];
+        key3_ff[0] <= i_key[129:192];
+        for (idx = 1; idx < (2*DES_LATENCY); idx = idx + 1) begin
+            key3_ff[idx] <= key3_ff[idx-1];
         end
     end
 end
 
+// 3DES EDE mode: Encrypt(K1) -> Decrypt(K2) -> Encrypt(K3)
 des_enc #(
     .NBW_DATA(NBW_DATA),
-    .NBW_KEY (NBW_SUBKEY)
-) u_des_enc_1 (
+    .NBW_KEY ('d64)
+) uu_des_enc_1 (
     .clk        (clk),
     .rst_async_n(rst_async_n),
     .i_valid    (i_valid),
     .i_data     (i_data),
-    .i_key      (k1),
-    .o_valid    (s1_valid),
-    .o_data     (s1_data)
+    .i_key      (i_key[1:64]),
+    .o_valid    (valid_stage1),
+    .o_data     (data_stage1)
 );
 
 des_dec #(
     .NBW_DATA(NBW_DATA),
-    .NBW_KEY (NBW_SUBKEY)
-) u_des_dec_2 (
+    .NBW_KEY ('d64)
+) uu_des_dec_1 (
     .clk        (clk),
     .rst_async_n(rst_async_n),
-    .i_valid    (s1_valid),
-    .i_data     (s1_data),
-    .i_key      (k2_pipe[STAGE_LAT-1]),
-    .o_valid    (s2_valid),
-    .o_data     (s2_data)
+    .i_valid    (valid_stage1),
+    .i_data     (data_stage1),
+    .i_key      (key2_ff[DES_LATENCY-1]),
+    .o_valid    (valid_stage2),
+    .o_data     (data_stage2)
 );
 
 des_enc #(
     .NBW_DATA(NBW_DATA),
-    .NBW_KEY (NBW_SUBKEY)
-) u_des_enc_3 (
+    .NBW_KEY ('d64)
+) uu_des_enc_2 (
     .clk        (clk),
     .rst_async_n(rst_async_n),
-    .i_valid    (s2_valid),
-    .i_data     (s2_data),
-    .i_key      (k3_pipe[(2*STAGE_LAT)-1]),
+    .i_valid    (valid_stage2),
+    .i_data     (data_stage2),
+    .i_key      (key3_ff[(2*DES_LATENCY)-1]),
     .o_valid    (o_valid),
     .o_data     (o_data)
 );
 
-endmodule
+endmodule : des3_enc

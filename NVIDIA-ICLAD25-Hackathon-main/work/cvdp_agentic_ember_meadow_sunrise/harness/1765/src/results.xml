@@ -1,0 +1,6 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1776705311" />
+    <testcase name="test_elevator_control_system" classname="elevator_control" file="/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_ember_meadow_sunrise/harness/1765/src/elevator_control.py" lineno="193" time="2.7687809467315674" sim_time_ns="300670.0" ratio_time="108592.91716628165" />
+  </testsuite>
+</testsuites>

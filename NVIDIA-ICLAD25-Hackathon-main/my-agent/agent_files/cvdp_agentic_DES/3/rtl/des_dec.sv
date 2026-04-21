@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module des_dec #(
     parameter NBW_DATA = 'd64,
     parameter NBW_KEY  = 'd64
@@ -62,6 +64,8 @@ assign D0 = {i_key[63], i_key[55], i_key[47], i_key[39], i_key[31], i_key[23], i
 generate
     for (genvar i = 1; i <= ROUNDS; i++) begin : rounds
         logic [1:EXPANDED_BLOCK] round_key;
+        logic [1:(USED_KEY/2)]    C_cur;
+        logic [1:(USED_KEY/2)]    D_cur;
         logic [1:(USED_KEY/2)]    C_nx;
         logic [1:(USED_KEY/2)]    D_nx;
         logic [1:USED_KEY]        perm_ch;
@@ -71,7 +75,9 @@ generate
         logic [1:4] Primitive_output [1:8];
         logic [1:(NBW_DATA/2)] perm_in;
 
-        assign perm_ch = {C_nx, D_nx};
+        assign C_cur = (i == 1) ? C0 : C_ff[i-1];
+        assign D_cur = (i == 1) ? D0 : D_ff[i-1];
+        assign perm_ch = {C_cur, D_cur};
         assign round_key = {perm_ch[14], perm_ch[17], perm_ch[11], perm_ch[24], perm_ch[ 1], perm_ch[ 5],
                             perm_ch[ 3], perm_ch[28], perm_ch[15], perm_ch[ 6], perm_ch[21], perm_ch[10],
                             perm_ch[23], perm_ch[19], perm_ch[12], perm_ch[ 4], perm_ch[26], perm_ch[ 8],
@@ -81,17 +87,12 @@ generate
                             perm_ch[44], perm_ch[49], perm_ch[39], perm_ch[56], perm_ch[34], perm_ch[53],
                             perm_ch[46], perm_ch[42], perm_ch[50], perm_ch[36], perm_ch[29], perm_ch[32]};
 
-        // Decryption uses subkeys in reverse order (K16 -> K1):
-        // stage 1 uses C0/D0 directly (K16), then right-rotate by 1 at stages 2/9/16 and by 2 otherwise.
-        if(i == 1) begin
-            assign C_nx = C0;
-            assign D_nx = D0;
-        end else if(i == 2 || i == 9 || i == 16) begin
-            assign C_nx = {C_ff[i-1][(USED_KEY/2)], C_ff[i-1][1:(USED_KEY/2)-1]};
-            assign D_nx = {D_ff[i-1][(USED_KEY/2)], D_ff[i-1][1:(USED_KEY/2)-1]};
+        if(i == 1 || i == 8 || i == 15 || i == 16) begin
+            assign C_nx = {C_cur[(USED_KEY/2)], C_cur[1:(USED_KEY/2)-1]};
+            assign D_nx = {D_cur[(USED_KEY/2)], D_cur[1:(USED_KEY/2)-1]};
         end else begin
-            assign C_nx = {C_ff[i-1][(USED_KEY/2)-1:(USED_KEY/2)], C_ff[i-1][1:(USED_KEY/2)-2]};
-            assign D_nx = {D_ff[i-1][(USED_KEY/2)-1:(USED_KEY/2)], D_ff[i-1][1:(USED_KEY/2)-2]};
+            assign C_nx = {C_cur[(USED_KEY/2)-1:(USED_KEY/2)], C_cur[1:(USED_KEY/2)-2]};
+            assign D_nx = {D_cur[(USED_KEY/2)-1:(USED_KEY/2)], D_cur[1:(USED_KEY/2)-2]};
         end
 
         assign Primitive_input[1] = R_expanded[ 1:6 ] ^ round_key[ 1:6 ];

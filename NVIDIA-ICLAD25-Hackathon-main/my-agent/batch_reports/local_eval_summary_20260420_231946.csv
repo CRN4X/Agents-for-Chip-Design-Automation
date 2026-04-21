@@ -1,0 +1,2 @@
+problem,issue_id,harness_path,exit_code,status,duration_sec,first_error
+cvdp_agentic_phase_rotation,13,NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_phase_rotation/harness/13,1,FAIL,92,":0: error: parameter `NBW_OUT` not found in `slicer_top`."

@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module des3_dec #(
     parameter NBW_DATA = 'd64,
     parameter NBW_KEY  = 'd192
@@ -11,71 +13,88 @@ module des3_dec #(
     output logic [1:NBW_DATA] o_data
 );
 
-logic              busy_ff;
-logic [47:0]       valid_shift_ff;
-logic              accept_start;
-logic              stage1_valid;
-logic              stage2_valid;
-logic              stage3_valid;
+localparam STAGE_LATENCY = 'd16;
+localparam TOTAL_LATENCY = 'd48;
+
+logic busy;
+logic [5:0] cycle_cnt;
+
+logic [1:NBW_KEY]  key_latched;
+
+logic stage1_start;
+logic stage2_start;
+logic stage3_start;
+
 logic [1:NBW_DATA] stage1_data;
 logic [1:NBW_DATA] stage2_data;
 logic [1:NBW_DATA] stage3_data;
-logic [1:NBW_KEY]  start_key_ff;
 
-assign accept_start = i_start & ~busy_ff;
-assign stage1_valid = valid_shift_ff[15];
-assign stage2_valid = valid_shift_ff[31];
-assign stage3_valid = valid_shift_ff[46];
-assign o_data       = stage3_data;
+assign stage1_start = (!busy) && i_start;
+assign stage2_start = busy && (cycle_cnt == (STAGE_LATENCY - 1));
+assign stage3_start = busy && (cycle_cnt == ((2 * STAGE_LATENCY) - 1));
 
-// 3DES DED mode: decrypt with K3, encrypt with K2, decrypt with K1.
-des_dec u_des_dec_k3 (
+always_ff @(posedge clk or negedge rst_async_n) begin
+    if (!rst_async_n) begin
+        busy        <= 1'b0;
+        cycle_cnt   <= '0;
+        key_latched  <= '0;
+        o_done      <= 1'b1;
+    end else begin
+        if (!busy) begin
+            if (i_start) begin
+                busy         <= 1'b1;
+                cycle_cnt    <= '0;
+                key_latched  <= i_key;
+                o_done       <= 1'b0;
+            end
+        end else begin
+            if (cycle_cnt == (TOTAL_LATENCY - 2)) begin
+                busy      <= 1'b0;
+                cycle_cnt <= '0;
+                o_done    <= 1'b1;
+            end else begin
+                cycle_cnt <= cycle_cnt + 1'b1;
+            end
+        end
+    end
+end
+
+des_dec #(
+    .NBW_DATA(NBW_DATA),
+    .NBW_KEY ('d64)
+) uu_des_dec_k3 (
     .clk        (clk),
     .rst_async_n(rst_async_n),
-    .i_start    (accept_start),
+    .i_start    (stage1_start),
     .i_data     (i_data),
     .i_key      (i_key[129:192]),
     .o_data     (stage1_data)
 );
 
-des_enc u_des_enc_k2 (
+des_enc #(
+    .NBW_DATA(NBW_DATA),
+    .NBW_KEY ('d64)
+) uu_des_enc_k2 (
     .clk        (clk),
     .rst_async_n(rst_async_n),
-    .i_start    (stage1_valid),
+    .i_start    (stage2_start),
     .i_data     (stage1_data),
-    .i_key      (start_key_ff[65:128]),
+    .i_key      (key_latched[65:128]),
     .o_data     (stage2_data)
 );
 
-des_dec u_des_dec_k1 (
+des_dec #(
+    .NBW_DATA(NBW_DATA),
+    .NBW_KEY ('d64)
+) uu_des_dec_k1 (
     .clk        (clk),
     .rst_async_n(rst_async_n),
-    .i_start    (stage2_valid),
+    .i_start    (stage3_start),
     .i_data     (stage2_data),
-    .i_key      (start_key_ff[1:64]),
+    .i_key      (key_latched[1:64]),
     .o_data     (stage3_data)
 );
 
-always_ff @(posedge clk or negedge rst_async_n) begin
-    if (!rst_async_n) begin
-        busy_ff        <= 1'b0;
-        valid_shift_ff <= '0;
-        start_key_ff   <= '0;
-        o_done         <= 1'b1;
-    end else begin
-        valid_shift_ff <= {valid_shift_ff[46:0], accept_start};
-
-        if (accept_start) begin
-            busy_ff      <= 1'b1;
-            o_done       <= 1'b0;
-            start_key_ff <= i_key;
-        end
-
-        if (stage3_valid) begin
-            busy_ff <= 1'b0;
-            o_done  <= 1'b1;
-        end
-    end
-end
+assign o_data = stage3_data;
 
 endmodule : des3_dec

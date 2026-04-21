@@ -1,4 +1,6 @@
-module thermostat_secure_top #(
+`timescale 1ns/1ns
+
+module thermostat_secure_top  #(
     parameter p_address_width = 8,
     parameter p_data_width = 8,
     parameter p_unlock_code_0 = 8'hAB,
@@ -25,18 +27,18 @@ module thermostat_secure_top #(
     output reg [2:0] o_state
 );
 
-wire secure_enable_capclk;
-reg secure_sync_ff1;
-reg secure_sync_ff2;
+wire secure_enable_capture;
+reg secure_enable_sync_ff1;
+reg secure_enable_sync_ff2;
 
-wire heater_full_w;
-wire heater_medium_w;
-wire heater_low_w;
-wire aircon_full_w;
-wire aircon_medium_w;
-wire aircon_low_w;
-wire fan_w;
-wire [2:0] state_w;
+wire th_heater_full;
+wire th_heater_medium;
+wire th_heater_low;
+wire th_aircon_full;
+wire th_aircon_medium;
+wire th_aircon_low;
+wire th_fan;
+wire [2:0] th_state;
 
 security_module #(
     .p_address_width(p_address_width),
@@ -49,46 +51,46 @@ security_module #(
     .i_addr(i_addr),
     .i_data_in(i_data_in),
     .i_read_write_enable(i_read_write_enable),
-    .o_secure_enable(secure_enable_capclk)
+    .o_secure_enable(secure_enable_capture)
 );
 
 always @(posedge i_clk or negedge i_rst) begin
     if (!i_rst) begin
-        secure_sync_ff1 <= 1'b0;
-        secure_sync_ff2 <= 1'b0;
+        secure_enable_sync_ff1 <= 1'b0;
+        secure_enable_sync_ff2 <= 1'b0;
     end else begin
-        secure_sync_ff1 <= secure_enable_capclk;
-        secure_sync_ff2 <= secure_sync_ff1;
+        secure_enable_sync_ff1 <= secure_enable_capture;
+        secure_enable_sync_ff2 <= secure_enable_sync_ff1;
     end
 end
 
 thermostat u_thermostat (
     .i_temp_feedback(i_temp_feedback),
     .i_fan_on(i_fan_on),
-    .i_enable(secure_sync_ff2),
+    .i_enable(secure_enable_sync_ff2),
     .i_fault(i_fault),
     .i_clr(i_clr),
     .i_clk(i_clk),
     .i_rst(i_rst),
-    .o_heater_full(heater_full_w),
-    .o_heater_medium(heater_medium_w),
-    .o_heater_low(heater_low_w),
-    .o_aircon_full(aircon_full_w),
-    .o_aircon_medium(aircon_medium_w),
-    .o_aircon_low(aircon_low_w),
-    .o_fan(fan_w),
-    .o_state(state_w)
+    .o_heater_full(th_heater_full),
+    .o_heater_medium(th_heater_medium),
+    .o_heater_low(th_heater_low),
+    .o_aircon_full(th_aircon_full),
+    .o_aircon_medium(th_aircon_medium),
+    .o_aircon_low(th_aircon_low),
+    .o_fan(th_fan),
+    .o_state(th_state)
 );
 
 always @(*) begin
-    o_heater_full = heater_full_w;
-    o_heater_medium = heater_medium_w;
-    o_heater_low = heater_low_w;
-    o_aircon_full = aircon_full_w;
-    o_aircon_medium = aircon_medium_w;
-    o_aircon_low = aircon_low_w;
-    o_fan = fan_w;
-    o_state = state_w;
+    o_heater_full = th_heater_full;
+    o_heater_medium = th_heater_medium;
+    o_heater_low = th_heater_low;
+    o_aircon_full = th_aircon_full;
+    o_aircon_medium = th_aircon_medium;
+    o_aircon_low = th_aircon_low;
+    o_fan = th_fan;
+    o_state = th_state;
 end
 
 endmodule

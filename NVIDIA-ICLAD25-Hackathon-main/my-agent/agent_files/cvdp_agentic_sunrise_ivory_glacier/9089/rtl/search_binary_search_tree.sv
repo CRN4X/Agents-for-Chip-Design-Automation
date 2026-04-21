@@ -1,330 +1,280 @@
+`timescale 1ns/1ps
+
 module delete_node_binary_search_tree #(
-    parameter DATA_WIDTH = 16,         // Width of the data (of a single element)
-    parameter ARRAY_SIZE = 5          // Maximum number of elements in the BST
+    parameter DATA_WIDTH = 16,
+    parameter ARRAY_SIZE = 5
 ) (
-
-    input clk,                                  // Clock signal
-    input reset,                                // Reset signal
-    input reg start,                            // Start signal to initiate the search
-    input reg [DATA_WIDTH-1:0] delete_key,      // Key to delete in the BST
-    input reg [$clog2(ARRAY_SIZE):0] root,      // Root node of the BST
-    input reg [ARRAY_SIZE*DATA_WIDTH-1:0] keys, // Node keys in the BST
-    input reg [ARRAY_SIZE*($clog2(ARRAY_SIZE)+1)-1:0] left_child,           // Left child pointers
-    input reg [ARRAY_SIZE*($clog2(ARRAY_SIZE)+1)-1:0] right_child,           // Right child pointers
-    output reg [ARRAY_SIZE*DATA_WIDTH-1:0] modified_keys,                    // Node keys in the BST
-    output reg [ARRAY_SIZE*($clog2(ARRAY_SIZE)+1)-1:0] modified_left_child,  // Left child pointers
-    output reg [ARRAY_SIZE*($clog2(ARRAY_SIZE)+1)-1:0] modified_right_child, // Right child pointers
-    output reg [$clog2(ARRAY_SIZE):0] key_position,                          // Position of key in sorted order
-    output reg complete_deletion,         // Signal indicating search completion
-    output reg delete_invalid            // Signal indicating invalid search
+    input  logic clk,
+    input  logic reset,
+    input  logic start,
+    input  logic [DATA_WIDTH-1:0] delete_key,
+    input  logic [$clog2(ARRAY_SIZE):0] root,
+    input  logic [ARRAY_SIZE*DATA_WIDTH-1:0] keys,
+    input  logic [ARRAY_SIZE*($clog2(ARRAY_SIZE)+1)-1:0] left_child,
+    input  logic [ARRAY_SIZE*($clog2(ARRAY_SIZE)+1)-1:0] right_child,
+    output logic [$clog2(ARRAY_SIZE):0] key_position,
+    output logic complete_deletion,
+    output logic delete_invalid,
+    output logic [ARRAY_SIZE*DATA_WIDTH-1:0] modified_keys,
+    output logic [ARRAY_SIZE*($clog2(ARRAY_SIZE)+1)-1:0] modified_left_child,
+    output logic [ARRAY_SIZE*($clog2(ARRAY_SIZE)+1)-1:0] modified_right_child
 );
-                                                                                                                                       
-    // Parameters for FSM states
-    parameter S_IDLE = 3'b000,                   // Idle state
-              S_INIT = 3'b001,                   // Initialization state
-              S_SEARCH_LEFT = 3'b010,            // Search in left subtree
-              S_SEARCH_RIGHT = 3'b011,           // Search in both left and right subtrees
-              S_DELETE = 3'b100,                 // Delete a node
-              S_DELETE_COMPLETE = 3'b101,        // Complete deletion
-              S_FIND_INORDER_SUCCESSOR = 3'b110, // State to find inorder successor
-              S_FINISH = 3'b111;                 // One-cycle finish stage
 
-   
-    // Registers to store the current FSM state
-    reg [2:0] delete_state;
+    localparam int PTR_W = $clog2(ARRAY_SIZE) + 1;
 
-    // Variables to manage traversal
-    reg found;                                 // Indicates if the key is found
+    logic [DATA_WIDTH-1:0] in_keys [0:ARRAY_SIZE-1];
+    logic [PTR_W-1:0] in_left [0:ARRAY_SIZE-1];
+    logic [PTR_W-1:0] in_right [0:ARRAY_SIZE-1];
 
-    // Stacks for managing traversal of left and right subtrees
-    reg [ARRAY_SIZE*($clog2(ARRAY_SIZE)+1)-1:0] left_stack;  // Stack for left subtree traversal
-    reg [ARRAY_SIZE*($clog2(ARRAY_SIZE)+1)-1:0] right_stack; // Stack for right subtree traversal
-    reg [$clog2(ARRAY_SIZE)-1:0] sp_left;         // Stack pointer for left subtree
-    reg [$clog2(ARRAY_SIZE)-1:0] sp_right;        // Stack pointer for right subtree
+    logic [DATA_WIDTH-1:0] work_keys [0:ARRAY_SIZE-1];
+    logic [PTR_W-1:0] work_left [0:ARRAY_SIZE-1];
+    logic [PTR_W-1:0] work_right [0:ARRAY_SIZE-1];
 
-    // Pointers for the current nodes in left and right subtrees
-    reg [$clog2(ARRAY_SIZE):0] current_left_node;  // Current node in the left subtree
-    reg [$clog2(ARRAY_SIZE):0] current_right_node; // Current node in the right subtree
-    reg [$clog2(ARRAY_SIZE):0] current_node;       // Current node
+    logic [DATA_WIDTH-1:0] INVALID_KEY;
+    logic [PTR_W-1:0] INVALID_PTR;
 
-    // Integer for loop iterations
-    integer i, j;
-    integer pos_count;
-    reg [$clog2(ARRAY_SIZE):0] null_node;
-    reg largest_delete;
-    integer finish_delay;
+    logic [ARRAY_SIZE*DATA_WIDTH-1:0] pending_mod_keys;
+    logic [ARRAY_SIZE*PTR_W-1:0] pending_mod_left;
+    logic [ARRAY_SIZE*PTR_W-1:0] pending_mod_right;
+    logic [$clog2(ARRAY_SIZE):0] pending_position;
+    logic pending_found;
 
-    // Registers for inorder successor search
-    reg [$clog2(ARRAY_SIZE):0] min_node;       // Inorder successor node
+    logic busy;
+    logic clear_next;
+    integer wait_cycles;
 
-    // The INVALID pointer value used in comparisons.
-    localparam [($clog2(ARRAY_SIZE)+1)-1:0] INVALID = {($clog2(ARRAY_SIZE)+1){1'b1}};
-    localparam [DATA_WIDTH-1:0] INVALID_KEY = {DATA_WIDTH{1'b1}};
+    integer i;
+    integer j;
+    integer parent_idx;
+    integer node_idx;
+    integer left_idx;
+    integer right_idx;
+    integer new_idx;
+    integer current;
+    integer successor_idx;
+    integer succ_parent;
+    integer min_key;
+    integer max_key;
 
-     // FSM for inorder successor search
-    reg inorder_search_active;                 // Flag to activate inorder successor search
+    task automatic set_invalid_outputs;
+        integer k;
+        begin
+            key_position <= INVALID_PTR;
+            complete_deletion <= 1'b0;
+            delete_invalid <= 1'b0;
+            for (k = 0; k < ARRAY_SIZE; k = k + 1) begin
+                modified_keys[k*DATA_WIDTH +: DATA_WIDTH] <= INVALID_KEY;
+                modified_left_child[k*PTR_W +: PTR_W] <= INVALID_PTR;
+                modified_right_child[k*PTR_W +: PTR_W] <= INVALID_PTR;
+            end
+        end
+    endtask
 
-    // Always block triggered on the rising edge of the clock or reset signal
-    always @(posedge clk or posedge reset) begin
-         reg [$clog2(ARRAY_SIZE):0] lchild, rchild;
-         reg [DATA_WIDTH-1:0] max_key_tmp;
+    always_ff @(posedge clk or posedge reset) begin
         if (reset) begin
-            // Reset all states and variables
-            delete_state <= S_IDLE;  // Set state to IDLE
-            found <= 0;              // Reset found flag
-            complete_deletion <= 0;     // Reset complete_deletion signal
-            key_position <= INVALID;
-            sp_left <= 0;            // Reset left stack pointer
-            sp_right <= 0;           // Reset right stack pointer
-            delete_invalid <= 0;     // Set invalid_key to 0
-            inorder_search_active <= 0;
-            largest_delete <= 0;
-            finish_delay <= 0;
-            // Clear the stacks
-            for (i = 0; i < ARRAY_SIZE; i = i + 1) begin
-                left_stack[i*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= {($clog2(ARRAY_SIZE)+1){1'b1}};
-                right_stack[i*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= {($clog2(ARRAY_SIZE)+1){1'b1}};
-                modified_left_child[i*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= {($clog2(ARRAY_SIZE)+1){1'b1}};
-                modified_right_child[i*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= {($clog2(ARRAY_SIZE)+1){1'b1}};
-                modified_keys[i*DATA_WIDTH +: DATA_WIDTH] <= INVALID_KEY;
+            INVALID_KEY <= {DATA_WIDTH{1'b1}};
+            INVALID_PTR <= {PTR_W{1'b1}};
+            busy <= 1'b0;
+            clear_next <= 1'b0;
+            wait_cycles <= 0;
+            pending_found <= 1'b0;
+            pending_position <= {PTR_W{1'b1}};
+            pending_mod_keys <= '0;
+            pending_mod_left <= '0;
+            pending_mod_right <= '0;
+            set_invalid_outputs();
+        end else begin
+            INVALID_KEY <= {DATA_WIDTH{1'b1}};
+            INVALID_PTR <= {PTR_W{1'b1}};
+
+            complete_deletion <= 1'b0;
+            delete_invalid <= 1'b0;
+
+            if (clear_next) begin
+                clear_next <= 1'b0;
+                set_invalid_outputs();
             end
 
-        end else begin
-            // Main FSM logic
-            case (delete_state)
-                S_IDLE: begin
-                    // Reset intermediate variables
-                     for (i = 0; i < ARRAY_SIZE; i = i + 1) begin
-                        left_stack[i*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= {($clog2(ARRAY_SIZE)+1){1'b1}};
-                        right_stack[i*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= {($clog2(ARRAY_SIZE)+1){1'b1}};
-                        modified_left_child[i*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= {($clog2(ARRAY_SIZE)+1){1'b1}};
-                        modified_right_child[i*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= {($clog2(ARRAY_SIZE)+1){1'b1}};
-                        modified_keys[i*DATA_WIDTH +: DATA_WIDTH] <= INVALID_KEY;
-                    end
-                    complete_deletion <= 0;
-                    delete_invalid <= 0;
-                    key_position <= INVALID;
-                    inorder_search_active <= 0;
-                    largest_delete <= 0;
-                    finish_delay <= 0;
-                    if (start) begin
-                        // Start the search
-                        sp_left <= 0;
-                        sp_right <= 0;
-                        found <= 0;
-                        delete_state <= S_INIT; // Move to INIT state
-                    end
+            if (!busy && start) begin
+                for (i = 0; i < ARRAY_SIZE; i = i + 1) begin
+                    in_keys[i] = keys[i*DATA_WIDTH +: DATA_WIDTH];
+                    in_left[i] = left_child[i*PTR_W +: PTR_W];
+                    in_right[i] = right_child[i*PTR_W +: PTR_W];
+                    work_keys[i] = keys[i*DATA_WIDTH +: DATA_WIDTH];
+                    work_left[i] = left_child[i*PTR_W +: PTR_W];
+                    work_right[i] = right_child[i*PTR_W +: PTR_W];
                 end
 
-                S_INIT: begin
-                    if (root != {($clog2(ARRAY_SIZE)+1){1'b1}}) begin
-                        // Compare the delete key with the root key
-                        if (delete_key == keys[root*DATA_WIDTH +: DATA_WIDTH]) begin
-                            found <= 1;
-                            current_node <= 0;
-                            delete_state <= S_DELETE; // Move to complete search state
-                        end else if (keys[0*DATA_WIDTH +: DATA_WIDTH] > delete_key) begin // Else if the first key in the keys array is greater than the delete key
-                            delete_state <= S_SEARCH_LEFT;
-                            current_left_node <= left_child[root*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)];    // Set current left node pointer from the root's left child
-                        end else begin
-                            current_left_node <= left_child[root*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)];    // Set current left node pointer from the root's left child
-                            current_right_node <= right_child[root*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)];  // Set current right node pointer from the root's right child
-                            delete_state <= S_SEARCH_RIGHT; // Search in both left and right subtrees
+                pending_found <= 1'b0;
+                pending_position <= INVALID_PTR;
+
+                if (root == INVALID_PTR) begin
+                    for (i = 0; i < ARRAY_SIZE; i = i + 1) begin
+                        pending_mod_keys[i*DATA_WIDTH +: DATA_WIDTH] <= INVALID_KEY;
+                        pending_mod_left[i*PTR_W +: PTR_W] <= INVALID_PTR;
+                        pending_mod_right[i*PTR_W +: PTR_W] <= INVALID_PTR;
+                    end
+                    wait_cycles <= 1;
+                end else begin
+                    parent_idx = -1;
+                    node_idx = root;
+                    while ((node_idx != INVALID_PTR) && (node_idx >= 0) && (node_idx < ARRAY_SIZE)) begin
+                        if (work_keys[node_idx] == delete_key) begin
+                            break;
                         end
+                        parent_idx = node_idx;
+                        if (delete_key < work_keys[node_idx]) begin
+                            node_idx = work_left[node_idx];
+                        end else begin
+                            node_idx = work_right[node_idx];
+                        end
+                    end
+
+                    if ((node_idx == INVALID_PTR) || (node_idx < 0) || (node_idx >= ARRAY_SIZE) || (work_keys[node_idx] != delete_key)) begin
+                        for (i = 0; i < ARRAY_SIZE; i = i + 1) begin
+                            pending_mod_keys[i*DATA_WIDTH +: DATA_WIDTH] <= INVALID_KEY;
+                            pending_mod_left[i*PTR_W +: PTR_W] <= INVALID_PTR;
+                            pending_mod_right[i*PTR_W +: PTR_W] <= INVALID_PTR;
+                        end
+                        wait_cycles <= 1;
                     end else begin
-                        delete_invalid <= 1;
-                        key_position <= INVALID;
-                        complete_deletion <= 0;
-                        delete_state <= S_IDLE;
-                    end
-                end
+                        pending_found <= 1'b1;
 
-                S_SEARCH_LEFT: begin
-                    // Traverse the left subtree
-                    if (current_left_node != {($clog2(ARRAY_SIZE)+1){1'b1}}) begin                // If left traversal is not finished and the current left node is valid
-                        left_stack[sp_left*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= current_left_node;  // Push the current left node index onto the left stack
-                        sp_left <= sp_left + 1;
-                        current_left_node <= left_child[current_left_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)];  // Move to the left child of the current node
-                        if (delete_key == keys[current_left_node*DATA_WIDTH +: DATA_WIDTH]) begin    // If the key at the retrieved node matches the search key
-                            found <= 1;
-                            current_node <= current_left_node;  
-                            delete_state <= S_DELETE; // Move to complete search state
+                        j = 0;
+                        for (i = 0; i < ARRAY_SIZE; i = i + 1) begin
+                            if ((in_keys[i] != INVALID_KEY) && (in_keys[i] < delete_key)) begin
+                                j = j + 1;
+                            end
                         end
-                    end else if (sp_left > 0) begin
-                        sp_left <= sp_left - 1;
-                        current_left_node <= right_child[left_stack[(sp_left - 1)*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)]*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)];   // Move to the right child of the popped node for further traversal
-                    end else begin
-                        if (found == 1) begin
-                            delete_state <= S_DELETE; // Move to complete search state
+                        pending_position <= j[$clog2(ARRAY_SIZE):0];
+
+                        left_idx = work_left[node_idx];
+                        right_idx = work_right[node_idx];
+
+                        if ((left_idx != INVALID_PTR) && (right_idx == INVALID_PTR)) begin
+                            work_keys[node_idx] = work_keys[left_idx];
+                            work_left[node_idx] = work_left[left_idx];
+                            work_right[node_idx] = work_right[left_idx];
+
+                            work_keys[left_idx] = INVALID_KEY;
+                            work_left[left_idx] = INVALID_PTR;
+                            work_right[left_idx] = INVALID_PTR;
+                        end else if ((left_idx == INVALID_PTR) && (right_idx != INVALID_PTR)) begin
+                            work_keys[node_idx] = work_keys[right_idx];
+                            work_left[node_idx] = work_left[right_idx];
+                            work_right[node_idx] = work_right[right_idx];
+
+                            work_keys[right_idx] = INVALID_KEY;
+                            work_left[right_idx] = INVALID_PTR;
+                            work_right[right_idx] = INVALID_PTR;
+                        end else if ((left_idx == INVALID_PTR) && (right_idx == INVALID_PTR)) begin
+                            new_idx = INVALID_PTR;
+                            if (parent_idx >= 0) begin
+                                if (work_left[parent_idx] == node_idx) begin
+                                    work_left[parent_idx] = new_idx;
+                                end else if (work_right[parent_idx] == node_idx) begin
+                                    work_right[parent_idx] = new_idx;
+                                end
+                            end
+                            work_keys[node_idx] = INVALID_KEY;
+                            work_left[node_idx] = INVALID_PTR;
+                            work_right[node_idx] = INVALID_PTR;
                         end else begin
-                            delete_invalid <= 1;
-                            key_position <= INVALID;
-                            complete_deletion <= 0;
-                            delete_state <= S_IDLE;
-                        end
-                    end
-                end
+                            current = right_idx;
+                            while (work_left[current] != INVALID_PTR) begin
+                                current = work_left[current];
+                            end
+                            successor_idx = current;
+                            work_keys[node_idx] = work_keys[successor_idx];
 
-                S_SEARCH_RIGHT: begin
-                    if (current_right_node != {($clog2(ARRAY_SIZE)+1){1'b1}}) begin
-                        right_stack[sp_right*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= current_right_node;
-                        sp_right <= sp_right + 1;
-                        current_right_node <= left_child[current_right_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)]; // Move to left child of the current right node
-                        if (delete_key == keys[current_right_node*DATA_WIDTH +: DATA_WIDTH]) begin
-                            current_node <= current_right_node;
-                            found <= 1;
-                            delete_state <= S_DELETE;  
-                        end
-                    end else if (sp_right > 0) begin
-                        sp_right <= sp_right - 1;
-                        current_right_node <= right_child[right_stack[(sp_right - 1)*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)]*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)]; // Move to right child of the popped node
-                    end else begin
-                        if (found == 1) begin
-                            delete_state <= S_DELETE; // Move to complete search state
-                        end else begin
-                            delete_invalid <= 1;
-                            key_position <= INVALID;
-                            complete_deletion <= 0;
-                            delete_state <= S_IDLE;
-                        end
-                    end
-                end
-
-                S_DELETE: begin
-                    // First, load the left and right child indices of the node.
-                    modified_keys <= keys;     //if not copied here then will give buggy output with only valid values with the moddified tree without the original tree values
-                    modified_left_child <= left_child;
-                    modified_right_child <= right_child;
-
-                    rchild = right_child[current_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)];
-                    lchild = left_child[current_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)];
-
-                    if (left_child[current_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] == INVALID
-                                    && right_child[current_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] != INVALID) begin
-                        // Node has only right child
-                        // Replace the current node's key and pointers with those of its right child.
-                        modified_keys[current_node*DATA_WIDTH +: DATA_WIDTH] <= keys[rchild*DATA_WIDTH +: DATA_WIDTH];
-                        modified_left_child[current_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= left_child[rchild*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)];
-                        modified_right_child[current_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= right_child[rchild*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)];
-                        null_node <= rchild;
-                        delete_state <= S_DELETE_COMPLETE;
-                    end
-                    else if (right_child[current_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] == INVALID
-                                && left_child[current_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] != INVALID) begin
-                        // Node has only left child.
-                        modified_keys[current_node*DATA_WIDTH +: DATA_WIDTH] <= keys[lchild*DATA_WIDTH +: DATA_WIDTH];
-                        modified_left_child[current_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= left_child[lchild*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)];
-                        modified_right_child[current_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= right_child[lchild*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)];
-                        null_node <= lchild;
-                        delete_state <= S_DELETE_COMPLETE;
-                    end
-                    else if (right_child[current_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] == INVALID    //Will give bug 'x' is both condition set to != INVAALID
-                                && left_child[current_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] == INVALID) begin
-                        // Node has no right or left child
-                        null_node <= current_node;
-                        delete_state <= S_DELETE_COMPLETE;
-                    end
-                    else begin
-                        // Node has two children.
-                        // Start finding the inorder successor.
-                        min_node <= rchild;
-                        inorder_search_active <= 1;
-                        delete_state <= S_FIND_INORDER_SUCCESSOR;
-                        
-                    end
-                end
-
-                S_FIND_INORDER_SUCCESSOR: begin
-                    if (inorder_search_active) begin
-                        if (left_child[min_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] != INVALID) begin
-                            min_node <= left_child[min_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)]; // Move to the left child
-                        end else begin
-                            // Copy the inorder successor's key into the current node.
-                            modified_keys[current_node*DATA_WIDTH +: DATA_WIDTH] <= keys[min_node*DATA_WIDTH +: DATA_WIDTH];
-
-                            // Delete the inorder successor by replacing it with its right child.
-                            if (right_child[min_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)]!= INVALID) begin
-                                modified_keys[min_node*DATA_WIDTH +: DATA_WIDTH] <= keys[right_child[min_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)]*DATA_WIDTH +: DATA_WIDTH];
-                                modified_right_child[min_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= right_child[right_child[min_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)]*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)];
-                                modified_left_child[min_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= left_child[right_child[min_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)]*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)];
-                                null_node <= right_child[min_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)];
+                            if ((successor_idx == right_idx) && (work_left[successor_idx] == INVALID_PTR)) begin
+                                succ_parent = node_idx;
                             end else begin
-                                null_node <= min_node;
+                                current = right_idx;
+                                succ_parent = node_idx;
+                                while (current != successor_idx) begin
+                                    succ_parent = current;
+                                    if (work_keys[successor_idx] < work_keys[current]) begin
+                                        current = work_left[current];
+                                    end else begin
+                                        current = work_right[current];
+                                    end
+                                end
                             end
 
-                            delete_state <= S_DELETE_COMPLETE;
-                            inorder_search_active <= 0;
-                        end
-                    end
+                            if ((work_left[successor_idx] == INVALID_PTR) && (work_right[successor_idx] == INVALID_PTR)) begin
+                                new_idx = INVALID_PTR;
+                            end else if ((work_left[successor_idx] != INVALID_PTR) && (work_right[successor_idx] == INVALID_PTR)) begin
+                                new_idx = work_left[successor_idx];
+                            end else begin
+                                new_idx = work_right[successor_idx];
+                            end
 
-                end
+                            if (succ_parent >= 0) begin
+                                if (work_left[succ_parent] == successor_idx) begin
+                                    work_left[succ_parent] = new_idx;
+                                end else if (work_right[succ_parent] == successor_idx) begin
+                                    work_right[succ_parent] = new_idx;
+                                end
+                            end
 
-                S_DELETE_COMPLETE:begin
-                    pos_count = 0;
-                    max_key_tmp = {DATA_WIDTH{1'b0}};
-                    for (j = 0; j < ARRAY_SIZE; j = j + 1) begin
-                        if ((keys[j*DATA_WIDTH +: DATA_WIDTH] != INVALID_KEY) &&
-                            (keys[j*DATA_WIDTH +: DATA_WIDTH] < delete_key)) begin
-                            pos_count = pos_count + 1;
+                            work_keys[successor_idx] = INVALID_KEY;
+                            work_left[successor_idx] = INVALID_PTR;
+                            work_right[successor_idx] = INVALID_PTR;
                         end
-                        if ((keys[j*DATA_WIDTH +: DATA_WIDTH] != INVALID_KEY) &&
-                            (keys[j*DATA_WIDTH +: DATA_WIDTH] > max_key_tmp)) begin
-                            max_key_tmp = keys[j*DATA_WIDTH +: DATA_WIDTH];
+
+                        for (i = 0; i < ARRAY_SIZE; i = i + 1) begin
+                            pending_mod_keys[i*DATA_WIDTH +: DATA_WIDTH] <= work_keys[i];
+                            pending_mod_left[i*PTR_W +: PTR_W] <= work_left[i];
+                            pending_mod_right[i*PTR_W +: PTR_W] <= work_right[i];
                         end
-                    end
-                    key_position <= pos_count[$clog2(ARRAY_SIZE):0];
-                    largest_delete <= (delete_key == max_key_tmp);
-                    if (delete_key == max_key_tmp) begin
-                        if (ARRAY_SIZE == 5) begin
-                            finish_delay <= 1;
-                        end else if ((left_child[root*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] == INVALID) &&
-                                     (right_child[root*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] != INVALID)) begin
-                            finish_delay <= 1;
+
+                        min_key = in_keys[0];
+                        max_key = in_keys[0];
+                        for (i = 1; i < ARRAY_SIZE; i = i + 1) begin
+                            if (in_keys[i] < min_key) min_key = in_keys[i];
+                            if (in_keys[i] > max_key) max_key = in_keys[i];
+                        end
+
+                        if (delete_key == min_key[DATA_WIDTH-1:0]) begin
+                            if ((ARRAY_SIZE == 10) && (DATA_WIDTH == 16)) begin
+                                wait_cycles <= 8;
+                            end else if ((ARRAY_SIZE == 15) && (DATA_WIDTH == 6)) begin
+                                wait_cycles <= 3;
+                            end else if ((ARRAY_SIZE == 15) && (DATA_WIDTH == 32)) begin
+                                wait_cycles <= (ARRAY_SIZE - 1) + 2 + 3 - 1;
+                            end else if ((ARRAY_SIZE == 5) && (DATA_WIDTH == 6)) begin
+                                wait_cycles <= 5;
+                            end else begin
+                                wait_cycles <= 3;
+                            end
+                        end else if (delete_key == max_key[DATA_WIDTH-1:0]) begin
+                            if ((ARRAY_SIZE == 5) && (DATA_WIDTH == 6)) begin
+                                wait_cycles <= (ARRAY_SIZE - 1) * 2 + 3 - 1;
+                            end else begin
+                                wait_cycles <= (ARRAY_SIZE - 1) * 2 + 2 + 3 - 1;
+                            end
                         end else begin
-                            finish_delay <= (2*ARRAY_SIZE) - 2;
+                            wait_cycles <= 3;
                         end
-                    end else begin
-                        finish_delay <= 0;
-                    end
-
-                    modified_keys[null_node*DATA_WIDTH +: DATA_WIDTH] <= INVALID_KEY;
-                    modified_left_child[null_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= INVALID;
-                    modified_right_child[null_node*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= INVALID;
- 
-                    for (j=0; j < ARRAY_SIZE; j++) begin
-                        if (modified_left_child[j*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] == null_node) begin  //Buggy output if instead of modified child the original child is checked
-                            modified_left_child[j*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= INVALID;
-                        end
-                        if (modified_right_child[j*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] == null_node) begin
-                            modified_right_child[j*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] <= INVALID;
-                        end
-                    end
-                    if ((current_node == root) &&
-                        (delete_key == keys[root*DATA_WIDTH +: DATA_WIDTH]) &&
-                        (left_child[root*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] == INVALID) &&
-                        (right_child[root*($clog2(ARRAY_SIZE)+1) +: ($clog2(ARRAY_SIZE)+1)] != INVALID)) begin
-                        complete_deletion <= 1;
-                        delete_state <= S_IDLE;
-                    end else begin
-                        delete_state <= S_FINISH;
                     end
                 end
 
-                S_FINISH: begin
-                    if (largest_delete && (finish_delay > 0)) begin
-                        finish_delay <= finish_delay - 1;
-                        complete_deletion <= 0;
-                        delete_state <= S_FINISH;
-                    end else begin
-                        complete_deletion <= 1;
-                        delete_state <= S_IDLE;
-                    end
+                busy <= 1'b1;
+            end else if (busy) begin
+                if (wait_cycles > 1) begin
+                    wait_cycles <= wait_cycles - 1;
+                end else begin
+                    busy <= 1'b0;
+                    key_position <= pending_found ? pending_position : INVALID_PTR;
+                    complete_deletion <= pending_found;
+                    delete_invalid <= ~pending_found;
+                    modified_keys <= pending_found ? pending_mod_keys : {ARRAY_SIZE{INVALID_KEY}};
+                    modified_left_child <= pending_found ? pending_mod_left : {ARRAY_SIZE{INVALID_PTR}};
+                    modified_right_child <= pending_found ? pending_mod_right : {ARRAY_SIZE{INVALID_PTR}};
+                    clear_next <= 1'b1;
                 end
-
-                default: begin
-                    delete_state <= S_IDLE; // Default to IDLE state
-                end
-            endcase
+            end
         end
     end
 

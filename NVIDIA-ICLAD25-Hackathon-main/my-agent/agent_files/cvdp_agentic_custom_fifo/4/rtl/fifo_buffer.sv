@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module fifo_buffer #(
   parameter int unsigned NUM_OF_REQS = 2,
   parameter bit          ResetAll      = 1'b0
@@ -14,7 +16,7 @@ module fifo_buffer #(
   input  logic [1:0]          in_err_i,
 
   output logic [1:0]          out_valid_o,
-  input  logic [0:0]          out_ready_i,
+  input  logic [1:0]          out_ready_i,
   output logic [31:0]         out_addr_o,
   output logic [31:0]         out_rdata_o,
   output logic [1:0]          out_err_o,
@@ -32,7 +34,6 @@ module fifo_buffer #(
   logic [FIFO_DEPTH-1:0]         entry_en;
 
   logic                     pop_fifo;
-  logic                     clear_i_b, in_valid_i_b, in_err_i_b;
   logic         [31:0]      rdata, rdata_unaligned;
   logic                     err,   err_unaligned, err_plus2;
   logic                     valid, valid_unaligned;
@@ -45,26 +46,21 @@ module fifo_buffer #(
   logic                     instr_addr_en;
   logic                     unused_addr_in;
 
-  assign clear_i_b    = clear_i[0];
-  assign in_valid_i_b = in_valid_i[0];
-  assign in_err_i_b   = in_err_i[0];
-
   assign rdata = valid_q[0] ? rdata_q[0] : in_rdata_i;
-  assign err   = valid_q[0] ? err_q[0]   : in_err_i_b;
-  assign valid = valid_q[0] | in_valid_i_b;
+  assign err   = valid_q[0] ? err_q[0]   : in_err_i[0];
+  assign valid = valid_q[0] | in_valid_i[0];
 
   assign rdata_unaligned = valid_q[1] ? {rdata_q[1][15:0], rdata[31:16]} :
                                         {in_rdata_i[15:0], rdata[31:16]};
 
   assign err_unaligned   = valid_q[1] ? ((err_q[1] & ~unaligned_is_compressed) | err_q[0]) :
                                         ((valid_q[0] & err_q[0]) |
-                                         (in_err_i_b & (~valid_q[0] | ~unaligned_is_compressed)));
+                                         (in_err_i[0] & (~valid_q[0] | ~unaligned_is_compressed)));
 
-  assign err_plus2       = valid_q[1] ? err_q[1] :
-                                        (in_err_i_b & valid_q[0] & ~err_q[0]);
+  assign err_plus2       = valid_q[1] ? err_q[1] : in_err_i[0];
 
   assign valid_unaligned = valid_q[1] ? 1'b1 :
-                                        (valid_q[0] & in_valid_i_b);
+                                        (valid_q[0] & in_valid_i[0]);
 
   assign unaligned_is_compressed = (rdata[17:16] != 2'b11);
   assign aligned_is_compressed   = (rdata[1:0]   != 2'b11);
@@ -72,29 +68,29 @@ module fifo_buffer #(
   always @(*) begin
     if (out_addr_o[1]) begin
       out_rdata_o     = rdata_unaligned;
-      out_err_o       = {1'b0, err_unaligned};
-      out_err_plus2_o = {1'b0, err_plus2};
+      out_err_o       = err_unaligned;
+      out_err_plus2_o = err_plus2;
       if (unaligned_is_compressed) begin
-        out_valid_o = {1'b0, valid};
+        out_valid_o = valid;
       end else begin
-        out_valid_o = {1'b0, valid_unaligned};
+        out_valid_o = valid_unaligned;
       end
     end else begin
       out_rdata_o     = rdata;
-      out_err_o       = {1'b0, err};
-      out_err_plus2_o = {1'b0, err_plus2};
-      out_valid_o     = {1'b0, valid};
+      out_err_o       = err;
+      out_err_plus2_o = err_plus2;
+      out_valid_o     = valid;
     end
   end
 
-  assign instr_addr_en   = clear_i_b | (out_ready_i[0] & out_valid_o[0]);
+  assign instr_addr_en   = clear_i[0] | (out_ready_i[0] & out_valid_o[0]);
   assign addr_incr_two   = instr_addr_q[1] ? unaligned_is_compressed :
                                                aligned_is_compressed;
 
   assign instr_addr_next = (instr_addr_q[31:1] +
                             {29'd0, ~addr_incr_two, addr_incr_two});
 
-  assign instr_addr_d    = clear_i_b ? in_addr_i[31:1] : instr_addr_next;
+  assign instr_addr_d    = clear_i[0] ? in_addr_i[31:1] : instr_addr_next;
 
   if (ResetAll) begin : g_instr_addr_ra
     always_ff @(posedge clk_i or negedge rst_i) begin
@@ -116,7 +112,8 @@ module fifo_buffer #(
   assign unused_addr_in = in_addr_i[0];
 
   assign busy_o = valid_q[FIFO_DEPTH-1:FIFO_DEPTH-NUM_OF_REQS];
-  assign pop_fifo = out_ready_i[0] & out_valid_o[0] & (~aligned_is_compressed | out_addr_o[1]);
+  assign pop_fifo = out_ready_i[0] & out_valid_o[0] &
+                    (~aligned_is_compressed | out_addr_o[1]);
 
   for (genvar i = 0; i < (FIFO_DEPTH - 1); i++) begin : g_fifo_next
     if (i == 0) begin : g_ent0
@@ -125,22 +122,22 @@ module fifo_buffer #(
       assign lowest_free_entry[i] = ~valid_q[i] & valid_q[i-1];
     end
 
-    assign valid_pushed[i] = (in_valid_i_b & lowest_free_entry[i]) | valid_q[i];
+    assign valid_pushed[i] = (in_valid_i[0] & lowest_free_entry[i]) | valid_q[i];
     assign valid_popped[i] = pop_fifo ? valid_pushed[i+1] : valid_pushed[i];
-    assign valid_d[i]      = valid_popped[i] & ~clear_i_b;
+    assign valid_d[i]      = valid_popped[i] & ~clear_i[0];
     assign entry_en[i]     = (valid_pushed[i+1] & pop_fifo) |
-                             (in_valid_i_b & lowest_free_entry[i] & ~pop_fifo);
+                             (in_valid_i[0] & lowest_free_entry[i] & ~pop_fifo);
     assign rdata_d[i]      = valid_q[i+1] ? rdata_q[i+1] : in_rdata_i;
-    assign err_d[i]        = valid_q[i+1] ? err_q[i+1]   : in_err_i_b;
+    assign err_d[i]        = valid_q[i+1] ? err_q[i+1]   : in_err_i[0];
   end
 
   assign lowest_free_entry[FIFO_DEPTH-1] = ~valid_q[FIFO_DEPTH-1] & valid_q[FIFO_DEPTH-2];
-  assign valid_pushed[FIFO_DEPTH-1]      = valid_q[FIFO_DEPTH-1] | (in_valid_i_b & lowest_free_entry[FIFO_DEPTH-1]);
+  assign valid_pushed[FIFO_DEPTH-1]      = valid_q[FIFO_DEPTH-1] | (in_valid_i[0] & lowest_free_entry[FIFO_DEPTH-1]);
   assign valid_popped[FIFO_DEPTH-1]      = pop_fifo ? 1'b0 : valid_pushed[FIFO_DEPTH-1];
-  assign valid_d[FIFO_DEPTH-1]           = valid_popped[FIFO_DEPTH-1] & ~clear_i_b;
-  assign entry_en[FIFO_DEPTH-1]          = in_valid_i_b & lowest_free_entry[FIFO_DEPTH-1];
+  assign valid_d[FIFO_DEPTH-1]           = valid_popped[FIFO_DEPTH-1] & ~clear_i[0];
+  assign entry_en[FIFO_DEPTH-1]          = in_valid_i[0] & lowest_free_entry[FIFO_DEPTH-1];
   assign rdata_d[FIFO_DEPTH-1]           = in_rdata_i;
-  assign err_d[FIFO_DEPTH-1]             = in_err_i_b;
+  assign err_d[FIFO_DEPTH-1]             = in_err_i[0];
 
   always_ff @(posedge clk_i or negedge rst_i) begin
     if (!rst_i) begin

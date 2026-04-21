@@ -1,0 +1,2 @@
+problem,issue_id,harness_path,exit_code,status,duration_sec,first_error
+cvdp_agentic_ethernet_mii,4,NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_ethernet_mii/harness/4,1,FAIL,34,"error: Unable to find the root module ""ethernet_mii_tx"" in the Verilog source."

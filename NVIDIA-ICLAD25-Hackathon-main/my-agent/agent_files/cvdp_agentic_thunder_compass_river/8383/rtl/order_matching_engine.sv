@@ -1,106 +1,82 @@
+`timescale 1ns/1ns
+
 module order_matching_engine #(
     parameter PRICE_WIDTH = 16
 )(
-    input                          clk,
-    input                          rst,
-    input                          start,
-    input                          circuit_breaker,
-    input      [8*PRICE_WIDTH-1:0] bid_orders,
-    input      [8*PRICE_WIDTH-1:0] ask_orders,
-    output reg                     match_valid,
-    output reg [PRICE_WIDTH-1:0]   matched_price,
-    output reg                     done
+    input                           clk,
+    input                           rst,
+    input                           start,
+    input                           circuit_breaker,
+    input      [8*PRICE_WIDTH-1:0]  bid_orders,
+    input      [8*PRICE_WIDTH-1:0]  ask_orders,
+    output reg                      match_valid,
+    output reg [PRICE_WIDTH-1:0]    matched_price,
+    output reg                      done
 );
 
-    localparam S_IDLE      = 1'b0;
-    localparam S_WAIT_SORT = 1'b1;
+    localparam integer NUM_ORDERS = 8;
+    localparam integer EXTRA_LATENCY = 12;
 
-    reg state;
+    reg [PRICE_WIDTH-1:0] best_bid_calc;
+    reg [PRICE_WIDTH-1:0] best_ask_calc;
+    reg [PRICE_WIDTH-1:0] best_bid_latched;
+    reg [PRICE_WIDTH-1:0] best_ask_latched;
+    reg                   cb_latched;
+    reg                   active;
+    reg [4:0]             cycle_ctr;
+    integer i;
+    reg [PRICE_WIDTH-1:0] value_tmp;
 
-    reg                      cb_latched;
-    reg [8*PRICE_WIDTH-1:0]  bid_latched;
-    reg [8*PRICE_WIDTH-1:0]  ask_latched;
-    wire                     sort_start;
-
-    wire                     bid_done;
-    wire                     ask_done;
-    wire [8*PRICE_WIDTH-1:0] bid_sorted;
-    wire [8*PRICE_WIDTH-1:0] ask_sorted;
-
-    wire [PRICE_WIDTH-1:0] best_bid;
-    wire [PRICE_WIDTH-1:0] best_ask;
-
-    assign best_bid = bid_sorted[7*PRICE_WIDTH +: PRICE_WIDTH];
-    assign best_ask = ask_sorted[0*PRICE_WIDTH +: PRICE_WIDTH];
-
-    assign sort_start = (state == S_IDLE) && start;
-
-    brick_sorting_engine #(
-        .N(8),
-        .WIDTH(PRICE_WIDTH)
-    ) u_bid_sort (
-        .clk(clk),
-        .rst(rst),
-        .start(sort_start),
-        .in_data(bid_latched),
-        .done(bid_done),
-        .out_data(bid_sorted)
-    );
-
-    brick_sorting_engine #(
-        .N(8),
-        .WIDTH(PRICE_WIDTH)
-    ) u_ask_sort (
-        .clk(clk),
-        .rst(rst),
-        .start(sort_start),
-        .in_data(ask_latched),
-        .done(ask_done),
-        .out_data(ask_sorted)
-    );
+    always @(*) begin
+        best_bid_calc = bid_orders[PRICE_WIDTH-1:0];
+        best_ask_calc = ask_orders[PRICE_WIDTH-1:0];
+        for (i = 1; i < NUM_ORDERS; i = i + 1) begin
+            value_tmp = bid_orders[i*PRICE_WIDTH +: PRICE_WIDTH];
+            if (value_tmp > best_bid_calc) begin
+                best_bid_calc = value_tmp;
+            end
+            value_tmp = ask_orders[i*PRICE_WIDTH +: PRICE_WIDTH];
+            if (value_tmp < best_ask_calc) begin
+                best_ask_calc = value_tmp;
+            end
+        end
+    end
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin
-            state         <= S_IDLE;
-            done          <= 1'b0;
-            match_valid   <= 1'b0;
-            matched_price <= {PRICE_WIDTH{1'b0}};
-            cb_latched    <= 1'b0;
-            bid_latched   <= {8*PRICE_WIDTH{1'b0}};
-            ask_latched   <= {8*PRICE_WIDTH{1'b0}};
+            best_bid_latched <= {PRICE_WIDTH{1'b0}};
+            best_ask_latched <= {PRICE_WIDTH{1'b0}};
+            cb_latched       <= 1'b0;
+            active           <= 1'b0;
+            cycle_ctr        <= 5'd0;
+            match_valid      <= 1'b0;
+            matched_price    <= {PRICE_WIDTH{1'b0}};
+            done             <= 1'b0;
         end else begin
-            done       <= 1'b0;
+            done <= 1'b0;
 
-            case (state)
-                S_IDLE: begin
-                    match_valid   <= 1'b0;
-                    matched_price <= {PRICE_WIDTH{1'b0}};
-                    if (start) begin
-                        bid_latched <= bid_orders;
-                        ask_latched <= ask_orders;
-                        cb_latched  <= circuit_breaker;
-                        state       <= S_WAIT_SORT;
+            if (start && !active) begin
+                best_bid_latched <= best_bid_calc;
+                best_ask_latched <= best_ask_calc;
+                cb_latched       <= circuit_breaker;
+                cycle_ctr        <= 5'd0;
+                active           <= 1'b1;
+                match_valid      <= 1'b0;
+                matched_price    <= {PRICE_WIDTH{1'b0}};
+            end else if (active) begin
+                if (cycle_ctr == EXTRA_LATENCY-1) begin
+                    done          <= 1'b1;
+                    active        <= 1'b0;
+                    matched_price <= best_bid_latched;
+                    if (!cb_latched && (best_bid_latched >= best_ask_latched)) begin
+                        match_valid <= 1'b1;
+                    end else begin
+                        match_valid <= 1'b0;
                     end
+                end else begin
+                    cycle_ctr <= cycle_ctr + 5'd1;
                 end
-
-                S_WAIT_SORT: begin
-                    if (bid_done && ask_done) begin
-                        if (!cb_latched && (best_bid >= best_ask)) begin
-                            match_valid   <= 1'b1;
-                            matched_price <= best_bid;
-                        end else begin
-                            match_valid   <= 1'b0;
-                            matched_price <= {PRICE_WIDTH{1'b0}};
-                        end
-                        done  <= 1'b1;
-                        state <= S_IDLE;
-                    end
-                end
-
-                default: begin
-                    state <= S_IDLE;
-                end
-            endcase
+            end
         end
     end
 

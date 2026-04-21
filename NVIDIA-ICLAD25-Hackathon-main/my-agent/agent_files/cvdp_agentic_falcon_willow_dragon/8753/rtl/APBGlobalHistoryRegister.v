@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 module APBGlobalHistoryRegister (
     // APB clock & reset
     input  wire         pclk,  //APB clock input used for all synchronous operations.
@@ -11,6 +13,7 @@ module APBGlobalHistoryRegister (
     input  wire [7:0]   pwdata, // Write data bus for sending data to CSR registers or memory.
     input  wire         history_shift_valid,  
     input  wire         clk_gate_en,  
+    input  wire         secure_enable,
     output reg          pready, // Ready signal, driven high to indicate the end of a transaction.
     output reg  [7:0]   prdata, // Read data bus for retrieving data from the module.
     output reg          pslverr,  //Error signal, asserted on invalid addresses.
@@ -48,6 +51,7 @@ module APBGlobalHistoryRegister (
     // APB Read/Write Logic
     //---------------------------------------------
     wire apb_valid;
+    wire pclk_gated;
     assign apb_valid = pselx & penable;    // Indicates active APB transaction
     assign pclk_gated = !clk_gate_en&pclk;
     // By spec, no wait states => PREADY always high after reset
@@ -128,7 +132,7 @@ module APBGlobalHistoryRegister (
         //    Clear the entire history register.
         predict_history <= 0;
       end
-      else begin
+      else if (secure_enable) begin
         // 2) Misprediction Handling (highest priority)
         //    If a misprediction is flagged, restore the old history from train_history
         //    and incorporate the correct outcome (train_taken) as the newest bit.
