@@ -87,6 +87,33 @@ if ! ensure_iverilog; then
   exit 1
 fi
 
+# Run Codex once during setup so first-time users can approve repo access
+# immediately and avoid later permission friction.
+# Set SKIP_CODEX_BOOTSTRAP=1 to disable this step (for CI or scripted runs).
+bootstrap_codex_repo_access() {
+  if [[ "${SKIP_CODEX_BOOTSTRAP:-0}" == "1" ]]; then
+    echo "[setup] Skipping Codex bootstrap (SKIP_CODEX_BOOTSTRAP=1)."
+    return 0
+  fi
+
+  if ! command -v codex >/dev/null 2>&1; then
+    echo "[setup] Codex CLI not found in PATH. Skipping Codex bootstrap."
+    return 0
+  fi
+
+  if [[ ! -t 0 || ! -t 1 ]]; then
+    echo "[setup] Non-interactive shell detected. Skipping Codex bootstrap."
+    echo "[setup] Run 'codex' once from repo root to grant folder access."
+    return 0
+  fi
+
+  echo "[setup] Launching Codex once so repo access can be approved."
+  echo "[setup] Approve access if prompted, then exit Codex to continue setup."
+  if ! codex; then
+    echo "[setup] WARN: Codex exited with a non-zero status. Continuing setup." >&2
+  fi
+}
+
 if [[ ! -d "$ROOT_DIR/agent_env" ]]; then
   echo "[setup] Creating virtual environment: agent_env"
   "$PYTHON_BIN" -m venv "$ROOT_DIR/agent_env"
@@ -134,6 +161,9 @@ if [[ "$count_fail" -gt 0 ]]; then
   exit 2
 fi
 
+bootstrap_codex_repo_access
+
 echo "[setup] Complete. Next steps:"
 echo "  1) source agent_env/bin/activate"
 echo "  2) python3 my-agent/agent.py -i <dataset_index>"
+echo "  3) codex"

@@ -1,17 +1,21 @@
+`timescale 1ns/1ns
+
 module cross_correlation #(
    parameter  NS_DATA_IN  = 'd11,
    parameter  NBW_DATA_IN = 'd08,
-   parameter  NBI_DATA_IN = 'd02,   
+   parameter  NBI_DATA_IN = 'd02,
    parameter  NBW_ENERGY  = 'd08
-)
-( 
+)(
  input  logic                                clk         ,
- input  logic                                i_enable    , 
+ input  logic                                rst_async_n ,
+ input  logic                                i_enable    ,
+ input  logic [1:0]                          i_mode      ,
  input  logic [NBW_DATA_IN*NS_DATA_IN-1 : 0] i_data_i    ,
  input  logic [NBW_DATA_IN*NS_DATA_IN-1 : 0] i_data_q    ,
  input  logic [NS_DATA_IN-1:0]               i_conj_seq_i,
  input  logic [NS_DATA_IN-1:0]               i_conj_seq_q,
- output logic [NBW_ENERGY-1:0]               o_energy  
+ output logic [NBW_ENERGY-1:0]               o_energy    ,
+ output logic [1:0]                          o_aware_mode
 );
 localparam N_ADDER_LEVELS= $clog2(NS_DATA_IN);
 localparam N_REG_LEVELS  = 8'b00000000;
@@ -26,7 +30,6 @@ localparam NBF_ADDER_TREE_OUT = NBW_ADDER_TREE_OUT - NBI_ADDER_TREE_OUT;
 logic [NBW_ADDER_TREE_IN*NS_DATA_IN-1:0] sum_i_1d;
 logic [NBW_ADDER_TREE_IN*NS_DATA_IN-1:0] sum_q_1d;
 
-/*Correlation result for i and q data component*/
 wire signed [NBW_ADDER_TREE_OUT-1:0] correlation_i;
 wire signed [NBW_ADDER_TREE_OUT-1:0] correlation_q;
 
@@ -38,7 +41,8 @@ correlate #(
     .i_data_i    (i_data_i    ),
     .i_data_q    (i_data_q    ),
     .i_conj_seq_i(i_conj_seq_i),
-    .i_conj_seq_q(i_conj_seq_q),   
+    .i_conj_seq_q(i_conj_seq_q),
+    .i_mode      (i_mode      ),
     .o_sum_i     (sum_i_1d    ),
     .o_sum_q     (sum_q_1d    )
 );
@@ -51,13 +55,16 @@ adder_2d_layers  #(
     .NBW_ADDER_TREE_OUT(NBW_ADDER_TREE_OUT),
     .NBW_ENERGY        (NBW_ENERGY        )
 ) uu_adder_2d_layers (
-        .clk     (clk            ),
-        .i_enable(i_enable       ),
-        .i_data_i(sum_i_1d       ),
-        .i_data_q(sum_q_1d       ),
-        .o_data_i(correlation_i  ),
-        .o_data_q(correlation_q  ),
-        .o_energy(o_energy)            
+    .clk         (clk           ),
+    .rst_async_n (rst_async_n   ),
+    .i_enable    (i_enable      ),
+    .i_mode      (i_mode        ),
+    .i_data_i    (sum_i_1d      ),
+    .i_data_q    (sum_q_1d      ),
+    .o_data_i    (correlation_i ),
+    .o_data_q    (correlation_q ),
+    .o_energy    (o_energy      ),
+    .o_aware_mode(o_aware_mode  )
 );
 
 endmodule

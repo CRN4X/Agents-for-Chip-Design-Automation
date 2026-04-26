@@ -1,3 +1,4 @@
+`timescale 1ns/1ns
 module top_phase_rotation #(
    parameter NBW_ANG  =  'd7,      
    parameter NBW_COS  =  'd10,
@@ -9,6 +10,10 @@ module top_phase_rotation #(
 )
 (    
    input  logic clk,
+   input  logic i_bypass,
+   input  logic i_en_capture_data,
+   input  logic i_en_capture_cos_sin,
+   input  logic rst_async_n,
    input  logic [NBW_IN_DATA*NS_IN-1:0]   i_data_re,
    input  logic [NBW_IN_DATA*NS_IN-1:0]   i_data_im,    
    input  logic [NBW_ANG*NS_IN-1:0]             i_angle,
@@ -18,6 +23,8 @@ module top_phase_rotation #(
 
 logic signed [NBW_IN_DATA-1:0]  i_data_re_2d [NS_IN-1:0];
 logic signed [NBW_IN_DATA-1:0]  i_data_im_2d [NS_IN-1:0];
+logic signed [NBW_IN_DATA-1:0]  i_data_re_cap_2d [NS_IN-1:0];
+logic signed [NBW_IN_DATA-1:0]  i_data_im_cap_2d [NS_IN-1:0];
 logic signed [NBW_OUT_DATA-1:0] o_data_re_2d [NS_IN-1:0];
 logic signed [NBW_OUT_DATA-1:0] o_data_im_2d [NS_IN-1:0];
 logic signed [NBW_ANG-1:0]      i_angle_2d [NS_IN-1:0];
@@ -31,6 +38,21 @@ always_comb begin : convert_2d_array_to_1d_input_data
    end
 end
 
+always_ff @(posedge clk or negedge rst_async_n) begin : capture_input_data
+   if(!rst_async_n) begin
+      for(int i=0; i < NS_IN; i++) begin
+         i_data_re_cap_2d[i] <= '0;
+         i_data_im_cap_2d[i] <= '0;
+      end
+   end
+   else if(i_en_capture_data) begin
+      for(int i=0; i < NS_IN; i++) begin
+         i_data_re_cap_2d[i] <= i_data_re_2d[i];
+         i_data_im_cap_2d[i] <= i_data_im_2d[i];
+      end
+   end
+end
+
 always_comb begin : convert_2d_array_to_1d_input_angle
    for(int i=0; i < NS_IN; i++) begin
       i_angle_2d[i] = $signed(i_angle[(i+1)*NBW_ANG-1-:NBW_ANG]);
@@ -41,7 +63,10 @@ genvar j;
 generate
    for(j = 0; j < NS_IN; j++) begin : gen_lut_phase_rot
       gen_cos_sin_lut uu_gen_cos_sin_lut (
+         .clk(clk),
+         .rst_async_n(rst_async_n),
          .i_angle(i_angle_2d[j]),
+         .i_en_capture_cos_sin(i_en_capture_cos_sin),
          .o_cos(cos_2d[j]),
          .o_sin(sin_2d[j])
       );
@@ -54,8 +79,10 @@ generate
          .NBW_OUT_DATA(NBW_OUT_DATA)
       ) uu_phase_rotation(
          .clk(clk),
-         .i_data_re(i_data_re_2d[j]),
-         .i_data_im(i_data_im_2d[j]),
+         .rst_async_n(rst_async_n),
+         .i_bypass(i_bypass),
+         .i_data_re(i_data_re_cap_2d[j]),
+         .i_data_im(i_data_im_cap_2d[j]),
          .i_cos(cos_2d[j]),
          .i_sin(sin_2d[j]),
          .o_data_re(o_data_re_2d[j]),

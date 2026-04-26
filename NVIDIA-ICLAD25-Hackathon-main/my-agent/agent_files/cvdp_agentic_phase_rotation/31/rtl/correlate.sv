@@ -1,16 +1,17 @@
+`timescale 1ns/1ns
+
 module correlate #(
    parameter  NS_DATA_IN        = 'd11,
-   parameter  NBW_DATA_IN = 'd08,
+   parameter  NBW_DATA_IN       = 'd08,
    parameter  NBW_ADDER_TREE_IN = 3
-)
-(
- input  logic [NBW_DATA_IN*NS_DATA_IN-1 : 0]  i_data_i    ,
- input  logic [NBW_DATA_IN*NS_DATA_IN-1 : 0]  i_data_q    ,
- input  logic        [       NS_DATA_IN-1 : 0]  i_conj_seq_i,
- input  logic        [       NS_DATA_IN-1 : 0]  i_conj_seq_q,   
- output logic [NBW_ADDER_TREE_IN*NS_DATA_IN-1:0]o_sum_i,
+)(
+ input  logic [NBW_DATA_IN*NS_DATA_IN-1 : 0]    i_data_i    ,
+ input  logic [NBW_DATA_IN*NS_DATA_IN-1 : 0]    i_data_q    ,
+ input  logic [NS_DATA_IN-1 : 0]                i_conj_seq_i,
+ input  logic [NS_DATA_IN-1 : 0]                i_conj_seq_q,
+ input  logic [1:0]                             i_mode      ,
+ output logic [NBW_ADDER_TREE_IN*NS_DATA_IN-1:0]o_sum_i     ,
  output logic [NBW_ADDER_TREE_IN*NS_DATA_IN-1:0]o_sum_q
-
 );
 
 wire signed  [      NBW_DATA_IN:0] add[NS_DATA_IN];
@@ -44,27 +45,40 @@ generate
         assign sub[i] = i_data_i_2d[i] - i_data_q_2d[i];
     
         always_comb begin
-            case({signal_seq_i[i],signal_seq_q[i]})
+            case(i_mode)
                 2'b00: begin
+                    case({signal_seq_i[i],signal_seq_q[i]})
+                        2'b00: begin
                             sum_i[i]  = sub[i];
                             sum_q[i]  = add[i];
-                       end
-
-                2'b01: begin
-                            sum_i[i]  =  add[i];
+                        end
+                        2'b01: begin
+                            sum_i[i]  = add[i];
                             sum_q[i]  = -sub[i];
-                       end    
-
-                2'b10: begin
+                        end
+                        2'b10: begin
                             sum_i[i]  = -add[i];
-                            sum_q[i]  =  sub[i];
-                       end    
-
-                2'b11: begin
+                            sum_q[i]  = sub[i];
+                        end
+                        default: begin
                             sum_i[i]  = -sub[i];
                             sum_q[i]  = -add[i];
-                       end    
-            endcase 
+                        end
+                    endcase
+                end
+                2'b01: begin
+                    sum_i[i] = sub[i];
+                    sum_q[i] = sub[i];
+                end
+                2'b10: begin
+                    sum_i[i] = add[i];
+                    sum_q[i] = add[i];
+                end
+                default: begin
+                    sum_i[i] = '0;
+                    sum_q[i] = '0;
+                end
+            endcase
         end
     end    
 endgenerate

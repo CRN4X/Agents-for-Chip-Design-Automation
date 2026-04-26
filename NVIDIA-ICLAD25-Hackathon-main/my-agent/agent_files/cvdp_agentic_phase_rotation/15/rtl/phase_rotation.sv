@@ -1,3 +1,4 @@
+`timescale 1ns/1ns
 module phase_rotation #(
    parameter NBW_IN_DATA  = 8,
    parameter NBW_COS      = 8,
@@ -6,6 +7,8 @@ module phase_rotation #(
    parameter NBW_OUT_DATA = NBW_SUM
 ) (
    input  logic clk,
+   input  logic rst_async_n,
+   input  logic i_bypass,
    input  logic signed [NBW_IN_DATA-1:0]  i_data_re,
    input  logic signed [NBW_IN_DATA-1:0]  i_data_im,
    input  logic signed [NBW_COS-1:0]      i_cos,
@@ -27,11 +30,19 @@ module phase_rotation #(
    logic signed [NBW_SUM-1:0] sum_1;
    logic signed [NBW_SUM-1:0] sum_2;
 
-   always_ff @(posedge clk) begin
-      data_re_reg <= i_data_re;
-      data_im_reg <= i_data_im;
-      cos_reg     <= i_cos;
-      sin_reg     <= i_sin;
+   always_ff @(posedge clk or negedge rst_async_n) begin
+      if(!rst_async_n) begin
+         data_re_reg <= '0;
+         data_im_reg <= '0;
+         cos_reg     <= '0;
+         sin_reg     <= '0;
+      end
+      else begin
+         data_re_reg <= i_data_re;
+         data_im_reg <= i_data_im;
+         cos_reg     <= i_cos;
+         sin_reg     <= i_sin;
+      end
    end
 
    assign data_a = cos_reg*data_re_reg;
@@ -43,8 +54,14 @@ module phase_rotation #(
    assign sum_2  = data_c + data_d;
 
    always_comb begin
-      o_data_re = sum_1;
-      o_data_im = sum_2;
+      if(i_bypass) begin
+         o_data_re = i_data_re;
+         o_data_im = i_data_im;
+      end
+      else begin
+         o_data_re = sum_1;
+         o_data_im = sum_2;
+      end
    end
 
 endmodule

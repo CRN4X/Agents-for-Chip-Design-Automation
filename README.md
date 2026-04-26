@@ -5,6 +5,7 @@ This repository evaluates agentic RTL debugging/generation workflows on harnesse
 ## Prerequisites
 
 - `python 3.12`
+- Codex CLI (`codex`) installed and available on PATH (`codex --version`)
 - Icarus Verilog tools:
   - `iverilog`
   - `vvp`
@@ -25,6 +26,7 @@ sudo apt-get install -y iverilog
 ### Windows (No WSL)
 
 - Install **Python 3** and ensure `python`/`python3` is on PATH.
+- Install **Codex CLI** and ensure `codex` is on PATH.
 - Install **Git for Windows** (includes Git Bash).
 - Install **Icarus Verilog for Windows** and ensure `iverilog` and `vvp` are on PATH.
 

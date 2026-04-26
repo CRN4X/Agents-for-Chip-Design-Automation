@@ -1,0 +1,2 @@
+problem,issue_id,harness_path,exit_code,status,duration_sec,first_error
+cvdp_agentic_phase_rotation,31,NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_phase_rotation/harness/31,1,FAIL,939,"                                                        Traceback (most recent call last):"

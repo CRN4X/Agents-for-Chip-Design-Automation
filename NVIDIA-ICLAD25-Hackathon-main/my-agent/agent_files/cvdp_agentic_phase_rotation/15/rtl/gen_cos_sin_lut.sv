@@ -1,3 +1,4 @@
+`timescale 1ns/1ns
 module gen_cos_sin_lut #(
     parameter NBW_ANG  =  'd7,      
     parameter NBW_COS  =  'd10
@@ -149,7 +150,7 @@ end
 
 always_ff @(posedge clk or negedge rst_async_n) begin
     if(!rst_async_n) begin
-        o_cos <= 10'b0100000000;        
+        o_cos <= 10'b0100000000;
         o_sin <= 'd0;
     end
     else begin

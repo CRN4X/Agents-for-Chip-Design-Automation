@@ -7,7 +7,7 @@
         "result": 1,
         "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_queue/harness/1/rundir/sim.log",
         "error_msg": "error: Unable to find the root module \"queue\" in the Verilog source.",
-        "execution": 41.0,
+        "execution": 45.0,
         "pid": 0
       }
     ],
