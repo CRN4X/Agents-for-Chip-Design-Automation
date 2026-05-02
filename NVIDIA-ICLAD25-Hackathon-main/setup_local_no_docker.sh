@@ -174,5 +174,5 @@ bootstrap_codex_repo_access
 
 echo "[setup] Complete. Next steps:"
 echo "  1) source agent_env/bin/activate"
-echo "  2) codex"
+echo "  2) codex (is not installed, install with - npm install -g @openai/codex)"
 echo "  3) python3 my-agent/agent.py -i <dataset_index>"
