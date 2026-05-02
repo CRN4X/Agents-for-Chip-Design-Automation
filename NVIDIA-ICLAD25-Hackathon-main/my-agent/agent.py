@@ -980,7 +980,11 @@ def _main_orchestrator(idx: int, max_retries: int, repo_root: Path) -> None:
         sys.exit(1)
 
     final_status = "PASS" if solved else "FAIL"
-    log(f"Step C: Complete. Target problem final status: {final_status}")
+    log(
+        f"Step C: Complete.Target problem final status: {final_status}\n"
+        f"Location of Original RTL Files : {source_rtl}\n"
+        f"Location of Created/Modified RTL Files : {staged_rtl}"
+    )
     sys.exit(0 if solved else 3)
 
 
