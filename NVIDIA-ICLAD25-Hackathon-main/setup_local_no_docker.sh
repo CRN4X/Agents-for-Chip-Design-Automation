@@ -136,11 +136,20 @@ echo "[setup] Relinking harness rtl directories (symlink first, copy fallback)"
 count_total=0
 count_ok=0
 count_fail=0
+count_skip=0
 
 shopt -s nullglob
 for h in "$ROOT_DIR"/work/*/harness/*; do
   [[ -d "$h" ]] || continue
   ((count_total+=1))
+  problem_name="$(basename "$(dirname "$(dirname "$h")")")"
+  issue_id="$(basename "$h")"
+  staged_rtl_issue="$ROOT_DIR/my-agent/agent_files/$problem_name/$issue_id/rtl"
+  staged_rtl_legacy="$ROOT_DIR/my-agent/agent_files/$problem_name/rtl"
+  if [[ ! -d "$staged_rtl_issue" && ! -d "$staged_rtl_legacy" ]]; then
+    ((count_skip+=1))
+    continue
+  fi
   if "$ROOT_DIR/my-agent/link_harness_rtl_to_staged.sh" "$h" >/dev/null 2>&1; then
     ((count_ok+=1))
   else
@@ -155,7 +164,7 @@ if ! python3 "$ROOT_DIR/my-agent/init_learnings.py" >/dev/null 2>&1; then
   echo "[setup] WARN: could not initialize work/learnings.json (file may be open/locked)." >&2
 fi
 
-echo "[setup] Relink summary: total=$count_total ok=$count_ok failed=$count_fail"
+echo "[setup] Relink summary: total=$count_total ok=$count_ok skipped=$count_skip failed=$count_fail"
 if [[ "$count_fail" -gt 0 ]]; then
   echo "[setup] ERROR: one or more harness relinks failed. Fix warnings above and rerun." >&2
   exit 2

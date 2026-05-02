@@ -1,14 +1,14 @@
 {
-  "source_csv": "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/my-agent/batch_reports/local_eval_summary_20260421_111403.csv",
+  "source_csv": "/Users/siddharth/Documents/EEE_598_VDA_Proj2/Proj2_Phase2/NVIDIA-ICLAD25-Hackathon-main/my-agent/batch_reports/local_eval_summary_20260427_225638.csv",
   "count": 1,
   "results": [
     {
-      "problem": "cvdp_agentic_queue",
-      "issue_id": "1",
-      "harness_path": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_queue/harness/1",
-      "status": "FAIL",
-      "exit_code": 2,
-      "first_error": "error: Unable to find the root module \"queue\" in the Verilog source."
+      "problem": "cvdp_agentic_starlight_phoenix_comet",
+      "issue_id": "6246",
+      "harness_path": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_starlight_phoenix_comet/harness/6246",
+      "status": "PASS",
+      "exit_code": 0,
+      "first_error": ""
     }
   ]
 }

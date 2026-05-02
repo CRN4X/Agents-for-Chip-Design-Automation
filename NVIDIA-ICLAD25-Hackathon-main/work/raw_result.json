@@ -1,16 +1,16 @@
 {
-  "cvdp_agentic_queue_1": {
-    "category": "cid003",
+  "cvdp_agentic_starlight_phoenix_comet_6246": {
+    "category": "cid016",
     "difficulty": "medium",
     "tests": [
       {
-        "result": 1,
-        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_queue/harness/1/rundir/sim.log",
-        "error_msg": "error: Unable to find the root module \"queue\" in the Verilog source.",
-        "execution": 45.0,
+        "result": 0,
+        "log": "NVIDIA-ICLAD25-Hackathon-main/work/cvdp_agentic_starlight_phoenix_comet/harness/6246/rundir/sim.log",
+        "error_msg": null,
+        "execution": 129.0,
         "pid": 0
       }
     ],
-    "errors": 1
+    "errors": 0
   }
 }
