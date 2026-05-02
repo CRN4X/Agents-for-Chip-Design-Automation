@@ -695,10 +695,11 @@ def run_codex_once(repo_root: Path, prompt: str) -> subprocess.CompletedProcess:
 
 
 def run_local_eval(repo_root: Path, harness_path: Path) -> subprocess.CompletedProcess:
+    shell_path = _resolve_shell_path()
     cmd = [
-        "/bin/zsh",
+        shell_path,
         "-lc",
-        f"source {shlex.quote(str(repo_root / 'agent_env' / 'bin' / 'activate'))} && "
+        f". {shlex.quote(str(repo_root / 'agent_env' / 'bin' / 'activate'))} && "
         f"./my-agent/run_local_eval.sh {shlex.quote(str(harness_path))}",
     ]
     return run_cmd(cmd, cwd=repo_root)
@@ -709,14 +710,27 @@ def run_post_benchmark(
     harness_path: Path,
     pipeline_start_epoch: int,
 ) -> subprocess.CompletedProcess:
+    shell_path = _resolve_shell_path()
     cmd = [
-        "/bin/zsh",
+        shell_path,
         "-lc",
-        f"source {shlex.quote(str(repo_root / 'agent_env' / 'bin' / 'activate'))} && "
+        f". {shlex.quote(str(repo_root / 'agent_env' / 'bin' / 'activate'))} && "
         f"export AGENT_PIPELINE_START_EPOCH={pipeline_start_epoch} && "
         f"./my-agent/run_local_eval_batch.sh {shlex.quote(str(repo_root))} --harness {shlex.quote(str(harness_path))}",
     ]
     return run_cmd(cmd, cwd=repo_root)
+
+
+def _resolve_shell_path() -> str:
+    env_shell = os.environ.get("SHELL", "")
+    if env_shell and Path(env_shell).is_file() and os.access(env_shell, os.X_OK):
+        return env_shell
+
+    for shell_name in ("zsh", "bash", "sh"):
+        resolved = shutil.which(shell_name)
+        if resolved:
+            return resolved
+    return "/bin/sh"
 
 
 def ensure_local_eval_env(repo_root: Path) -> bool:
